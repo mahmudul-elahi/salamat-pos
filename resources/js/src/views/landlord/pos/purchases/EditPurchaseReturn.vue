@@ -60,7 +60,7 @@ const searchProducts = async () => {
             products.value = []
         }
     } catch (error) {
-        console.log(error)
+
     } finally {
         preloader.value = false;
     }
@@ -269,7 +269,6 @@ const submit = async () => {
         toast.success('Purchase Return updated successfully');
         await router.push({name: 'purchaseReturn'});
     } catch (error) {
-        console.log(error);
 
         if (error.response?.status === 422) errors.value = error.response.data.errors;
         else toast.error(error.response?.data?.message || 'Error submitting form');

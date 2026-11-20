@@ -54,7 +54,6 @@ const changeAttribute = (variant) => {
     if (!variant) return;
 
     const attrString = variant.attributes || '';
-    console.log(variant)
 
     const existing = selectedProducts.value.find(p => p.id === variant.id);
     if (!existing) {
@@ -164,7 +163,6 @@ const printMultipleBarcodes = async () => {
         }, 500);
 
     } catch (error) {
-        console.log(error, "Error");
 
         const response = error?.response;
         if (response?.status === 422) {

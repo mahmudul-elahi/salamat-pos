@@ -67,7 +67,7 @@ const searchProducts = async () => {
             products.value = []
         }
     } catch (error) {
-        console.log("Error", error)
+
     } finally {
         preloader.value = false;
     }

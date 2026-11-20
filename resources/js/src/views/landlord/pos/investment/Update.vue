@@ -31,11 +31,8 @@ const attachments = ref([]);
 
 const deletableAttachmentIds = ref([]);
 const removeAttachments = (attachment) => {
-  console.log('Before remove:', formData.value.images.map(a => a.id));
 
   formData.value.images = formData.value.images.filter(a => a.id !== attachment.id);
-
-  console.log('After remove:', formData.value.images.map(a => a.id));
 
   if (attachment.id) {
     deletableAttachmentIds.value.push(attachment.id);

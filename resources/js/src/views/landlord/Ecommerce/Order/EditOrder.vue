@@ -100,7 +100,6 @@ const validateDiscountAmount = (product) => {
 // Function to calculate total per product considering discount
 const calculateProductTotal = (product) => {
     const price = Number(product.purchase_price) || 0;
-    console.log(price);
 
     const qty = Number(product.quantity) || 1;
     let total = price * qty;

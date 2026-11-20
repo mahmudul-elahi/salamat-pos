@@ -13,8 +13,6 @@ const { t } = useI18n();
 const emit = defineEmits(['close'])
 const { preloader, closeModal } = useSubmitForm(props, emit)
 
-console.log(props.rowData);
-
 </script>
 
 <template>

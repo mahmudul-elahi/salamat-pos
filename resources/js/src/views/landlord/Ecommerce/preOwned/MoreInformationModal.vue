@@ -67,7 +67,7 @@ const save = () => {
         index: props.index,
         data: { ...localData.value },
     });
-    console.log('emitting save with data:');
+
     emit('close');
 };
 </script>

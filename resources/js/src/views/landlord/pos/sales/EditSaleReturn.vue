@@ -52,7 +52,7 @@ const searchProducts = async () => {
             products.value = []
         }
     } catch (error) {
-        console.log("Error", error)
+
     } finally {
         preloader.value = false;
     }
@@ -319,7 +319,6 @@ const fetchSaleReturnData = async () => {
             status: item.status || '',
         }));
     } catch (err) {
-        console.log(err);
 
         toast.error("Failed to load sale return data");
     } finally {

@@ -70,7 +70,6 @@ onMounted(fetchAllowances);
 const submit = () => {
     errors.value = {};
     preloader.value = true;
-    console.log("formData.value", formData.value);
 
     const fd = new FormData();
     fd.append('leave_type_id', formData.value.leave_type_id ?? '');

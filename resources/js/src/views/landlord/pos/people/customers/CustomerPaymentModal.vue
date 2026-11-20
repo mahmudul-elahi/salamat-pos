@@ -59,7 +59,7 @@ const submit = async () => {
         });
 
     } catch (e) {
-        console.log(e)
+
         if (e.response && e.response.status === 422) {
             errors.value = e.response.data.errors;
         } else {

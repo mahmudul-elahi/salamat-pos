@@ -38,7 +38,7 @@ const ledgerContacts = async () => {
             contact.value = res.data;
         });
     } catch {
-        console.log('error');
+
     } finally {
         preloader.value = false;
     }
