@@ -1,0 +1,60 @@
+<?php
+
+namespace Database\Seeders\Setting;
+
+use App\Models\Setting\Setting;
+use Illuminate\Database\Seeder;
+
+class DefaultSettingSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        Setting::query()->insert(config('settings.app'));
+
+        // Store logo and update 'value' with media URL
+        $logo = Setting::query()->create([
+            'name' => 'company_logo',
+        ]);
+        $logo->addMediaFromUrl(url('assets/images/installer/logo.png'))
+            ->toMediaCollection('company_logo');
+
+        $logo->update([
+            'value' => $logo->getFirstMediaUrl('company_logo'),
+        ]);
+
+        $secondaryLogo = Setting::query()->create([
+            'name' => 'company_secondary_logo',
+        ]);
+        $secondaryLogo->addMediaFromUrl(url('assets/images/installer/logo.png'))
+            ->toMediaCollection('company_secondary_logo');
+
+        $secondaryLogo->update([
+            'value' => $secondaryLogo->getFirstMediaUrl('company_secondary_logo'),
+        ]);
+
+        // Store icon and update
+        $icon = Setting::query()->create([
+            'name' => 'company_icon',
+        ]);
+        $icon->addMediaFromUrl(url('assets/images/installer/favicon.png'))
+            ->toMediaCollection('company_icon');
+
+        $icon->update([
+            'value' => $icon->getFirstMediaUrl('company_icon'),
+        ]);
+
+        // Store banner and update
+        $banner = Setting::query()->create([
+            'name' => 'company_banner',
+        ]);
+        $banner->addMediaFromUrl(url('assets/images/installer/banner.png'))
+            ->toMediaCollection('company_banner');
+
+        $banner->update([
+            'value' => $banner->getFirstMediaUrl('company_banner'),
+        ]);
+    }
+}

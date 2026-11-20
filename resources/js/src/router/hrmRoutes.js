@@ -1,0 +1,155 @@
+import { alreadyLogin } from "@/router/gurd.js";
+
+export default [
+    {
+        path: "/",
+        component: () => import("@/views/common/layout/Main.vue"),
+        beforeEnter: [alreadyLogin],
+        children: [
+            {
+                path: "/hrm/employees",
+                name: "HrmEmployeeList",
+                component: () => import("@/views/landlord/hrm/employee/Employee.vue"),
+                meta: { permissions: ["view_employees"] },
+            },
+            {
+                path: "/hrm/employees/:id",
+                name: "HrmEmployeeDetails",
+                component: () => import("@/views/landlord/hrm/employee/EmployeeDetails.vue"),
+                meta: { permissions: ["view_employees"] },
+            },
+            {
+                path: "/hrm/designations",
+                name: "HrmDesignationList",
+                component: () => import("@/views/landlord/hrm/designation/Designation.vue"),
+                meta: { permissions: ["view_designations"] },
+            },
+            {
+                path: "/hrm/employee-statuses",
+                name: "HrmEmployeeStatusList",
+                component: () => import("@/views/landlord/hrm/employeeStatus/EmployeeStatus.vue"),
+                meta: { permissions: ["view_employee_statuses"] },
+            },
+            {
+                path: "/hrm/departments",
+                name: "HrmDepartmentList",
+                component: () => import("@/views/landlord/hrm/department/Department.vue"),
+                meta: { permissions: ["view_departments"] },
+            },
+            {
+                path: "/hrm/holidays",
+                name: "HrmHolidayList",
+                component: () => import("@/views/landlord/hrm/holiday/Holiday.vue"),
+                meta: { permissions: ["view_holidays"] },
+            },
+            {
+                path: "/hrm/holiday-calendar",
+                name: "HrmHolidayCalendar",
+                component: () => import("@/views/landlord/hrm/holiday/HolidayCalendar.vue"),
+                meta: { permissions: ["view_holidays"] },
+            },
+            {
+                path: "/hrm/events",
+                name: "HrmEventList",
+                component: () => import("@/views/landlord/hrm/event/Event.vue"),
+                meta: { permissions: ["view_events"] },
+            },
+            {
+                path: "/hrm/announcements",
+                name: "HrmAnnouncementList",
+                component: () => import("@/views/landlord/hrm/announcement/Announcement.vue"),
+                meta: { permissions: ["view_announcements"] },
+            },
+            {
+                path: "/hrm/break-times",
+                name: "HrmBreakTimeList",
+                component: () => import("@/views/landlord/hrm/attendance/breakTime/BreakTime.vue"),
+                meta: { permissions: ["view_break_times"] },
+            },
+            {
+                path: "/hrm/work-shifts",
+                name: "HrmWorkShiftList",
+                component: () => import("@/views/landlord/hrm/attendance/workShift/WorkShift.vue"),
+                meta: { permissions: ["view_work_shifts"] },
+            },
+            {
+                path: "/hrm/attendances",
+                name: "HrmAttendanceList",
+                component: () => import("@/views/landlord/hrm/attendance/attendance/Attendance.vue"),
+                meta: { permissions: ["view_attendances"] },
+            },
+            {
+                path: "/hrm/attendance-report",
+                name: "HrmAttendanceReport",
+                component: () => import("@/views/landlord/hrm/attendance/attendance/AttendanceReport.vue"),
+                meta: { permissions: ["report_attendances"] },
+            },
+            {
+                path: "/hrm/attendance-daily-log",
+                name: "HrmAttendanceDailyLog",
+                component: () => import("@/views/landlord/hrm/attendance/attendance/AttendanceDailyLog.vue"),
+                meta: { permissions: ["view_attendances"] },
+            },
+            {
+                path: "/hrm/attendance-requests",
+                name: "HrmAttendanceRequests",
+                component: () => import("@/views/landlord/hrm/attendance/attendanceRequest/AttendanceRequest.vue"),
+                meta: { permissions: ["view_attendance_requests"] },
+            },
+            {
+                path: "/hrm/leave-types",
+                name: "HrmLeaveTypeList",
+                component: () => import("@/views/landlord/hrm/leaves/leaveType/LeaveType.vue"),
+                meta: { permissions: ["view_leave_types"] },
+            },
+            {
+                path: "/hrm/leave-requests",
+                name: "HrmLeaveRequestList",
+                component: () => import("@/views/landlord/hrm/leaves/leaveRequest/LeaveRequest.vue"),
+                meta: { permissions: ["view_leave_requests"] },
+            },
+            {
+                path: "/hrm/asset-categories",
+                name: "HrmAssetCategoryList",
+                component: () => import("@/views/landlord/hrm/assetCategory/AssetCategory.vue"),
+                meta: { permissions: ["view_asset_categories"] },
+            },
+            {
+                path: "/hrm/assets",
+                name: "HrmAssetList",
+                component: () => import("@/views/landlord/hrm/asset/Asset.vue"),
+                meta: { permissions: ["view_assets"] },
+            },
+            {
+                path: "/hrm/beneficiaries",
+                name: "HrmBeneficiaryList",
+                component: () => import("@/views/landlord/hrm/beneficiary/Beneficiary.vue"),
+                meta: { permissions: ["view_beneficiaries"] },
+            },
+            {
+                path: "/hrm/beneficiary-values",
+                name: "HrmBeneficiaryValue",
+                component: () => import("@/views/landlord/hrm/beneficiary/BeneficiaryValue.vue"),
+                meta: { permissions: ["default_beneficiary_values"] },
+            },
+            {
+                path: "/hrm/payruns",
+                name: "HrmPayrunList",
+                component: () => import("@/views/landlord/hrm/payrun/Payrun.vue"),
+                meta: { permissions: ["view_payruns"] },
+            },
+            {
+                path: "/hrm/payruns/manual",
+                name: "HrmManualPayrun",
+                component: () => import("@/views/landlord/hrm/payrun/ManualPayrun.vue"),
+                meta: { permissions: ["run_default_payruns"] },
+            },
+            {
+                path: "/hrm/payslips",
+                name: "HrmPayslipList",
+                component: () => import("@/views/landlord/hrm/payrun/Payslip.vue"),
+                meta: { permissions: ["view_payslips"] },
+            },
+        ],
+    },
+];

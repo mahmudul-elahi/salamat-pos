@@ -1,0 +1,117 @@
+/*---------------------------------------------
+    :: Calendar
+-----------------------------------------------*/
+
+.dp__cell_inner.dp__pointer.dp__range_start {
+    border-radius: 50%;
+}
+.dp__cell_inner.dp__pointer.dp__date_hover_end {
+    border-radius: 50%;
+}
+.dp__cell_inner.dp__pointer.dp__today {
+    border-radius: 50%;
+}
+.dp__preset_range {
+    padding: 8px 20px !important;
+    color: var(--font-color) !important;
+    font-weight: 500;
+    &:hover {
+        color: var(--primary) !important;
+    }
+}
+.dp__btn {
+    color: var(--font-color) !important;
+    font-weight: 600 !important;
+}
+
+input.dp__pointer.dp__input_readonly.dp__input.dp__input_icon_pad.dp__input_reg {
+    background-color: var(--white) !important;
+    &::placeholder {
+        color: var(--font-color) !important;
+    }
+}
+.dp--menu-wrapper {
+    left: 0 !important;
+}
+.year-selector-wrapper {
+    box-shadow: var(--box-shadow);
+    .btn {
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 10px 20px;
+
+        &.prev-btn {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        &.next-btn {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            border-left: 1px solid var(--border-color);
+        }
+    }
+}
+.without-filter {
+    .all-years-list-show {
+        left: unset;
+        right: 0;
+    }
+}
+.all-years-list-show {
+    position: absolute;
+    z-index: 9999;
+}
+.year-picker {
+    max-width: 280px;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+    padding: 16px;
+    background: var(--white);
+
+    .year-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+        margin-bottom: 16px;
+
+        .range-btn {
+            cursor: pointer;
+            user-select: none;
+
+            svg {
+                width: 16px;
+            }
+        }
+
+        .decade-range {
+            font-size: 16px;
+        }
+    }
+
+    .year-list {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+
+        .year {
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+
+            &:hover {
+                background-color: var(--border-color);
+            }
+
+            &.selected {
+                background-color: var(--border-color);
+                font-weight: bold;
+            }
+        }
+    }
+}

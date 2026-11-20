@@ -1,0 +1,17 @@
+{
+    "exo 2": {
+        "200": "\/var\/www\/business\/html\/storage\/fonts\/exo_2_200_7349c38452aa104603a17af9273fbbeb",
+        "normal": "\/var\/www\/business\/html\/storage\/fonts\/exo_2_normal_fb7f9c940ae51ff196470aa90b270a44",
+        "600": "\/var\/www\/business\/html\/storage\/fonts\/exo_2_600_7538f6a092994e13de4dd4650d46ca77",
+        "bold": "exo_2_bold_f4cc926d20b4a75b9ae7ec85e46b8f5c"
+    },
+    "dejavu sans": {
+        "bold": "\/var\/www\/business\/html\/vendor\/dompdf\/dompdf\/lib\/fonts\/DejaVuSans-Bold",
+        "bold_italic": "\/var\/www\/business\/html\/vendor\/dompdf\/dompdf\/lib\/fonts\/DejaVuSans-BoldOblique",
+        "italic": "\/var\/www\/business\/html\/vendor\/dompdf\/dompdf\/lib\/fonts\/DejaVuSans-Oblique",
+        "normal": "dejavu_sans_normal_787e981459ef15a1b2b96e59ecb1eba9"
+    },
+    "li-ador-noirrit": {
+        "300": "li_ador_noirrit_300_c1e481ebf17fbc4d60835f69ef77a4d9"
+    }
+}

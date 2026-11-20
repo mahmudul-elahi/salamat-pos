@@ -1,0 +1,52 @@
+/*---------------------------------------------
+    :: Variables
+-----------------------------------------------*/
+
+// Border Variables
+$round-6: 6px;
+$transition-duration: 0.25s;
+// Fonts
+$default-font-size: 14px;
+
+// Measurement & Property Variables
+$default-padding-margin: 24px;
+
+// Transition Variables
+$transition: all 0.3s ease-in;
+
+// Navbar
+$navbar-height: 60px;
+
+// loader
+$colors:
+  hsla(337, 84%, 48%, 0.75),
+  hsla(160, 50%, 48%, 0.75),
+  hsla(190, 61%, 65%, 0.75),
+  hsla( 41, 82%, 52%, 0.75);
+
+$size: 2.5em;
+$thickness: 0.5em;
+
+// Calculated variables.
+$lat: calc(($size - $thickness) / 2);
+$offset: $lat - $thickness;
+
+// Sidebar
+$sidebar-width-lg: 260px;
+
+
+// Positioning
+@for $i from 0 through 500 {
+    .top-#{$i} {
+        top: #{$i}px;
+    }
+    .right-#{$i} {
+        right: #{$i}px;
+    }
+    .bottom-#{$i} {
+        bottom: #{$i}px;
+    }
+    .left-#{$i} {
+        left: #{$i}px;
+    }
+}

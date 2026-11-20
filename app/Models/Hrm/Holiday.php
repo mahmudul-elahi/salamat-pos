@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Models\Hrm;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Holiday extends Model
+{
+    protected $fillable = ['name', 'start_date', 'end_date', 'department_id', 'description'];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
+    ];
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+}

@@ -1,0 +1,180 @@
+/*---------------------------------------------
+    :: Notification Variables
+-----------------------------------------------*/
+
+.template-variables {
+    border-radius: 10px;
+    background-color: var(--light);
+    padding: 25px;
+
+    .title {
+        color: var(--font-color);
+        letter-spacing: 0.4px;
+        font-weight: bold;
+    }
+
+    .variables {
+        display: flex;
+        flex-direction: column;
+
+        span {
+            color: var(--font-color);
+        }
+    }
+}
+
+.notification-wrapper-item {
+    display: flex;
+    gap: 16px;
+    .icon {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        background-color: rgba(43, 135, 104, 0.06);
+        svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 0;
+        }
+    }
+}
+.all-notification-wrapper-item {
+    padding: 12px 16px;
+}
+.notification-header {
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    .title {
+        font-size: 15px;
+        color: var(--secondary-font-color);
+        font-weight: 600;
+    }
+    .key-title {
+        border: 1px solid var(--border-color);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: var(--font-color);
+    }
+}
+.all-notification-body {
+    .notification-list {
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer;
+        position: relative;
+        &:last-child {
+            border-bottom: none;
+        }
+        &.active {
+            background-color: rgba(43, 135, 104, 0.06);
+            &::before {
+                content: "";
+                position: absolute;
+                left: 0px;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                height: 100%;
+                background: var(--primary);
+            }
+        }
+        .notification-content {
+            margin-bottom: 0;
+        }
+        .name {
+            font-size: 16px;
+            color: var(--secondary-font-color);
+            font-weight: 600;
+            margin-bottom: 0px;
+            @media (max-width: 575px) {
+                font-size: 14px;
+            }
+        }
+        .time {
+            font-size: 14px;
+            color: var(--menu-font-title-color);
+            font-weight: 400;
+            margin-bottom: 0px;
+            @media (max-width: 575px) {
+                font-size: 13px;
+            }
+        }
+        svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 1.75;
+            color: var(--primary);
+            @media (max-width: 575px) {
+                width: 18px;
+                height: 18px;
+            }
+        }
+        .btn-primary {
+            svg {
+                color: var(--btn-white);
+            }
+        }
+    }
+}
+.all-notification-card {
+    .footer-paginate {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        padding: 24px;
+
+        .right-portion {
+            column-gap: 15px;
+
+            .pages-infos {
+                display: flex;
+                column-gap: 15px;
+
+                .items {
+                    .page-input {
+                        height: 34px;
+                        width: 72px;
+                        text-align: center;
+                        border: 1px solid var(--border-color);
+                        border-radius: 5px;
+                        font-size: 13px;
+                        background: var(--white);
+                        color: var(--font-color);
+                        padding: 0 4px;
+                        background-color: transparent;
+
+                        &:focus {
+                            border-color: var(--primary);
+                        }
+
+                        &::-webkit-outer-spin-button {
+                            -webkit-appearance: none;
+                            margin: 0;
+                        }
+
+                        &::-webkit-inner-spin-button {
+                            margin: 0;
+                            -webkit-appearance: none;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .search-input {
+        padding: 12px 16px;
+        .search-icon {
+            left: 26px;
+            svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
+}

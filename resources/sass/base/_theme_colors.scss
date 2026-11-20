@@ -1,0 +1,145 @@
+/*---------------------------------------------
+    :: Theme Colors
+-----------------------------------------------*/
+
+:root {
+    --black: #000;
+    --warning: #ffc107;
+    --indigo: #6610f2;
+    --secondary: #637381;
+    --success: #34ab84;
+    --info: #0dcaf0;
+    --danger: #ff4842;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --base-color: rgba(43, 135, 104, 0.06);
+    --muted-color: #b8b8b8;
+    --btn-white: #fff;
+    --lp-white: #fff;
+    --primary-paragraph: #767676;
+    --primary-hover-two: rgba(43, 135, 104, 0.0666666667);
+    --menubar-font-color: #505050;
+    --box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.05);
+    --navbar-box-shadow: 9px 6px 10px rgba(0, 0, 0, 0.05);
+    --dropdown-box-shadow: 0 4px 24px 0 rgba(62, 57, 107, 0.18);
+    --dropdown-border-color: rgba(216, 216, 216, 0.5);
+    --scroll-bg: rgba(177, 177, 177, 0.8);
+    --select-arrow: url(/public/assets/images/icons/chevron-down.svg);
+    --arrow-down: url(/public/assets/images/icons/arrow-down.svg);
+    --arrow-up: url(/public/assets/images/icons/arrow-up.svg);
+    --sidebar-open-overlay-color: linear-gradient(
+        70deg,
+        rgb(22 28 36 / 45%),
+        #161c24c9
+    );
+    --dropzone-bg-color: #f1faff;
+    --menu-font-title-color: #9b9ca3;
+    --rounded-icon-bg: #f2f5fa;
+    --badge-danger-color: #f24c7c;
+    --badge-success-color: #5faf70;
+    --badge-warning-color: #b18d22;
+    --badge-info-color: #0063b8;
+    --badge-secondary-color: #5c636a;
+    --badge-danger-bg: #fff5f8;
+    --badge-success-bg: #e8fff3;
+    --badge-warning-bg: #fff8dd;
+    --badge-info-bg: #d9f5fd;
+    --badge-secondary-bg: #f1f3f5;
+
+    // Extra badge palette — picked from the result colour dropdown.
+    --badge-purple-color: #7e22ce;
+    --badge-purple-bg: #f5ecfe;
+    --badge-pink-color: #be185d;
+    --badge-pink-bg: #fdeaf3;
+    --badge-orange-color: #c2410c;
+    --badge-orange-bg: #fff0e3;
+    --badge-teal-color: #0f766e;
+    --badge-teal-bg: #e2fbf6;
+    --badge-indigo-color: #4338ca;
+    --badge-indigo-bg: #ecefff;
+    --badge-brown-color: #6d4c41;
+    --badge-brown-bg: #f4efec;
+    --dot-icon-bg: #cbc9c9;
+    --secondary-button-color: #5c636a;
+    --light-button-color: #f8f9fa;
+    --lp-hero-bg-img: url(/public/assets/images/hero/hero-bg.svg);
+    --lp-secondary: #ffa447;
+    --lp-primary: #3662d3;
+    --lp-gray: #efefff;
+    --lp-gradiant: linear-gradient(90deg, #3662d3 0%, #a66dd4 100%);
+    --lp-light-primary: #f8f9ff;
+    --form-placeholder: #6c757d;
+    --table-th-font-color: rgb(99, 115, 129);
+    --table-thead-bg-color: rgb(244, 246, 248);
+    --inv-black: #000;
+    --inv-gray: #f6f6f6;
+    --inv-white: #fff;
+    --secondary-font-color: #031126;
+    --skeleton-card-loader-bg: linear-gradient(
+        90deg,
+        #f2f5fa 0%,
+        #ffffff 50%,
+        #f2f5fa 100%
+    );
+    --skeleton-bar-loader-bg: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+}
+
+[theme="dark"] {
+    --base-color: rgba(43, 135, 104, 0.06);
+    --black: #fff;
+    --secondary-font-color: #f1f5f9;
+    --menubar-font-color: #bfc4d4;
+    --box-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+    --navbar-box-shadow: 1px 5px 6px rgba(0, 0, 0, 0.09);
+    --menu-title-shadow: 2px 2px 1px 0px rgba(0, 0, 0, 0.3);
+    --select-arrow: url(/public/assets/images/icons/chevron-down-dark.svg);
+    --sidebar-open-overlay-color: #00000075;
+    --table-th-font-color: rgb(170, 170, 180);
+    --table-thead-bg-color: rgb(46 50 62);
+    --dropzone-bg-color: #162036;
+    --dropdown-box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    --rounded-icon-bg: #2e3136;
+    --badge-danger-color: #ff85a1;
+    --badge-success-color: #80c490;
+    --badge-warning-color: #d4b13a;
+    --badge-info-color: #3399ff;
+    --badge-secondary-color: #adb5bd;
+    --badge-danger-bg: #3a1f28;
+    --badge-success-bg: #2a3b31;
+    --badge-warning-bg: #3c3520;
+    --badge-info-bg: #1a2a38;
+    --badge-secondary-bg: #2b3036;
+
+    --badge-purple-color: #c4a6ea;
+    --badge-purple-bg: #33254a;
+    --badge-pink-color: #f0a0c0;
+    --badge-pink-bg: #40222f;
+    --badge-orange-color: #e8a765;
+    --badge-orange-bg: #43301c;
+    --badge-teal-color: #6fd0c2;
+    --badge-teal-bg: #16332f;
+    --badge-indigo-color: #a5b0f0;
+    --badge-indigo-bg: #262b4d;
+    --badge-brown-color: #c4a494;
+    --badge-brown-bg: #332a26;
+    --primary-paragraph: #909090;
+    --light: #131920;
+    --light-button-color: #282e35;
+    --skeleton-card-loader-bg: linear-gradient(
+        90deg,
+        #1a1c1f 0%,
+        #202225 50%,
+        #1a1c1f 100%
+    );
+    --skeleton-bar-loader-bg: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.08),
+        transparent
+    );
+}

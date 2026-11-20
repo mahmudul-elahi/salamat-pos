@@ -1,0 +1,22 @@
+{
+    "extensions": [
+        "*",
+        ".js",
+        ".vue",
+        ".json"
+    ],
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "./public",
+        "moduleResolution": "node",
+        "allowJs": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./resources/js/src/*"
+            ]
+        }
+    }
+}

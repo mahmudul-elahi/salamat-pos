@@ -1,0 +1,267 @@
+/*---------------------------------------------
+    :: Buttons
+-----------------------------------------------*/
+@use "../base/variables" as vars;
+
+.btn {
+    font-weight: 400;
+    border-radius: 6px;
+    transition: all vars.$transition-duration ease-in-out;
+    font-size: vars.$default-font-size;
+    &:focus {
+        box-shadow: none;
+    }
+    &:not(.btn-sm, .btn-md, .btn-lg) {
+        padding: 6px 12px;
+    }
+    &.bg-primary {
+        color: var(--btn-white) !important;
+    }
+    .btn:first-child:active {
+        color: unset;
+    }
+
+    &.btn-default {
+        color: var(--font-color);
+        border-color: var(--white);
+        background-color: var(--white);
+        transition: all vars.$transition-duration ease-in-out;
+        &:hover {
+            border-color: var(--primary);
+            background-color: var(--primary);
+            color: var(--white);
+        }
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+    &.btn-primary {
+        color: var(--btn-white);
+        border-color: var(--primary);
+        background-color: var(--primary);
+        transition: all vars.$transition-duration ease-in-out;
+        &:hover {
+            border-color: var(--primary-hover);
+            background-color: var(--primary-hover);
+        }
+        &:focus,
+        &:focus-visible {
+            border-color: var(--primary);
+            background-color: var(--primary);
+            box-shadow: none;
+            outline: none;
+        }
+
+        &:active,
+        &.active,
+        &.show,
+        :not(.btn-check) + &:active,
+        :not(.btn-check) + &:active:focus-visible,
+        .btn-check:checked + &,
+        &:not(.btn-check) + &:active,
+        &:first-child:active {
+            border-color: var(--primary-hover);
+            background-color: var(--primary-hover);
+            box-shadow: none;
+        }
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    &.btn-success,
+    &.btn-white {
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+    &.btn-light-primary {
+        background-color: var(--light-button-color);
+        border-color: var(--light-button-color);
+    }
+    &.pill {
+        border-radius: 20px;
+        svg {
+            width: 18px;
+            height: 18px;
+            margin-right: 10px;
+            stroke-width: 1.5;
+        }
+    }
+
+    &.btn-primary-outline {
+        color: var(--primary);
+        border: 1px solid var(--primary) !important;
+        &:hover {
+            background-color: var(--primary);
+            color: var(--btn-white);
+        }
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+        &.active {
+            background-color: var(--primary);
+            color: var(--btn-white);
+        }
+        &:active,
+        &.active,
+        &.show,
+        :not(.btn-check) + &:active,
+        :not(.btn-check) + &:active:focus-visible,
+        .btn-check:checked + &,
+        &:not(.btn-check) + &:active,
+        &:first-child:active {
+            background-color: var(--primary);
+            color: var(--btn-white);
+        }
+    }
+    &.btn-primary-danger {
+        color: var(--danger);
+        letter-spacing: 0.7px;
+        font-weight: 500;
+        border: none !important;
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2) !important;
+        &:hover {
+            background-color: #c7322e !important;
+        }
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+    &.btn-primary-danger-outline {
+        color: var(--danger);
+        border: 1px solid var(--danger) !important;
+        &:hover {
+            background-color: #ff484233 !important;
+        }
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+    &.has-shadow {
+        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2) !important;
+    }
+    &.btn-info {
+        color: var(--btn-white);
+    }
+
+    &.btn-warning {
+        color: var(--btn-white);
+    }
+
+    &.btn-danger {
+        color: var(--btn-white);
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    &.btn-secondary {
+        color: var(--btn-white);
+        border-color: var(--secondary-button-color);
+        background-color: var(--secondary-button-color);
+
+        &.dropdown-toggle {
+            &:after {
+                background-image: var(--select-arrow);
+            }
+        }
+
+        &:hover {
+            color: var(--btn-white);
+            border-color: darken(#637381, 4%);
+            background-color: darken(#637381, 4%);
+        }
+    }
+
+    &.btn-white {
+        color: var(--font-color);
+        box-shadow: var(--box-shadow);
+        background-color: var(--white);
+        border: 1px solid var(--border-color);
+
+        &:hover {
+            color: var(--primary);
+        }
+    }
+
+    &.dropdown-toggle {
+        color: var(--font-color);
+
+        &::after {
+            width: 18px;
+            height: 18px;
+            border: none;
+            margin-left: 0;
+            display: inline-block;
+            vertical-align: inherit;
+            background-image: var(--select-arrow);
+            background-repeat: no-repeat;
+            background-size: 16px 16px;
+            background-position: center;
+            transition: all vars.$transition-duration ease-in-out;
+        }
+
+        &[aria-expanded="true"] {
+            &:after {
+                transform: rotate(180deg);
+            }
+        }
+    }
+}
+
+.toggle-switch-wrapper {
+    display: flex;
+    justify-content: end;
+    .toggle-switch {
+        display: flex;
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        min-width: 180px;
+        justify-content: space-around;
+        margin-bottom: 20px;
+        align-items: end;
+        background-color: var(--white);
+        padding: 6px;
+
+        .toggle-option {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s, color 0.3s;
+            border-radius: 20px;
+            text-align: center;
+            font-size: 14px;
+            flex: 1;
+            &:hover {
+                background-color: var(--dashboard-bg);
+            }
+            &.active {
+                background-color: var(--primary);
+                color: white;
+            }
+        }
+    }
+}
+.more-feature {
+    margin-top: 20px;
+    .btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+}
+.del-btn {
+    background-color: transparent;
+    border: none;
+    color: var(--danger);
+}

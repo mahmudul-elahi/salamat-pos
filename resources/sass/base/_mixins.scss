@@ -1,0 +1,81 @@
+/*---------------------------------------------
+    :: Mixins
+-----------------------------------------------*/
+@use "../base/variables" as vars;
+
+// Table filter scroll
+@mixin filter-scrollbar-mixin {
+    &::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: var(--base-color);
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background: var(--primary);
+    }
+}
+
+// Sidebar submenu
+@mixin sidebarSubmenuMixin {
+    list-style: none;
+    margin-bottom: 0;
+    padding: 0;
+
+    .nav-item {
+        padding-left: 6px;
+        .nav-link {
+            padding: 10px 16px 10px 40px;
+            position: relative;
+            border-radius: 0;
+            margin-bottom: 0;
+            &::before {
+                content: "";
+                position: absolute;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: var(--dot-icon-bg);
+                left: 12px;
+                top: auto;
+                bottom: auto;
+                transition: vars.$transition;
+            }
+
+            .submenu-title {
+                width: 100%;
+                font-size: 14px;
+                line-height: 1.6;
+                color: var(--primary-paragraph);
+                font-weight: 500;
+                transition: vars.$transition;
+            }
+
+            &:hover {
+                background-color: transparent;
+                &::before {
+                    background-color: var(--primary);
+                }
+                .submenu-title {
+                    color: var(--primary);
+                }
+            }
+
+            &.active {
+                background-color: transparent;
+                &:focus-visible {
+                    box-shadow: none;
+                }
+                .submenu-title {
+                    color: var(--primary);
+                }
+                &::before {
+                    background-color: var(--primary);
+                }
+            }
+        }
+    }
+}

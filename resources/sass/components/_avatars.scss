@@ -1,0 +1,108 @@
+/*---------------------------------------------
+    :: Avatar
+-----------------------------------------------*/
+.avatar {
+    border-radius: 6px;
+    border: 2px solid var(--border-color);
+
+    &.no-image {
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: var(--muted-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--base-color);
+    }
+
+    &.avatar-circle {
+        border-radius: 50%;
+    }
+}
+
+.avatar-group {
+    display: flex;
+
+    .avatar {
+        margin-left: -15px;
+        transition: all 0.25s ease-in-out;
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &:hover {
+            z-index: 1;
+            transform: translateY(-2px);
+        }
+    }
+}
+.avatar-wrapper {
+    position: relative;
+
+    img {
+        height: 100%;
+        width: 100%;
+    }
+    .has-image {
+        height: 45px;
+        width: 45px;
+    }
+
+    .no-image {
+        font-size: 14px;
+        height: 45px;
+        width: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        background-color: var(--primary);
+    }
+
+    .active-status {
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+        bottom: 6%;
+        right: 10%;
+        position: absolute;
+    }
+    
+}
+.app-avatar-group {
+    display: flex;
+    position: relative;
+    justify-content: space-between;
+    column-gap: 10px;
+
+    .avatar-minimize {
+        background-color: transparent;
+        color: var(--font-color);
+        position: relative;
+        right: 0;
+        top: 14px;
+        border: none;
+
+        i {
+            font-size: 20px;
+            color: var(--font-color);
+        }
+    }
+
+    .avatar-wrapper {
+        img,
+        .no-image {
+            border: 2px solid var(--border-color);
+            transition: 0.5s;
+
+            &:hover {
+                transform: translateY(-2px) scale(1.02);
+            }
+        }
+        &:not(:first-child) {
+            margin-left: -10px;
+        }
+    }
+}

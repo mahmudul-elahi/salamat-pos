@@ -1,0 +1,200 @@
+/*---------------------------------------------
+    :: General Input
+-----------------------------------------------*/
+@use "../base/variables" as vars;
+
+label {
+    color: var(--font-color);
+    font-size: vars.$default-font-size;
+}
+.form-control::placeholder {
+    color: var(--form-placeholder);
+    opacity: 1;
+}
+.input-group {
+    border-radius: 10px;
+    .input-group-text {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+        color: var(--font-color);
+        background-color: var(--form-control-bg);
+        border-color: var(--border-color);
+    }
+}
+.form-control {
+    padding: 10px 15px;
+    color: var(--font-color);
+    font-size: vars.$default-font-size;
+    border-radius: 10px;
+    border-color: var(--border-color);
+    background-color: var(--white);
+    transition: all vars.$transition-duration ease-in-out;
+    &:focus {
+        outline: none;
+        box-shadow: none;
+        color: var(--font-color);
+        border-color: var(--primary);
+        background-color: var(--white);
+    }
+
+    &:hover {
+        border-color: var(--primary);
+    }
+
+    &[type="color"] {
+        height: 40px;
+    }
+
+    &.form-control-sm {
+        padding: 6px 15px;
+    }
+}
+
+.search-input {
+    position: relative;
+    @media (max-width: 575px) {
+        width: 100%;
+    }
+    .search-icon {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        color: var(--form-placeholder);
+        transform: translateY(-50%);
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    input {
+        padding: 9px 15px 9px 40px;
+
+        &.form-control-sm {
+            padding: 12px 15px 12px 40px;
+            width: 220px;
+            @media (max-width: 575px) {
+                width: 100%;
+            }
+        }
+    }
+}
+.vue-dropzone {
+    border-radius: 10px;
+    border: 2px dashed var(--border-color) !important;
+    background-color: var(--form-control-bg) !important;
+
+    &:hover {
+        border-color: var(--primary) !important;
+    }
+}
+
+.dp__input {
+    border-radius: 10px !important;
+    height: 42px;
+    font-size: 14px;
+}
+
+.dp__action_button {
+    height: 30px !important;
+
+    &.dp__action_cancel {
+        &:hover {
+            border: 0;
+            color: #fff;
+        }
+    }
+}
+
+.dp__action_row {
+    margin-left: unset;
+    .dp__action_buttons {
+        margin-left: auto;
+    }
+}
+
+input {
+    height: 42px;
+    &[type="number"] {
+        &:disabled {
+            cursor: not-allowed;
+            background-color: var(--form-control-bg);
+            opacity: 0.5;
+
+            &:hover {
+                border-color: var(--border-color);
+            }
+        }
+    }
+
+    &[type="text"] {
+        &:disabled {
+            cursor: not-allowed;
+            background-color: var(--form-control-bg);
+            opacity: 0.5;
+            &:hover {
+                border-color: var(--border-color);
+            }
+        }
+    }
+
+    &[type="date"] {
+        &:disabled {
+            cursor: not-allowed;
+            background-color: var(--form-control-bg);
+            opacity: 0.5;
+            &:hover {
+                border-color: var(--border-color);
+            }
+        }
+    }
+
+    &.form-control {
+        &:disabled {
+            cursor: not-allowed;
+            background-color: var(--form-control-bg);
+            opacity: 0.5;
+            &:hover {
+                border-color: var(--border-color);
+            }
+        }
+    }
+}
+
+//Date picker
+.dp-variables {
+    --dp-background-color: var(--white) !important;
+    --dp-border-color: var(--border-color) !important;
+    --dp-menu-border-color: var(--border-color) !important;
+    --dp-border-color-hover: var(--primary) !important;
+    --dp-text-color: var(--font-color) !important;
+    --dp-hover-color: var(--base-color) !important;
+    --dp-hover-text-color: var(--primary) !important;
+    --dp-primary-color: var(--primary) !important;
+    --dp-disabled-color: var(--white) !important;
+    --dp-secondary-color: var(--muted-color) !important;
+}
+.dp__input {
+    @extend .dp-variables;
+    --dp-background-color: var(--form-control-bg) !important;
+}
+.dp__theme_light {
+    @extend .dp-variables;
+}
+.dp__overlay_cell_disabled {
+    color: var(--muted-color) !important;
+}
+
+.password-input {
+    position: relative;
+
+    .eye-icon {
+        position: absolute;
+        top: 50%;
+        right: 14px;
+        color: var(--font-color);
+        transform: translateY(-50%);
+        width: 16px;
+        height: 16px;
+    }
+}

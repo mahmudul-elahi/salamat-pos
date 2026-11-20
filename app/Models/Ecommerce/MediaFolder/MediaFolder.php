@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models\Ecommerce\MediaFolder;
+
+use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+
+class MediaFolder extends Model implements HasMedia
+{
+    use InteractsWithMedia;
+
+    protected $fillable = ['name', 'parent_id',
+        'id'
+    ];
+    public $casts = [
+        'parent_id' => 'integer',
+    ];
+
+    public function children()
+    {
+        return $this->hasMany(MediaFolder::class, 'parent_id');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('global_media');
+    }
+}

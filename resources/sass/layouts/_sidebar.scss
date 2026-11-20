@@ -1,0 +1,218 @@
+/*---------------------------------------------
+    :: Sidebar
+-----------------------------------------------*/
+@use "../base/variables" as vars;
+@use "../base/mixins" as *;
+
+.sidebar {
+    z-index: 1;
+    position: fixed;
+    min-height: 100vh;
+    overflow-y: auto;
+    width: 260px;
+    background: var(--white);
+    padding: 26px 24px;
+    left: 0px;
+    transition: vars.$transition;
+
+    .navbar-brand {
+        padding-bottom: 25px;
+        display: block;
+        margin-right: auto;
+        img {
+            height: 50px;
+        }
+    }
+
+    .nav {
+        flex-wrap: nowrap;
+        flex-direction: column;
+        .nav-item {
+            position: relative;
+            transition: vars.$transition;
+            &.single-list {
+                margin-bottom: 10px;
+                &:has(.nav-link.active) {
+                    box-shadow: none;
+                    &::before {
+                        content: "";
+                        position: absolute;
+                        left: -8px;
+                        top: 0;
+                        bottom: 0;
+                        width: 4px;
+                        height: 41px;
+                        border-radius: 5px;
+                        background: var(--primary);
+                    }
+                }
+            }
+            &.nav-menu-title {
+                color: var(--menu-font-title-color);
+                font-weight: 500;
+                letter-spacing: 0.5px;
+                font-size: 12px;
+                line-height: 1.4;
+                margin-top: 12px;
+                margin-bottom: 22px;
+            }
+
+            .nav-link {
+                display: flex;
+                align-items: center;
+                padding: 9px;
+                color: var(--font-color);
+                white-space: nowrap;
+                transition: vars.$transition;
+                border-radius: 8px;
+                font-size: 15px;
+                font-weight: 400;
+                gap: 14px;
+                line-height: 1.6;
+                position: relative;
+                box-shadow: none;
+
+                svg {
+                    width: 22px;
+                    height: 22px;
+                    transition: fill vars.$transition-duration ease-in;
+                    color: var(--menu-font-title-color);
+                }
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    left: -8px;
+                    top: 0;
+                    bottom: 0;
+                    width: 4px;
+                    height: 41px;
+                    transition: background vars.$transition-duration ease-in;
+                }
+
+                &:hover {
+                    color: var(--primary);
+                    border-radius: 5px;
+                    background-color: #2b876811;
+
+                    &::before {
+                        border-radius: 5px;
+                        background-color: var(--primary);
+                    }
+
+                    svg {
+                        color: var(--primary);
+                    }
+                }
+
+                &.active {
+                    overflow: hidden;
+                    position: relative;
+                    color: var(--primary);
+                    border-radius: 5px;
+                    background: #2b876811;
+
+                    svg {
+                        color: var(--primary);
+                    }
+                }
+            }
+
+            &.nav-item-dropdown {
+                > .nav-link {
+                    box-shadow: none;
+                    i {
+                        &.feather-chevron-down {
+                            transition: vars.$transition-duration;
+                        }
+                    }
+
+                    &[aria-expanded="true"] {
+                        .rotate-a {
+                            svg {
+                                transform: rotate(180deg);
+                            }
+                        }
+                    }
+                }
+
+                .sub-menu {
+                    @include sidebarSubmenuMixin;
+                }
+            }
+        }
+    }
+    .sidebar-close-icon {
+        opacity: 0;
+        display: none;
+    }
+}
+
+// Sidebar icon Only
+.sidebar-icon-only {
+    @media (min-width: 992px) {
+        .main-panel {
+            transition: vars.$transition;
+            margin-left: 0;
+        }
+        .sidebar {
+            left: -260px;
+        }
+    }
+}
+.sidebar-off-canvas {
+    .sidebar-overlay {
+        display: none;
+        opacity: 0;
+    }
+}
+// Style for off-canvas menu
+@media screen and (max-width: 991px) {
+    .sidebar {
+        &.sidebar-off-canvas {
+            margin-top: 0;
+            position: fixed;
+            top: 0;
+            z-index: 10003;
+            bottom: 0;
+            left: calc(#{vars.$sidebar-width-lg} * -1);
+            max-height: calc(100vh - #{vars.$navbar-height});
+            transition: vars.$transition;
+
+            &.active {
+                left: 0;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+                .sidebar-close-icon {
+                    opacity: 1;
+                    position: absolute;
+                    top: 10px;
+                    right: 8px;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    background-color: var(--rounded-icon-bg);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 210;
+                    svg {
+                        width: 15px;
+                    }
+                }
+            }
+            &.active + .sidebar-overlay {
+                    display: block;
+                    position: fixed;
+                    backdrop-filter: blur(1px);
+                    height: 100%;
+                    width: 100%;
+                    background: var(--sidebar-open-overlay-color);
+                    z-index: 1003;
+                    animation: fadeInOutAnimation 0.25s linear;                
+            }
+        }
+        .responsive-nav {
+            margin-bottom: 90px;
+        }
+    }
+}

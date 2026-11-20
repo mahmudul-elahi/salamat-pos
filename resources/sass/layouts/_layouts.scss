@@ -1,0 +1,30 @@
+/*---------------------------------------------
+    :: Layouts
+---------------------------------------------*/
+@use "../base/variables" as vars;
+
+.navbar {
+    &.fixed-top {
+        +.page-body-wrapper {
+            padding-top: vars.$navbar-height;
+        }
+    }
+}
+
+.h-100vh {
+    height: 100vh !important;
+}
+
+.main-panel {
+    margin-left: 260px;
+    transition: vars.$transition;
+    min-height: 100vh;
+
+    .content-wrapper {
+        padding: 90px 24px 24px;
+    }
+
+    @media (max-width: 991px) {
+        margin-left: 0;
+    }
+}

@@ -1,0 +1,86 @@
+/*----------------------------------------------
+    Index Of Script
+------------------------------------------------
+
+    @version         : 1.1.0
+    @Template Name   : Billora
+    @Template author : Theme29
+
+    :: Variables                :: General Input
+    :: Template default css     :: Loaders
+    :: Buttons                  :: Modal
+    :: Animations               :: Settings
+    :: Theme Colors             :: Notification Variables
+    :: Dark                     :: Pagination
+    :: Fonts                    :: Selects
+    :: Avatars                  :: Tables
+    :: Badges                   :: Role
+    :: Calendar                 :: Profile
+    :: Cards                    :: Layouts
+    :: Chart                    :: Navbar
+    :: Checkbox Radio           :: Sidebar
+    :: Dropdown                 :: Auth
+    :: Customer Details         :: Landing Page
+    :: Tickets                  :: Media
+
+
+
+------------------------------------------------
+    End-of Script
+------------------------------------------------*/
+
+// Bootstrap
+@use "bootstrap/scss/bootstrap";
+
+// Global
+@use "base/variables";
+@use "base/global";
+@use "base/animation";
+@use "base/fonts";
+@use "base/theme_colors";
+@use "base/mixins";
+
+// Layouts
+@use "layouts/navbar";
+@use "layouts/sidebar";
+@use "layouts/layouts";
+
+// Components
+@use "components/avatars";
+@use "components/badges";
+@use "components/buttons";
+@use "components/cards";
+@use "components/calendar";
+@use "components/chart";
+@use "components/dropdown";
+@use "components/loaders";
+@use "components/modal";
+@use "components/pagination";
+@use "components/tables";
+@use "components/general_input";
+@use "components/selects";
+@use "components/checkbox_radios";
+@use "components/images";
+@use "components/quill_editor";
+@use "components/status";
+@use "components/tickets";
+
+// Pages
+@use "pages/profile";
+@use "pages/settings";
+@use "pages/auth";
+@use "pages/role";
+@use "pages/notification_variables";
+@use "pages/installer";
+@use "pages/customer_details";
+@use "pages/landing_page";
+@use "pages/media";
+
+// Dark Mode
+@use "base/dark";
+
+
+
+
+
+

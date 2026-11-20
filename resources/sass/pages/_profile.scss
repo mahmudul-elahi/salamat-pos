@@ -1,0 +1,226 @@
+@use "../base/variables" as vars;
+
+/*---------------------------------------------
+    :: Profile
+-----------------------------------------------*/
+
+.profile-page-wrapper {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+
+    @media (max-width: 650px) {
+        flex-direction: column;
+    }
+
+    .user-info-column {
+        height: fit-content;
+        .user-avatar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--white);
+            box-shadow: var(--box-shadow);
+
+            .user-avatar-three-dot {
+                width: 100%;
+
+                i {
+                    background-color: #f5f5f5;
+                    padding: 0px 3px;
+                    color: #a6a6a6;
+                }
+            }
+
+            .user-avatar-info {
+                text-align: center;
+            }
+        }
+
+        .user-tab-menu {
+            padding: 12px;
+            background-color: var(--white);
+            box-shadow: var(--box-shadow);
+            min-width: 220px;
+
+            @media (max-width: 768px) {
+                min-width: 100%;
+            }
+
+            .nav-pills {
+                .nav-link {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 5px;
+                    color: var(--font-color);
+                    border-radius: 10px;
+                    text-transform: capitalize;
+                    transition: all vars.$transition-duration ease-in-out;
+                    padding: 12px;
+                    svg {
+                        width: 18px;
+                        height: 18px;
+                        color: var(--primary-paragraph);
+                        margin-right: 10px;
+                        stroke-width: 1.5;
+                    }
+
+                    i {
+                        margin-right: 10px;
+                        font-size: 18px;
+                        line-height: 1;
+                    }
+
+                    &:hover {
+                        background-color: rgba(43, 135, 104, 0.06);
+                        color: var(--primary);
+                        svg {
+                            color: var(--primary);
+                        }
+                    }
+
+                    &.active {
+                        svg {
+                            color: var(--primary);
+                        }
+                        background-color: rgba(43, 135, 104, 0.06);
+                        color: var(--primary);
+                    }
+                }
+            }
+        }
+    }
+
+    .user-details-column {
+        width: 100%;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: var(--white);
+        flex: 1 1 0%;
+
+        .tab-content {
+            .tab-pane {
+                .tab-pane-header {
+                    padding-bottom: 20px;
+                    border-bottom: 1px solid var(--border-color);
+                    flex-wrap: wrap;
+                    gap: 12px;
+                }
+            }
+        }
+    }
+}
+.nav-profile-text {
+    .title {
+        color: var(--secondary-font-color);
+        font-weight: 500;
+        font-size: 14px;
+        text-align: end;
+    }
+    .mini-title {
+        color: var(--menu-font-title-color);
+        font-weight: 400;
+        font-size: 12px;
+        letter-spacing: 0.6px;
+        text-align: end;
+    }
+}
+[aria-label="vertical"] {
+    display: flex;
+    flex-direction: row;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
+}
+
+[aria-label="horizontal"] {
+    display: flex;
+    flex-direction: column;
+}
+
+[aria-label="horizontal-flat"] {
+    display: flex;
+    flex-direction: column;
+
+    .tab-pane-header {
+        display: none;
+    }
+
+    .user-info-column {
+        height: fit-content;
+        --round-default: 0px;
+        margin-top: 20px;
+        background-color: var(--white);
+        border-radius: 10px !important;
+        padding-bottom: 10px !important;
+        padding-right: 10px !important;
+        padding-left: 20px !important;
+        [aria-orientation="horizontal"] {
+            row-gap: 10px;
+        }
+
+        .user-tab-menu {
+            padding: 0;
+            background: none !important;
+            box-shadow: none !important;
+
+            .nav-pills {
+                .nav-link {
+                    padding: 16px;
+                    margin-bottom: 0;
+                    position: relative;
+                    margin-right: 10px;
+                    background-color: transparent !important;
+                    &:after {
+                        content: "";
+                        background: var(--border-color);
+                        position: absolute;
+                        bottom: -1px;
+                        left: 0;
+                        width: 100%;
+                        height: 3px;
+                        border-radius: 2px;
+                    }
+
+                    &.active {
+                        &:after {
+                            content: "";
+                            background: var(--primary);
+                            position: absolute;
+                            bottom: -1px;
+                            left: 0;
+                            width: 100%;
+                            height: 3px;
+                            border-radius: 2px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/*---------------------------------------------
+    :: Employee Details – shared tab panel styles
+-----------------------------------------------*/
+.tab-pane-content {
+    .detail-section-header {
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 24px;
+    }
+    .detail-section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--font-color);
+        margin: 0 0 4px;
+    }
+    .detail-section-sub {
+        font-size: 13px;
+        color: var(--secondary-font-color, #6b7280);
+        margin: 0;
+    }
+}

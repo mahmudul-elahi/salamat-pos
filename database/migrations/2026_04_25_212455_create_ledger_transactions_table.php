@@ -1,0 +1,31 @@
+<?php
+
+use App\Models\Pos\Ledger\Ledger;
+use App\Models\Pos\Transaction\Transaction;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('ledger_transactions', function (Blueprint $table) {
+            $table->foreignIdFor(Ledger::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Transaction::class)->constrained()->cascadeOnDelete();
+            $table->primary(['ledger_id', 'transaction_id']);
+            $table->index(['ledger_id', 'transaction_id'], 'ledger_transaction_index');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('ledger_transactions');
+    }
+};

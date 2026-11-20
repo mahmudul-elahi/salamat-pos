@@ -1,0 +1,1 @@
+export const PURCHASES_STOCKS = '/admin/pos/purchase-stocks'

@@ -1,0 +1,399 @@
+.installer-area {
+    background: #f9fafb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    @media (max-width: 991px) {
+        flex-direction: column;
+        height: auto;
+        gap: 24px;
+    }
+
+    .card-wrapper {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        width: 100%;
+        max-width: 700px;
+        animation: fadeIn 0.4s ease-in;
+    }
+
+    .welcome-header {
+        text-align: center;
+        margin-bottom: 30px;
+
+        .welcome-highlight {
+            color: #00a76f;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .welcome-title {
+            font-size: 26px;
+            font-weight: 700;
+
+            span {
+                color: #2b8768;
+            }
+        }
+    }
+
+    .install-section {
+        display: flex;
+        justify-content: center;
+
+        .install-link {
+            text-decoration: none;
+
+            .install-card {
+                display: flex;
+                align-items: center;
+                background-color: #eefaf6;
+                border-radius: 12px;
+                padding: 24px 30px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #dff5ec;
+                    transform: translateY(-3px);
+                }
+
+                .icon-box {
+                    color: #2b8768;
+                    margin-right: 16px;
+                    display: flex;
+                    align-items: center;
+                }
+
+                .text-box {
+                    .install-title {
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: #333;
+                    }
+
+                    .install-description {
+                        font-size: 14px;
+                        color: #555;
+                        margin-bottom: 0;
+                    }
+                }
+            }
+        }
+    }
+    .main-content {
+        margin-left: 360px;
+        padding: 30px;
+        min-height: 100vh;
+        width: 900px;
+        @media (max-width: 1099px) {
+            margin-left: 260px;
+        }
+        @media (max-width: 991px) {
+            margin-left: 0;
+            width: 100%;
+            padding: 0;
+        }
+    }
+    .card {
+        margin: auto;
+        border-radius: 12px;
+        margin-bottom: 24px;
+
+        .card-body {
+            padding: 32px;
+        }
+    }
+    .installer-header {
+        .highlight-text {
+            font-size: 16px;
+            color: rgba(9, 107, 121, 1);
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .title {
+            font-size: 20px;
+            color: var(--font-color);
+            font-weight: 700;
+            text-align: center;
+        }
+    }
+    .content-wrapper {
+        background-color: var(--base-color);
+        padding: 16px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        &.left-item {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+            border-right: 1px solid #ccc;
+            @media (max-width: 767px) {
+                border: none;
+                border-radius: 10px;
+            }
+        }
+        &.right-item {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            @media (max-width: 767px) {
+                border: none;
+                border-radius: 10px;
+            }
+        }
+        .first-content {
+            color: var(--font-color);
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+            text-transform: capitalize;
+            .mini-para {
+                color: var(--primary-paragraph);
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 1.5;
+            }
+        }
+        .second-content {
+            margin-top: 4px;
+            color: var(--menubar-font-color);
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+        .icon-wrapper {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            svg {
+                width: 16px;
+                height: 16px;
+                color: var(--white);
+            }
+            &.success {
+                background-color: #059669;
+            }
+            &.danger {
+                background-color: #b91013;
+            }
+            &.warning {
+                background-color: #eab308;
+            }
+        }
+    }
+    .installer-card-highlight {
+        background: linear-gradient(
+            90deg,
+            rgba(2, 0, 36, 1) 0%,
+            rgba(9, 107, 121, 1) 0%,
+            rgba(5, 171, 164, 1) 100%,
+            rgba(0, 189, 227, 1) 100%
+        );
+        display: block;
+        margin: auto;
+        padding: 40px;
+        border-radius: 10px;
+        width: 310px;
+        margin-top: 40px;
+        .big-icon {
+            text-align: center;
+            color: var(--white);
+            margin-bottom: 20px;
+            svg {
+                width: 30px;
+                height: 30px;
+            }
+        }
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--white);
+            text-align: center;
+        }
+        .para {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 16px;
+            color: var(--white);
+            text-align: center;
+        }
+    }
+    .requirement-wrapper {
+        .requirement-header {
+            .main-title {
+                font-size: 20px;
+                font-weight: 600;
+                color: var(--font-color);
+                margin-bottom: 24px;
+                line-height: 1.5;
+            }
+        }
+    }
+    .another-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        @media (max-width: 767px) {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    }
+    .installer-sidebar {
+        width: 360px;
+        padding: 24px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: var(--white);
+        height: 100vh;
+        .logo {
+            img {
+                max-width: 300px;
+                height: 50px;
+            }
+        }
+        @media (max-width: 1099px) {
+            width: 260px;
+            .logo {
+                img {
+                    max-width: 220px;
+                }
+            }
+        }
+        @media (max-width: 991px) {
+            width: 100%;
+            position: unset;
+            height: auto;
+            box-shadow: var(--box-shadow);
+            padding: 24px;
+            border-radius: 12px;
+        }
+    }
+    .step-progress {
+        position: relative;
+        padding-left: 30px;
+        list-style: none;
+        margin-top: 30px;
+        .para {
+            color: var(--primary-paragraph);
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        &::before {
+            display: inline-block;
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 0px;
+            width: 10px;
+            height: 96%;
+            border-left: 2px solid var(--border-color);
+        }
+
+        &-item {
+            position: relative;
+            counter-increment: list;
+
+            &:not(:last-child) {
+                padding-bottom: 20px;
+            }
+
+            &::before {
+                display: inline-block;
+                content: "";
+                position: absolute;
+                left: -30px;
+                height: 100%;
+                width: 10px;
+                top: 6px;
+            }
+
+            &::after {
+                content: "";
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                position: absolute;
+                top: 4px;
+                left: -37px;
+                width: 16px;
+                height: 16px;
+                border: 2px solid #ccc;
+                border-radius: 50%;
+                background-color: var(--white);
+            }
+
+            &.is-done {
+                &::before {
+                    border-left: 2px solid var(--primary);
+                }
+                &::after {
+                    content: "";
+                    font-size: 10px;
+                    color: #fff;
+                    text-align: center;
+                    border: 2px solid var(--primary);
+                    background-color: var(--primary);
+                }
+                .para {
+                    color: var(--font-color);
+                }
+            }
+
+            &.current {
+                &::before {
+                    border-left: 2px solid var(--primary);
+                }
+
+                &::after {
+                    content: "";
+                    padding-top: 1px;
+                    width: 16px;
+                    height: 16px;
+                    top: 4px;
+                    left: -37px;
+                    font-size: 14px;
+                    text-align: center;
+                    color: var(--primary);
+                    border: 2px solid var(--primary);
+                    background-color: var(--white);
+                }
+            }
+        }
+    }
+}
+.loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid var(--white);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

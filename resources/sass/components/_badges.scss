@@ -1,0 +1,142 @@
+/*---------------------------------------------
+    :: Badges
+-----------------------------------------------*/
+
+.badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+// badge fill
+
+.badge-square-fill {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    margin: 0 2px;
+
+    &.bg-success {
+        color: #fff;
+        background: #46c35f !important;
+    }
+
+    &.bg-info {
+        background-color: #38a4f8 !important;
+        color: #fff;
+    }
+
+    &.bg-danger {
+        color: #fff;
+        background: #ff5038 !important;
+    }
+
+    &.bg-warning {
+        color: #fff;
+        background: #fdae48 !important;
+    }
+
+    &.bg-primary {
+        color: #fff;
+        background: #4466f2 !important;
+    }
+}
+
+.badge-square-light {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+    margin: 0 2px;
+
+    &.bg-success {
+        color: var(--badge-success-color);
+        background: var(--badge-success-bg) !important;
+    }
+
+    &.bg-info {
+        background-color: var(--badge-info-bg) !important;
+        color: var(--badge-info-color);
+    }
+
+    &.bg-danger {
+        color: var(--badge-danger-color);
+        background: var(--badge-danger-bg) !important;
+    }
+
+    &.bg-warning {
+        color: var(--badge-warning-color);
+        background: var(--badge-warning-bg) !important;
+    }
+
+    &.bg-primary {
+        color: var(--primary);
+        background: rgba(43, 135, 104, 0.06) !important;
+    }
+
+    // Without this the badge falls back to Bootstrap's solid dark bg-secondary,
+    // which leaves the label unreadable against it in light mode.
+    &.bg-secondary {
+        color: var(--badge-secondary-color);
+        background: var(--badge-secondary-bg) !important;
+    }
+
+    // Extra palette offered in the result colour dropdown. Bootstrap ships no
+    // utilities for these names, so both sides come from our own tokens.
+    @each $name in (purple, pink, orange, teal, indigo, brown) {
+        &.bg-#{$name} {
+            color: var(--badge-#{$name}-color);
+            background: var(--badge-#{$name}-bg) !important;
+        }
+    }
+}
+
+// badge rounded
+
+.badge-rounded {
+    padding: 4px 10px;
+    border-radius: 18px;
+    font-size: 12px;
+    border: 1px solid var(--primary);
+    background-color: var(--primary);
+    font-weight: 500;
+    text-transform: capitalize;
+    margin: 0 2px;
+    color: #fff;
+
+    &.bg-success {
+        border: 1px solid #9bc438;
+        background-color: #e9f5ce !important;
+        color: #436f00;
+    }
+
+    &.bg-info {
+        border: 1px solid #5cc1ee;
+        background-color: #d9f5fd !important;
+        color: #0063b8;
+    }
+
+    &.bg-danger {
+        border: 1px solid #ff99a1;
+        background-color: #ffc3c9 !important;
+    }
+
+    &.bg-warning {
+        border: 1px solid #e6ac28;
+        background-color: #feefcb !important;
+        color: #925400;
+    }
+
+    &.bg-primary {
+        border: 1px solid #30a7f7;
+        background-color: #b5e1ff !important;
+        color: #0e5db1;
+    }
+}

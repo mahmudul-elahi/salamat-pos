@@ -1,0 +1,34 @@
+/*---------------------------------------------
+    :: Quill Editor
+-----------------------------------------------*/
+
+.ql-toolbar.ql-snow {
+    border: 1px solid var(--border-color) !important;
+}
+.ql-container.ql-snow {
+    border: 1px solid var(--border-color) !important;
+    overflow-y: scroll !important;
+    min-height: 100px !important;
+     height: auto !important;    
+    max-height: 400px; 
+}
+.ql-toolbar {
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+.ql-container {
+    border-bottom-left-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
+    &:hover {
+        border: 1px solid var(--primary) !important;
+    }
+}
+.ql-container .ql-editor {
+    background-color: var(--white) !important;
+    white-space: unset !important;
+}
+
+.ql-toolbar,
+.ql-container {
+    overflow: visible !important;
+}

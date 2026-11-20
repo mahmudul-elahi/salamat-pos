@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Jobs\Auth;
+
+use App\Helpers\Setting\SetEmailConfig;
+use App\Mail\Auth\PasswordChangeConfirmationMail;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Mail;
+
+class PasswordChangeConfirmationJob implements ShouldQueue
+{
+    use Queueable;
+
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(protected $user)
+    {
+        //
+    }
+
+    /**
+     * Execute the job.
+     */
+    public function handle(): void
+    {
+        Mail::to($this->user->email)->send(new PasswordChangeConfirmationMail($this->user));
+    }
+
+    public function middleware(): array
+    {
+        resolve(SetEmailConfig::class)->set();
+        return [];
+    }
+
+}

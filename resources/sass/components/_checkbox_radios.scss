@@ -1,0 +1,42 @@
+/*---------------------------------------------
+    :: Checkbox Radio
+-----------------------------------------------*/
+
+.form-check:not(.form-switch) {
+    &.form-check-radio {
+        &.form-check-boxed {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+
+            .form-check-input {
+                margin: 0;
+            }
+
+            .form-check-label {
+                margin-left: 10px;
+            }
+
+            &.form-check-inline {
+                display: inline-flex;
+            }
+        }
+    }
+}
+
+.checkbox-filter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 32px;
+    grid-row-gap: 24px;
+    align-items: center;
+    line-height: 1.8;
+    .checkbox-filter-input-label {
+        white-space: nowrap;
+    }
+}
+.form-check-input:focus {
+    box-shadow: none !important;
+}
