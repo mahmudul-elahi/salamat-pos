@@ -1,22 +1,24 @@
 {
-    "extensions": [
-        "*",
-        ".js",
-        ".vue",
-        ".json"
-    ],
     "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
-        "outDir": "./public",
-        "moduleResolution": "node",
         "allowJs": true,
-        "baseUrl": ".",
         "paths": {
             "@/*": [
                 "./resources/js/src/*"
             ]
         }
-    }
+    },
+    "include": [
+        "resources/js/**/*",
+        "resources/js/**/*.vue"
+    ],
+    "exclude": [
+        "node_modules",
+        "public"
+    ]
 }
