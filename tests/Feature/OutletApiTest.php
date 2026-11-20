@@ -6,9 +6,8 @@ use App\Http\Middleware\AuthorizeMiddleware;
 use App\Http\Middleware\PermissionMiddleware;
 use App\Models\Ecommerce\Outlet\Outlet;
 use App\Models\Ecommerce\Outlet\OutletImage;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Auth\Middleware\Authenticate;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -17,12 +16,6 @@ class OutletApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        config()->set('database.default', 'sqlite');
-        config()->set('database.connections.sqlite.database', ':memory:');
-
-        DB::purge('sqlite');
-        DB::reconnect('sqlite');
 
         Schema::dropAllTables();
 
@@ -214,4 +207,3 @@ class OutletApiTest extends TestCase
         ]);
     }
 }
-
