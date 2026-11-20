@@ -5,6 +5,7 @@ namespace App\Models\Traits\Relationship;
 use App\Exceptions\GeneralException;
 use App\Models\Tenant\Tenant;
 use App\Scopes\TenantScope;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 trait BelongToTenant
 {
@@ -15,13 +16,13 @@ trait BelongToTenant
      */
     protected static function bootBelongToTenant(): void
     {
-        if (!app()->runningInConsole()) {
-            static::addGlobalScope(new TenantScope());
+        if (! app()->runningInConsole()) {
+            static::addGlobalScope(new TenantScope);
 
             // Apply tenant logic on creating and saving
-            static::creating(fn($model) => $model->assignTenantId());
-            static::saving(fn($model) => $model->assignTenantId());
-            static::updating(fn($model) => $model->assignTenantId());
+            static::creating(fn ($model) => $model->assignTenantId());
+            static::saving(fn ($model) => $model->assignTenantId());
+            static::updating(fn ($model) => $model->assignTenantId());
         }
     }
 
@@ -42,14 +43,19 @@ trait BelongToTenant
         } elseif (request()->has('tenant_id')) {
             $this->tenant_id = request('tenant_id');
         } else {
-            throw new GeneralException("The warehouse/store field is required.", 400);
+            throw new GeneralException('The warehouse/store field is required.', 400);
+        }
+
+        $user = auth()->user();
+        if ($user && ! $user->isAppAdmin() && ! $user->tenants()->whereKey($this->tenant_id)->exists()) {
+            throw new GeneralException('Unauthorized shop access.', 403);
         }
     }
 
     /**
      * Relationship with Tenant.
      */
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }

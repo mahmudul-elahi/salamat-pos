@@ -39,7 +39,7 @@ const closeNote = () => {
                     {{ $t("comment") }}
                 </div>
                 <div class="note-details mb-3">
-                    <span v-html="rowData.comment"></span>
+                    <span>{{ rowData.comment }}</span>
                 </div>
                 <div class="d-flex justify-content-end">
                     <button

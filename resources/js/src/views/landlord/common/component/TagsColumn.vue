@@ -39,7 +39,7 @@ const closeNote = () => {
                     {{ $t("tags") }}
                 </div>
                 <div class="note-details mb-3">
-                    <span v-html="rowData.tags"></span>
+                    <span>{{ rowData.tags }}</span>
                 </div>
                 <div class="d-flex justify-content-end">
                     <button

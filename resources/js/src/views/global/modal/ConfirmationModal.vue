@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
                     <h4 class="text-left font-weight-bold msg-white">
                         {{ title ? title : $t('are_you_sure') }}</h4>
                     <p v-if="subTitle" class="text-center">{{ subTitle }}</p>
-                    <p class="text-left" v-html="message"></p>
+                    <p class="text-left">{{ message }}</p>
                     <div class="border-top my-4"></div>
 
                     <div class="text-end">

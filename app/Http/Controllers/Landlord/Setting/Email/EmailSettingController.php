@@ -8,18 +8,18 @@ use App\Services\Setting\EmailSettingService;
 
 class EmailSettingController extends Controller
 {
-
-    public function __construct(protected EmailSettingService $service)
-    {
-
-    }
+    public function __construct(protected EmailSettingService $service) {}
 
     public function index(): array
     {
-        
-            $default = $this->service->getDefaultSettings();
-            return $this->service->getFormattedDeliverySettings([optional($default)->value, 'default_mail_email_name']);
-        
+        $default = $this->service->getDefaultSettings();
+        $settings = $this->service->getFormattedDeliverySettings([optional($default)->value, 'default_mail_email_name']);
+
+        if (! empty($settings['email_password'])) {
+            $settings['email_password'] = '******';
+        }
+
+        return $settings;
     }
 
     public function update(EmailSettingRequest $request)
@@ -27,12 +27,14 @@ class EmailSettingController extends Controller
         $context = $request->get('provider');
 
         foreach ($request->only('from_name', 'from_email') as $key => $value) {
-
             $this->service
                 ->update($key, $value, 'default_mail_email_name');
         }
 
         foreach ($request->except('allowed_resource', 'from_name', 'from_email') as $key => $value) {
+            if ($key === 'email_password' && $value === '******') {
+                continue;
+            }
 
             $this->service
                 ->update($key, $value, $context);

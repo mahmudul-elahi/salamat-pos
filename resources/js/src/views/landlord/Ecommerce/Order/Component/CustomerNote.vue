@@ -31,7 +31,7 @@ const closeNote = () => {
                     {{ $t("note") }}
                 </div>
                 <div class="note-details mb-3">
-                    <span v-html="rowData.customer_note"></span>
+                    <span>{{ rowData.customer_note }}</span>
                 </div>
                 <div class="d-flex justify-content-end">
                     <button @click="closeNote" class="btn btn-primary" data-bs-toggle="collapse"
