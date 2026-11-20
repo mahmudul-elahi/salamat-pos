@@ -2,7 +2,6 @@
 
 namespace Database\Seeders\Sync;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -36,7 +35,7 @@ class SyncPartyMapperSeeder extends Seeder
                             [
                                 'customer_id' => $customer->id,
                                 'supplier_id' => $supplier->id,
-                                'tenant_id'   => $tenantId,
+                                'tenant_id' => $tenantId,
                             ],
                             [
                                 'updated_at' => now(),

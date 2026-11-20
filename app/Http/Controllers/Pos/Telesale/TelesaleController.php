@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Pos\Telesale;
 
 use App\Filters\Pos\Telesale\TelesaleFilter;
 use App\Http\Controllers\Controller;
+use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Telesale\Telesale;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TelesaleController extends Controller
@@ -22,10 +24,10 @@ class TelesaleController extends Controller
             ->orderByDesc('date')
             ->orderByDesc('id')
             ->paginate($request->input('per_page', 10))
-            ->through(fn(Telesale $telesale) => $this->transform($telesale));
+            ->through(fn (Telesale $telesale) => $this->transform($telesale));
     }
 
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): JsonResponse
     {
         $data = $this->validated($request);
 
@@ -43,14 +45,14 @@ class TelesaleController extends Controller
         return [
             ...$this->transform($telesale),
             // The edit form binds to the raw ids, not the display labels.
-            'product_id'         => $telesale->product_id,
-            'custom_product'     => $telesale->custom_product,
+            'product_id' => $telesale->product_id,
+            'custom_product' => $telesale->custom_product,
             'telesale_result_id' => $telesale->telesale_result_id,
-            'salesman_id'        => $telesale->salesman_id,
+            'salesman_id' => $telesale->salesman_id,
         ];
     }
 
-    public function update(Request $request, Telesale $telesale): \Illuminate\Http\JsonResponse
+    public function update(Request $request, Telesale $telesale): JsonResponse
     {
         $data = $this->validated($request);
 
@@ -66,7 +68,7 @@ class TelesaleController extends Controller
         return successResponse('Telesale entry updated successfully');
     }
 
-    public function destroy(Telesale $telesale): \Illuminate\Http\JsonResponse
+    public function destroy(Telesale $telesale): JsonResponse
     {
         $telesale->delete();
 
@@ -78,7 +80,7 @@ class TelesaleController extends Controller
      * "the outcome changed", and reopening the whole entry form for one field
      * is friction the agents don't need.
      */
-    public function result(Request $request, Telesale $telesale): \Illuminate\Http\JsonResponse
+    public function result(Request $request, Telesale $telesale): JsonResponse
     {
         $request->validate([
             'telesale_result_id' => ['nullable', 'integer', 'exists:telesale_results,id'],
@@ -102,13 +104,13 @@ class TelesaleController extends Controller
         $contact = Telesale::findContactByNumber($request->customer_number);
 
         return [
-            'exists'  => (bool) $contact,
-            'contact' => $contact ? [
-                'id'      => $contact->id,
-                'name'    => $contact->name,
-                'phone'   => $contact->phone,
+            'exists' => (bool) $contact,
+            'contact' => $contact instanceof Contact ? [
+                'id' => $contact->id,
+                'name' => $contact->name,
+                'phone' => $contact->phone,
                 'address' => $contact->address,
-                'type'    => $contact->type,
+                'type' => $contact->type,
             ] : null,
         ];
     }
@@ -116,22 +118,22 @@ class TelesaleController extends Controller
     private function transform(Telesale $telesale): array
     {
         return [
-            'id'              => $telesale->id,
-            'date'            => $telesale->date?->format('d M Y'),
-            'customer_name'   => $telesale->customer_name ?? $telesale->contact?->name,
+            'id' => $telesale->id,
+            'date' => $telesale->date?->format('d M Y'),
+            'customer_name' => $telesale->customer_name ?? $telesale->contact?->name,
             'customer_number' => $telesale->customer_number,
-            'address'         => $telesale->address,
-            'customer_type'   => $telesale->is_existing_customer ? 'existing' : 'new',
-            'contact_id'      => $telesale->contact_id,
-            'demand_product'  => $telesale->demand_product,
-            'media'           => $telesale->media,
-            'note'            => $telesale->note,
-            'result'          => $telesale->result ? [
-                'id'    => $telesale->result->id,
-                'name'  => $telesale->result->name,
+            'address' => $telesale->address,
+            'customer_type' => $telesale->is_existing_customer ? 'existing' : 'new',
+            'contact_id' => $telesale->contact_id,
+            'demand_product' => $telesale->demand_product,
+            'media' => $telesale->media,
+            'note' => $telesale->note,
+            'result' => $telesale->result ? [
+                'id' => $telesale->result->id,
+                'name' => $telesale->result->name,
                 'color' => $telesale->result->color,
             ] : null,
-            'salesman'        => $telesale->salesman?->name,
+            'salesman' => $telesale->salesman?->name,
         ];
     }
 
@@ -143,12 +145,12 @@ class TelesaleController extends Controller
     {
         $contact = Telesale::findContactByNumber($data['customer_number']);
 
-        $data['contact_id']           = $contact?->id;
+        $data['contact_id'] = $contact?->id;
         $data['is_existing_customer'] = (bool) $contact;
 
         // Only fill blanks — whatever the agent typed for this call wins, since
         // a delivery address can differ from the one on file.
-        if ($contact) {
+        if ($contact instanceof Contact) {
             if (empty($data['customer_name'])) {
                 $data['customer_name'] = $contact->name;
             }
@@ -164,21 +166,21 @@ class TelesaleController extends Controller
     private function validated(Request $request): array
     {
         $data = $request->validate([
-            'date'               => ['required', 'date'],
-            'customer_name'      => ['nullable', 'string', 'max:191'],
-            'customer_number'    => ['required', 'string', 'max:191'],
-            'address'            => ['nullable', 'string', 'max:1000'],
-            'product_id'         => ['nullable', 'integer', 'exists:products,id'],
-            'custom_product'     => ['nullable', 'string', 'max:191'],
-            'media'              => ['nullable', 'string', 'max:50'],
-            'note'               => ['nullable', 'string', 'max:2000'],
+            'date' => ['required', 'date'],
+            'customer_name' => ['nullable', 'string', 'max:191'],
+            'customer_number' => ['required', 'string', 'max:191'],
+            'address' => ['nullable', 'string', 'max:1000'],
+            'product_id' => ['nullable', 'integer', 'exists:products,id'],
+            'custom_product' => ['nullable', 'string', 'max:191'],
+            'media' => ['nullable', 'string', 'max:50'],
+            'note' => ['nullable', 'string', 'max:2000'],
             'telesale_result_id' => ['nullable', 'integer', 'exists:telesale_results,id'],
-            'salesman_id'        => ['nullable', 'integer', 'exists:users,id'],
+            'salesman_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
         // A catalogue product wins; the free-text field is only for what we
         // don't stock, so never keep both.
-        if (!empty($data['product_id'])) {
+        if (! empty($data['product_id'])) {
             $data['custom_product'] = null;
         }
 

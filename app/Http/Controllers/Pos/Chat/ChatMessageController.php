@@ -15,16 +15,14 @@ use Throwable;
 
 class ChatMessageController extends Controller
 {
-    private const MAX_SIZES_KB = [
+    private const array MAX_SIZES_KB = [
         'image' => 5 * 1024,
         'video' => 16 * 1024,
         'audio' => 16 * 1024,
         'document' => 100 * 1024,
     ];
 
-    public function __construct(protected ChatService $service)
-    {
-    }
+    public function __construct(protected ChatService $service) {}
 
     /**
      * @throws GeneralException
@@ -38,16 +36,16 @@ class ChatMessageController extends Controller
             'template_name' => ['required_if:type,template', 'nullable', 'string'],
             'language_code' => ['nullable', 'string'],
             'body_params' => ['nullable', 'array'],
-            'attachment' => ['nullable', 'file', 'max:' . self::MAX_SIZES_KB['document']],
+            'attachment' => ['nullable', 'file', 'max:'.self::MAX_SIZES_KB['document']],
         ]);
 
         if ($request->hasFile('attachment')) {
             $data = [...$data, ...$this->storeAttachment($chat_conversation, $request->file('attachment'))];
         }
 
-        $data['type'] = $data['type'] ?? 'text';
+        $data['type'] ??= 'text';
 
-        if ($data['type'] === 'text' && !$data['body']) {
+        if ($data['type'] === 'text' && ! $data['body']) {
             return errorResponse('A message body is required', null, 422);
         }
 
@@ -64,7 +62,7 @@ class ChatMessageController extends Controller
             throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -78,10 +76,10 @@ class ChatMessageController extends Controller
 
         $maxKb = self::MAX_SIZES_KB[$type];
         if ($file->getSize() > $maxKb * 1024) {
-            throw new GeneralException("This {$type} exceeds the " . ($maxKb / 1024) . 'MB limit', 422);
+            throw new GeneralException("This {$type} exceeds the ".($maxKb / 1024).'MB limit', 422);
         }
 
-        $filename = Str::uuid() . '.' . $extension;
+        $filename = Str::uuid().'.'.$extension;
         $path = "chat/attachments/{$conversation->id}/{$filename}";
 
         Storage::disk(config('filesystems.default'))->put($path, file_get_contents($file->getRealPath()));

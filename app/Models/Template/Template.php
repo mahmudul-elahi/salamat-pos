@@ -3,6 +3,7 @@
 namespace App\Models\Template;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Template extends Model
 {
@@ -14,7 +15,7 @@ class Template extends Model
         'template_type_id',
     ];
 
-    public function templateType(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function templateType(): BelongsTo
     {
         return $this->belongsTo(TemplateType::class);
     }
@@ -25,6 +26,7 @@ class Template extends Model
         if ($subject) {
             $content = $this->attributes['subject'];
         }
+
         return strtr($content, $vars);
     }
 
@@ -32,5 +34,4 @@ class Template extends Model
     {
         return $this->parse($vars, true);
     }
-
 }

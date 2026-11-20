@@ -1,18 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Controllers\Landlord\Setting\Attendance\AttendanceSettingController;
+use App\Http\Controllers\Landlord\Setting\DeliveryCharge\AreaShippingChargeController;
+use App\Http\Controllers\Landlord\Setting\DeliveryCharge\DeliveryChargeSettingController;
+use App\Http\Controllers\Landlord\Setting\Ecommerce\EcommerceController;
+use App\Http\Controllers\Landlord\Setting\Email\EmailSettingController;
+use App\Http\Controllers\Landlord\Setting\General\SettingController;
+use App\Http\Controllers\Landlord\Setting\Leave\LeaveSettingController;
+use App\Http\Controllers\Landlord\Setting\PaymentMethod\PaymentMethodController;
+use App\Http\Controllers\Landlord\Setting\Shop\ShopController;
+use App\Http\Controllers\Pos\Widget\WidgetController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Landlord\Setting\Shop\ShopController;
-use App\Http\Controllers\Landlord\Setting\General\SettingController;
-use App\Http\Controllers\Landlord\Setting\Email\EmailSettingController;
-use App\Http\Controllers\Pos\Widget\WidgetController;
-use App\Http\Controllers\Landlord\Setting\Ecommerce\EcommerceController;
-use App\Http\Controllers\Landlord\Setting\PaymentMethod\PaymentMethodController;
-use App\Http\Controllers\Landlord\Setting\Attendance\AttendanceSettingController;
-use App\Http\Controllers\Landlord\Setting\Leave\LeaveSettingController;
-use App\Http\Controllers\Landlord\Setting\DeliveryCharge\DeliveryChargeSettingController;
-use App\Http\Controllers\Landlord\Setting\DeliveryCharge\AreaShippingChargeController;
-
 
 Route::group(['prefix' => 'landlord/setting', 'middleware' => 'auth.permission'], function (Router $route) {
 
@@ -36,14 +37,11 @@ Route::group(['prefix' => 'landlord/setting', 'middleware' => 'auth.permission']
     $route->post('shop-settings/{tenant?}', [SettingController::class, 'update'])
         ->name('shop_settings.update');
 
-
     $route->get('email-settings', [EmailSettingController::class, 'index'])
         ->name('email_setting_view.landlord');
 
     $route->post('email-settings', [EmailSettingController::class, 'update'])
         ->name('email_setting_update.landlord');
-
-
 
     $route->get('leave-settings', [LeaveSettingController::class, 'index'])
         ->name('leave_settings.view');

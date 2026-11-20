@@ -8,13 +8,17 @@ trait S3ToLocalPathTrait
 {
     private function toCdnUrl(?string $url): ?string
     {
-        if (!$url) return null;
+        if (! $url) {
+            return null;
+        }
 
         $bucket = config('filesystems.disks.s3.bucket', '');
         $region = config('filesystems.disks.s3.region', '');
         $cdnBase = rtrim(config('filesystems.disks.s3.url', ''), '/');
 
-        if (!$cdnBase) return $url;
+        if (! $cdnBase) {
+            return $url;
+        }
 
         $s3Base = "https://{$bucket}.s3.{$region}.amazonaws.com";
 
@@ -23,12 +27,14 @@ trait S3ToLocalPathTrait
 
     private function s3ToLocalPath(?string $url): ?string
     {
-        if (!$url) return null;
+        if (! $url) {
+            return null;
+        }
 
         $bucket = config('filesystems.disks.s3.bucket', '');
         $region = config('filesystems.disks.s3.region', '');
         $s3Base = "https://{$bucket}.s3.{$region}.amazonaws.com/";
-        $cdnBase = rtrim(config('filesystems.disks.s3.url', ''), '/') . '/';
+        $cdnBase = rtrim(config('filesystems.disks.s3.url', ''), '/').'/';
 
         if (str_starts_with($url, $s3Base)) {
             $path = substr($url, strlen($s3Base));
@@ -39,12 +45,12 @@ trait S3ToLocalPathTrait
         }
 
         try {
-            $ext     = strtolower(pathinfo($path, PATHINFO_EXTENSION)) ?: 'jpg';
-            $tmpDir  = storage_path('app/pdf-tmp');
-            $tmpPath = $tmpDir . '/' . md5($path) . '.' . $ext;
+            $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION)) ?: 'jpg';
+            $tmpDir = storage_path('app/pdf-tmp');
+            $tmpPath = $tmpDir.'/'.md5($path).'.'.$ext;
 
-            if (!file_exists($tmpPath)) {
-                if (!is_dir($tmpDir)) {
+            if (! file_exists($tmpPath)) {
+                if (! is_dir($tmpDir)) {
                     mkdir($tmpDir, 0755, true);
                 }
                 file_put_contents($tmpPath, Storage::disk('s3')->get($path));

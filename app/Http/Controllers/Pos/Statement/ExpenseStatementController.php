@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers\Pos\Statement;
 
+use App\Filters\Landlord\Expense\ExpenseFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Expense\Expense;
-use App\Filters\Landlord\Expense\ExpenseFilter;
-use Illuminate\Http\Request;
+use App\Services\Setting\SettingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\Setting\SettingService;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class ExpenseStatementController extends Controller
 {
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $filter = new ExpenseFilter();
+        $filter = new ExpenseFilter;
 
         $baseQuery = Expense::query()
             ->filters($filter)
@@ -36,7 +35,7 @@ class ExpenseStatementController extends Controller
             return [
                 'sl' => (($currentPage - 1) * $perPage) + $index + 1,
                 'id' => $row->id,
-                'full_invoice_number' => 'EXP-' . $row->id,
+                'full_invoice_number' => 'EXP-'.$row->id,
                 'date' => $row->date,
                 'title' => $row->title,
                 'category' => $row->category,
@@ -63,14 +62,14 @@ class ExpenseStatementController extends Controller
             ...$paginated->toArray(),
             'grand_total' => [
                 'total_items' => (int) $paginated->total(),
-                'grand_total' => (float)$totalExpenses,
-                'paid_amount' => (float)$paidAmount,
-                'due_amount' => (float)($totalExpenses - $paidAmount),
+                'grand_total' => (float) $totalExpenses,
+                'paid_amount' => (float) $paidAmount,
+                'due_amount' => (float) ($totalExpenses - $paidAmount),
             ],
         ]);
     }
 
-    private const PDF_TOGGLEABLE_COLUMNS = ['category', 'payment_method', 'amount', 'paid_amount', 'due_amount'];
+    private const array PDF_TOGGLEABLE_COLUMNS = ['category', 'payment_method', 'amount', 'paid_amount', 'due_amount'];
 
     public function expenseStatementPdf(Request $request)
     {
@@ -81,25 +80,26 @@ class ExpenseStatementController extends Controller
             ? array_intersect(explode(',', $request->input('columns')), self::PDF_TOGGLEABLE_COLUMNS)
             : self::PDF_TOGGLEABLE_COLUMNS;
 
-        $filter = new ExpenseFilter();
+        $filter = new ExpenseFilter;
 
         $query = Expense::query()
             ->with(['category', 'payments.paymentMethod'])
             ->filters($filter);
 
-        if (!$isAppAdmin && tenant()) {
+        if (! $isAppAdmin && tenant()) {
             $query->where('tenant_id', tenant()->id);
         }
 
-        $expenses = $query->get()->map(function($expense, $index) {
-            $received = (float)$expense->payments->sum('amount');
+        $expenses = $query->get()->map(function ($expense, $index) {
+            $received = (float) $expense->payments->sum('amount');
+
             return [
                 'sl' => $index + 1,
                 'date' => Carbon::parse($expense->date)->format('d.m.y'),
                 'title' => $expense->title,
                 'category' => $expense->category->name ?? '-',
                 'payment_method' => $expense->payments->first()?->paymentMethod->name ?? '-',
-                'amount' => (float)$expense->amount,
+                'amount' => (float) $expense->amount,
                 'paid_amount' => $received,
             ];
         });
@@ -109,7 +109,7 @@ class ExpenseStatementController extends Controller
         $totalDue = $totalAmount - $totalPaid;
 
         $wareHouse = $request->input('warehouse');
-        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (strpos($wareHouse, ',') !== false ? explode(',', $wareHouse)[0] : $wareHouse);
+        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (str_contains($wareHouse, ',') ? explode(',', $wareHouse)[0] : $wareHouse);
         $tenantId = $isAppAdmin ? $firstWarehouseId : (tenant() ? tenant()->id : null);
 
         $appSettings = resolve(SettingService::class)->getFormattedSettings('app');

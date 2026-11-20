@@ -2,9 +2,9 @@
 
 namespace App\Filters\Pos\Purchase;
 
+use App\Exceptions\GeneralException;
 use App\Filters\Pos\Shop\ShopFilter;
 use Illuminate\Support\Carbon;
-use App\Exceptions\GeneralException;
 
 class PurchaseFilter extends ShopFilter
 {
@@ -32,7 +32,7 @@ class PurchaseFilter extends ShopFilter
 
     public function status($status = null): void
     {
-        if (!$status) {
+        if (! $status) {
             return;
         }
 
@@ -45,7 +45,7 @@ class PurchaseFilter extends ShopFilter
 
     public function brand($ids = null): void
     {
-        if (!$ids) {
+        if (! $ids) {
             return;
         }
 
@@ -62,6 +62,7 @@ class PurchaseFilter extends ShopFilter
             // If no date is provided, default to today's date
             if (empty($range)) {
                 $this->builder->whereDate('date', Carbon::today());
+
                 return;
             }
 
@@ -70,9 +71,10 @@ class PurchaseFilter extends ShopFilter
                 $range = json_decode($range, true);
             }
 
-            if (!is_array($range) || count($range) < 2) {
+            if (! is_array($range) || count($range) < 2) {
                 // Fallback to today if invalid structure
                 $this->builder->whereDate('date', Carbon::today());
+
                 return;
             }
 
@@ -82,7 +84,7 @@ class PurchaseFilter extends ShopFilter
             $end = Carbon::parse($endDate)->endOfDay();
 
             $this->builder->whereBetween('date', [$start, $end]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range format.');
         }
     }

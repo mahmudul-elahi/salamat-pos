@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class PaymentMethod extends BaseModel
 {
@@ -18,13 +19,14 @@ class PaymentMethod extends BaseModel
         'logo',
         'type',
         'tenant_id',
-        'director_id'
+        'director_id',
     ];
 
-    public function settings(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function settings(): MorphMany
     {
         return $this->morphMany(Setting::class, 'settingable');
     }
+
     public function scopeForTenant(Builder $query, $tenantId): Builder
     {
         return $query->where('tenant_id', $tenantId);

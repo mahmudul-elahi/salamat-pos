@@ -2,11 +2,10 @@
 
 namespace Database\Seeders\LongDescription;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-use App\Models\Pos\Product\Product;
-use App\Models\Landlord\Category\Category;
 use App\Models\Landlord\Brand\Brand;
+use App\Models\Landlord\Category\Category;
+use App\Models\Pos\Product\Product;
+use Illuminate\Database\Seeder;
 
 class LongDescriptionSeeder extends Seeder
 {
@@ -47,6 +46,6 @@ class LongDescriptionSeeder extends Seeder
                 );
             });
 
-        $this->command->info("Success fully synced description");
+        $this->command->info('Success fully synced description');
     }
 }

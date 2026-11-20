@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers\Pos\Partners;
 
-use Illuminate\Http\Request;
-use App\Enums\CustomerTypeEnum;
 use App\Enums\StatusEnum;
-use App\Http\Controllers\Controller;
 use App\Filters\Landlord\Common\NameFilter;
+use App\Http\Controllers\Controller;
 use App\Models\Pos\Partners\Partners;
+use Illuminate\Http\JsonResponse;
 
 class PartnerController extends Controller
 {
-    public function __construct(protected NameFilter $filter)
-    {
-    }
+    public function __construct(protected NameFilter $filter) {}
 
     /**
      * Display a listing of the resource.
      */
-
     public function index()
     {
         return Partners::query()
@@ -31,19 +27,18 @@ class PartnerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
-    public function store(PartnersRequest $request): \Illuminate\Http\JsonResponse
+    public function store(PartnersRequest $request): JsonResponse
     {
         $data = $request->validated();
         $data['tenant_id'] = null;
         Partners::create($data);
+
         return successResponse('Partners created successfully');
     }
 
     /**
      * Display the specified resource.
      */
-
     public function show(Partners $partners): Partners
     {
         return $partners;
@@ -52,7 +47,7 @@ class PartnerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(PartnersRequest $request, Partners $partners): \Illuminate\Http\JsonResponse
+    public function update(PartnersRequest $request, Partners $partners): JsonResponse
     {
         $partners->update($request->validated());
 
@@ -62,10 +57,10 @@ class PartnerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(Partners $partners): \Illuminate\Http\JsonResponse
+    public function destroy(Partners $partners): JsonResponse
     {
         $partners->delete();
+
         return successResponse('Partners deleted successfully');
     }
 }

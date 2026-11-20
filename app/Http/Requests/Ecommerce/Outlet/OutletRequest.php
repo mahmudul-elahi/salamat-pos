@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Ecommerce\Outlet;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -41,4 +43,3 @@ class OutletRequest extends FormRequest
         ];
     }
 }
-

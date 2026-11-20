@@ -2,7 +2,6 @@
 
 namespace Database\Seeders\Seo;
 
-use App\Models\Landlord\Brand\Brand;
 use App\Models\Landlord\Category\Category;
 use App\Models\Pos\Seo\Seo;
 use Illuminate\Database\Seeder;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Hrm\AnnouncementController;
 use App\Http\Controllers\Hrm\AssetCategoryController;
 use App\Http\Controllers\Hrm\AssetController;

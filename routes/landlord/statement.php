@@ -1,22 +1,23 @@
 <?php
 
-use App\Http\Controllers\Pos\Statement\DailyClosingController;
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\ProfitLoss\ProfitLossController;
-use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Pos\Statement\DailyClosingController;
+use App\Http\Controllers\Pos\Statement\DailyPayReceivableController;
+use App\Http\Controllers\Pos\Statement\DepositStatementController;
+use App\Http\Controllers\Pos\Statement\ExpenseStatementController;
+use App\Http\Controllers\Pos\Statement\PurchaseReturnStatementController;
+use App\Http\Controllers\Pos\Statement\PurchaseStatementController;
+use App\Http\Controllers\Pos\Statement\SaleReturnStatementController;
+use App\Http\Controllers\Pos\Statement\SaleStatementController;
 use App\Http\Controllers\Pos\Statement\StatementController;
 use App\Http\Controllers\Pos\Statement\StatementPDFController;
-use App\Http\Controllers\Pos\Statement\PurchaseStatementController;
-use App\Http\Controllers\Pos\Statement\SaleStatementController;
-use App\Http\Controllers\Pos\Statement\SaleReturnStatementController;
-use App\Http\Controllers\Pos\Statement\PurchaseReturnStatementController;
-use App\Http\Controllers\Pos\Statement\DailyPayReceivableController;
-use App\Http\Controllers\Pos\Statement\ExpenseStatementController;
 use App\Http\Controllers\Pos\Statement\WithdrawalStatementController;
-use App\Http\Controllers\Pos\Statement\DepositStatementController;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (Router $router) {
-
 
     $router->get('daily-closings', [DailyClosingController::class, 'index'])
         ->name('daily_closings.view');
@@ -42,8 +43,6 @@ Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (R
     $router->post('stock-statement-pdf', [StatementPDFController::class, 'stockStatementPdf'])
         ->name('stock_statement_pdf.generate');
 
-
-
     $router->post('sale-statement-pdf', [SaleStatementController::class, 'saleStatementPdf'])
         ->name('sale_statement_pdf.generate');
 
@@ -58,7 +57,6 @@ Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (R
 
     $router->post('expense-statement-pdf', [ExpenseStatementController::class, 'expenseStatementPdf'])
         ->name('expense_statement_pdf.generate');
-
 
     $router->post('withdrawal-statement-pdf', [WithdrawalStatementController::class, 'withdrawalStatementPdf'])
         ->name('withdrawal_statement_pdf.generate');
@@ -81,7 +79,6 @@ Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (R
     $router->get('transactions', [StatementController::class, 'transaction'])
         ->name('transaction_reports.view');
 
-
     $router->get('expense-statements', [ExpenseStatementController::class, 'index'])
         ->name('expense_statements.view');
 
@@ -100,7 +97,6 @@ Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (R
     $router->get('balance-sheets', [DailyPayReceivableController::class, 'contactBalanceSheet'])
         ->name('balance_sheets.view');
 });
-
 
 // Only query worker can access
 

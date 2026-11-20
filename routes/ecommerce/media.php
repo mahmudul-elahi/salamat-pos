@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Controllers\Pos\Media\MediaController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Pos\Media\MediaController;
 
 Route::group(['prefix' => 'ecommerce', 'middleware' => 'auth.permission'], function (Router $router) {
 

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -17,10 +18,10 @@ return new class extends Migration
         });
 
         // Existing rows: group_id = their own id
-        \Illuminate\Support\Facades\DB::table('faqs')
+        DB::table('faqs')
             ->whereNull('group_id')
             ->get()
-            ->each(fn($row) => \Illuminate\Support\Facades\DB::table('faqs')->where('id', $row->id)->update(['group_id' => $row->id]));
+            ->each(fn ($row) => DB::table('faqs')->where('id', $row->id)->update(['group_id' => $row->id]));
     }
 
     public function down(): void

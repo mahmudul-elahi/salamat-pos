@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Pos\Investent;
 use App\Exceptions\GeneralException;
 use App\Filters\Pos\Report\DepositReportFilter;
 use App\Http\Controllers\Controller;
-use App\Models\Pos\Investment\Investment;
 use App\Http\Requests\Pos\Investment\InvestmentRequest;
+use App\Models\Pos\Investment\Investment;
 use App\Models\Pos\Investment\InvestmentCategory;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -21,22 +21,20 @@ class InvestmentController extends Controller
         $perPage = request('per_page', 10);
 
         return Investment::query()
-            ->filters(new DepositReportFilter())
+            ->filters(new DepositReportFilter)
             ->with(['user:id,name,profile_photo', 'tenant:id,name', 'contact:id,name', 'createdBy:id,name'])
             ->orderByDesc('id')
             ->paginate($perPage)
-            ->through(function ($investment) {
-                return [
-                    ...$investment->toArray(),
-                    'invoice_number' => "INV-{$investment->id}",
-                    'images' => $investment->getImagesAttribute(),
-                ];
-            })->toArray();
+            ->through(fn ($investment) => [
+                ...$investment->toArray(),
+                'invoice_number' => "INV-{$investment->id}",
+                'images' => $investment->getImagesAttribute(),
+            ])->toArray();
     }
-
 
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException
      * @throws Throwable
      */
@@ -47,20 +45,17 @@ class InvestmentController extends Controller
             ->where('tenant_id', $request->tenant_id)
             ->first();
 
-        if (!$investmentCategory) {
+        if (! $investmentCategory) {
             throw new GeneralException('No director found in this investment category to this shop', 422);
         }
 
         try {
             DB::beginTransaction();
 
-
             $request['user_id'] = $investmentCategory->director_id;
             $request['created_by'] = auth()->id();
 
-
             $investment = Investment::query()->create($request->all());
-
 
             if ($request->has('attachments')) {
                 foreach ($request->attachments as $attachmentUrl) {
@@ -70,13 +65,14 @@ class InvestmentController extends Controller
                 }
             }
             DB::commit();
+
             return successResponse('Investment created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to create investment', 500);
+                throw new GeneralException('Failed to create investment', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -92,10 +88,12 @@ class InvestmentController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function update(InvestmentRequest $request, Investment $investment)
@@ -105,18 +103,16 @@ class InvestmentController extends Controller
             ->where('tenant_id', $request->tenant_id)
             ->first();
 
-        if (!$investmentCategory) {
+        if (! $investmentCategory) {
             throw new GeneralException('No director found in this investment category to this shop', 422);
         }
 
         try {
             DB::beginTransaction();
 
-
             $request['user_id'] = $investmentCategory->director_id;
 
             $investment->update($request->all());
-
 
             // Delete attachments marked for removal
             if ($request->has('deletable_attachment_ids')) {
@@ -135,13 +131,14 @@ class InvestmentController extends Controller
             }
 
             DB::commit();
+
             return successResponse('Investment updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to update investment', 500);
+                throw new GeneralException('Failed to update investment', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 

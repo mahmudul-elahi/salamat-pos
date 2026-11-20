@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hrm;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +12,7 @@ class Holiday extends Model
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date'   => 'date',
+        'end_date' => 'date',
     ];
 
     public function department()

@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Pos\Page;
 use App\Exceptions\GeneralException;
 use App\Filters\Landlord\Common\TitleFilter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Pos\Page\PageRequest;
 use App\Http\Requests\Pos\Page\TekzoPageRequest;
 use App\Models\Pos\Page\Page;
 use App\Models\Tenant\Tenant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -16,10 +16,7 @@ use Throwable;
 
 class TekzoPageController extends Controller
 {
-    public function __construct(protected TitleFilter $filter)
-    {
-
-    }
+    public function __construct(protected TitleFilter $filter) {}
 
     /**
      * @throws GeneralException
@@ -31,7 +28,7 @@ class TekzoPageController extends Controller
             ->where('slug', 'tekzo')
             ->first();
 
-        if (!$tekzo) {
+        if (! $tekzo) {
             throw new GeneralException('TekZo is E-commerce not found');
         }
 
@@ -40,9 +37,9 @@ class TekzoPageController extends Controller
 
     /**
      * Display a listing of the resource.
+     *
      * @throws GeneralException
      */
-
     public function index()
     {
         $tekzo = $this->checkTekzo();
@@ -53,26 +50,24 @@ class TekzoPageController extends Controller
             ->where('tenant_id', $tekzo->id)
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(function ($item) {
-                return [
-                    ...$item->toArray(),
-                    'tags' => $item->seo?->tags
-                ];
-            });
+            ->through(fn ($item) => [
+                ...$item->toArray(),
+                'tags' => $item->seo?->tags,
+            ]);
     }
 
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException
      * @throws Throwable
      */
-
-    public function store(TekzoPageRequest $request): \Illuminate\Http\JsonResponse
+    public function store(TekzoPageRequest $request): JsonResponse
     {
         $tekzo = $this->checkTekzo();
 
         $request->validate([
-            'slug' => Rule::unique('pages', 'slug')->where('tenant_id', $tekzo->id)->where('deleted_at', null)
+            'slug' => Rule::unique('pages', 'slug')->where('tenant_id', $tekzo->id)->where('deleted_at'),
         ]);
 
         try {
@@ -92,14 +87,15 @@ class TekzoPageController extends Controller
             ]);
 
             DB::commit();
+
             return successResponse('TekZo Page created successfully');
 
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('TekZo page created has been failed', 500);
+                throw new GeneralException('TekZo page created has been failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
 
     }
@@ -107,7 +103,6 @@ class TekzoPageController extends Controller
     /**
      * Display the specified resource.
      */
-
     public function show(Page $tekzoPage)
     {
 
@@ -115,53 +110,54 @@ class TekzoPageController extends Controller
             ...$tekzoPage->toArray(),
             'meta_title' => $tekzoPage->seo?->title,
             'meta_description' => $tekzoPage->seo?->description,
-            'tags' => $tekzoPage->seo?->tags
+            'tags' => $tekzoPage->seo?->tags,
         ];
     }
 
-
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException
      * @throws Throwable
      */
-    public function update(TekzoPageRequest $request, Page $tekzoPage): \Illuminate\Http\JsonResponse
+    public function update(TekzoPageRequest $request, Page $tekzoPage): JsonResponse
     {
         $request->validate([
             'slug' => Rule::unique('pages', 'slug')
                 ->where('tenant_id', $tekzoPage->tenant_id)
-                ->where('deleted_at', null)
-                ->ignore($tekzoPage->id)
+                ->where('deleted_at')
+                ->ignore($tekzoPage->id),
         ]);
 
         try {
             DB::beginTransaction();
             $tekzoPage->update($request->validated());
             $tekzoPage->seo()->updateOrCreate([
-                'tenant_id' => $tekzoPage->tenant_id
+                'tenant_id' => $tekzoPage->tenant_id,
             ], [
                 'title' => $request->meta_title,
                 'description' => $request->meta_description,
-                'tags' => $request->tags
+                'tags' => $request->tags,
             ]);
             DB::commit();
+
             return successResponse('TekZo page updated successfully');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('TekZo page updated has been failed', 500);
+                throw new GeneralException('TekZo page updated has been failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(Page $tekzoPage): \Illuminate\Http\JsonResponse
+    public function destroy(Page $tekzoPage): JsonResponse
     {
         $tekzoPage->delete();
+
         return successResponse('TekZo page deleted successfully');
     }
 }

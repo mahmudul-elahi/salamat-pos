@@ -8,10 +8,10 @@ use App\Models\Customization\Customization;
 use App\Models\Hrm\Attendance;
 use App\Models\Hrm\AttendanceRequest;
 use App\Models\Hrm\WorkShift;
-use Illuminate\Support\Facades\DB;
 use App\Notifications\Hrm\AttendanceRequestStatusNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -20,11 +20,11 @@ class AttendanceRequestController extends Controller
     public function index()
     {
         return AttendanceRequest::query()
-            ->when(request('employee'), fn($q) => $q->where('user_id', request('employee')))
+            ->when(request('employee'), fn ($q) => $q->where('user_id', request('employee')))
             ->with(['user:id,name', 'user.media', 'user.currentDepartment.department:id,name', 'reviewer:id,name'])
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(fn(AttendanceRequest $ar) => $this->formatAttendanceRequest($ar));
+            ->through(fn (AttendanceRequest $ar) => $this->formatAttendanceRequest($ar));
     }
 
     public function store(Request $request)
@@ -44,7 +44,6 @@ class AttendanceRequestController extends Controller
                 'date' => ['You already have a pending or approved attendance request for this date.'],
             ]);
         }
-
 
         $this->assertNoExistingAttendance($userId, $validated['date']);
 
@@ -147,6 +146,7 @@ class AttendanceRequestController extends Controller
         }
 
         $attendanceRequest->delete();
+
         return successResponse('Attendance request deleted successfully');
     }
 
@@ -171,8 +171,8 @@ class AttendanceRequestController extends Controller
         $tz = user_timezone();
 
         foreach (['in_time', 'out_time'] as $field) {
-            $validated[$field] = !empty($validated[$field])
-                ? Carbon::parse($validated['date'] . ' ' . $validated[$field], $tz)->setTimezone('UTC')
+            $validated[$field] = ! empty($validated[$field])
+                ? Carbon::parse($validated['date'].' '.$validated[$field], $tz)->setTimezone('UTC')
                 : null;
         }
 
@@ -221,7 +221,7 @@ class AttendanceRequestController extends Controller
                 'in_date' => $date,
             ]);
 
-            if (!$attendance->exists) {
+            if (! $attendance->exists) {
                 $workShift = $user->workShifts()->with('schedules')->first()
                     ?? $user->currentDepartment?->department?->workShifts()->with('schedules')->first();
 
@@ -229,7 +229,7 @@ class AttendanceRequestController extends Controller
                 // nullable — mirrors AttendanceController::punchIn()'s own
                 // hard requirement for a resolvable work shift before a row
                 // can be saved at all.
-                if (!$workShift) {
+                if (! $workShift) {
                     throw new GeneralException('This employee has no work shift assigned, so the attendance request cannot be approved yet.');
                 }
 
@@ -269,7 +269,7 @@ class AttendanceRequestController extends Controller
         DB::transaction(function () use ($attendanceRequest) {
             $detail = $attendanceRequest->attendanceDetail;
 
-            if (!$detail) {
+            if (! $detail) {
                 return;
             }
 
@@ -294,11 +294,11 @@ class AttendanceRequestController extends Controller
             ? $shift->schedules->firstWhere('day_name', $localPunch->format('l'))?->start_time
             : $shift->start_time;
 
-        if (!$startTime) {
+        if (! $startTime) {
             return 'regular';
         }
 
-        $scheduledStart = Carbon::parse($localPunch->toDateString() . ' ' . $startTime, $tz);
+        $scheduledStart = Carbon::parse($localPunch->toDateString().' '.$startTime, $tz);
 
         if ($localPunch->lt($scheduledStart)) {
             return 'early';

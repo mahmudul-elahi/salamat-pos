@@ -28,14 +28,14 @@ class ProductSpecScrapeController extends Controller
                 ->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'])
                 ->get($url);
 
-            if (!$response->successful()) {
-                throw new GeneralException('Failed to fetch the URL. Status: ' . $response->status(), 422);
+            if (! $response->successful()) {
+                throw new GeneralException('Failed to fetch the URL. Status: '.$response->status(), 422);
             }
 
             $html = $response->body();
             $specs = $this->parseSpecs($html);
 
-            if (empty($specs)) {
+            if ($specs === []) {
                 throw new GeneralException('No specification data found on this page.', 422);
             }
 
@@ -43,17 +43,17 @@ class ProductSpecScrapeController extends Controller
         } catch (GeneralException $e) {
             throw $e;
         } catch (\Exception $e) {
-            throw new GeneralException('Could not scrape the page: ' . $e->getMessage(), 422);
+            throw new GeneralException('Could not scrape the page: '.$e->getMessage(), 422, $e);
         }
     }
 
     public function saveSpecs(Request $request, Product $product)
     {
         $request->validate([
-            'specs'              => 'required|array|min:1',
-            'specs.*.group'      => 'required|string|max:255',
-            'specs.*.sub'        => 'nullable|string|max:255',
-            'specs.*.value'      => 'required|string',
+            'specs' => 'required|array|min:1',
+            'specs.*.group' => 'required|string|max:255',
+            'specs.*.sub' => 'nullable|string|max:255',
+            'specs.*.value' => 'required|string',
         ]);
 
         try {
@@ -61,8 +61,8 @@ class ProductSpecScrapeController extends Controller
 
             foreach ($request->input('specs') as $spec) {
                 $groupName = trim($spec['group']);
-                $subName   = isset($spec['sub']) ? trim($spec['sub']) : null;
-                $value     = trim($spec['value']);
+                $subName = isset($spec['sub']) ? trim($spec['sub']) : null;
+                $value = trim($spec['value']);
 
                 // Find or create parent group
                 $parentGroup = SpecificationGroup::firstOrCreate(
@@ -71,7 +71,7 @@ class ProductSpecScrapeController extends Controller
 
                 $subGroupId = null;
                 if ($subName) {
-                    $subGroup   = SpecificationGroup::firstOrCreate(
+                    $subGroup = SpecificationGroup::firstOrCreate(
                         ['name' => $subName, 'parent_id' => $parentGroup->id]
                     );
                     $subGroupId = $subGroup->id;
@@ -79,9 +79,9 @@ class ProductSpecScrapeController extends Controller
 
                 ProductSpecification::create([
                     'product_id' => $product->id,
-                    'parent_id'  => $parentGroup->id,
-                    'sub_id'     => $subGroupId,
-                    'details'    => $value,
+                    'parent_id' => $parentGroup->id,
+                    'sub_id' => $subGroupId,
+                    'details' => $value,
                 ]);
             }
 
@@ -90,14 +90,14 @@ class ProductSpecScrapeController extends Controller
             return successResponse('Specifications saved successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
     private function parseSpecs(string $html): array
     {
         libxml_use_internal_errors(true);
-        $dom = new DOMDocument();
+        $dom = new DOMDocument;
         $dom->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
         libxml_clear_errors();
 
@@ -113,14 +113,16 @@ class ProductSpecScrapeController extends Controller
                 $dds = $xpath->query('.//dd', $dl);
 
                 for ($i = 0; $i < $dts->length; $i++) {
-                    $key   = trim($dts->item($i)->textContent);
+                    $key = trim($dts->item($i)->textContent);
                     $value = $dds->item($i) ? trim($dds->item($i)->textContent) : '';
                     if ($key && $value) {
                         $specs[] = ['group' => $currentGroup, 'sub' => $key, 'value' => $value];
                     }
                 }
             }
-            if (!empty($specs)) return $specs;
+            if ($specs !== []) {
+                return $specs;
+            }
         }
 
         // Strategy 2: tables with section headers (th colspan spanning a row = group name)
@@ -136,22 +138,24 @@ class ProductSpecScrapeController extends Controller
                 // Full-width th = group header
                 if ($ths->length === 1 && $tds->length === 0) {
                     $currentGroup = trim($ths->item(0)->textContent);
+
                     continue;
                 }
 
                 // th + td = key-value pair
                 if ($ths->length === 1 && $tds->length === 1) {
-                    $key   = trim($ths->item(0)->textContent);
+                    $key = trim($ths->item(0)->textContent);
                     $value = trim($tds->item(0)->textContent);
                     if ($key && $value) {
                         $specs[] = ['group' => $currentGroup, 'sub' => $key, 'value' => $value];
                     }
+
                     continue;
                 }
 
                 // 2-column td/td = key-value pair
                 if ($tds->length === 2) {
-                    $key   = trim($tds->item(0)->textContent);
+                    $key = trim($tds->item(0)->textContent);
                     $value = trim($tds->item(1)->textContent);
                     if ($key && $value) {
                         $specs[] = ['group' => $currentGroup, 'sub' => $key, 'value' => $value];
@@ -159,13 +163,15 @@ class ProductSpecScrapeController extends Controller
                 }
             }
         }
-        if (!empty($specs)) return $specs;
+        if ($specs !== []) {
+            return $specs;
+        }
 
         // Strategy 3: heading + sibling table (h2/h3 before a table)
         $headings = $xpath->query('//h2|//h3|//h4');
         foreach ($headings as $heading) {
             $groupName = trim($heading->textContent);
-            $sibling   = $heading->nextSibling;
+            $sibling = $heading->nextSibling;
 
             while ($sibling && $sibling->nodeType !== XML_ELEMENT_NODE) {
                 $sibling = $sibling->nextSibling;
@@ -176,7 +182,7 @@ class ProductSpecScrapeController extends Controller
                 foreach ($rows as $row) {
                     $tds = $xpath->query('.//td', $row);
                     if ($tds->length >= 2) {
-                        $key   = trim($tds->item(0)->textContent);
+                        $key = trim($tds->item(0)->textContent);
                         $value = trim($tds->item(1)->textContent);
                         if ($key && $value) {
                             $specs[] = ['group' => $groupName, 'sub' => $key, 'value' => $value];

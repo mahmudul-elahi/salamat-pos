@@ -26,16 +26,18 @@ class OfferProductController extends Controller
         if (empty($data['product_id']) && empty($data['product_variant_id'])) {
             return response()->json(['message' => 'Either product_id or product_variant_id is required.'], 422);
         }
-        if (!empty($data['product_id']) && !empty($data['product_variant_id'])) {
+        if (! empty($data['product_id']) && ! empty($data['product_variant_id'])) {
             return response()->json(['message' => 'Cannot set both product_id and product_variant_id.'], 422);
         }
         $offerProduct = OfferProduct::create($data);
+
         return response()->json($offerProduct->fresh('offer'), 201);
     }
 
     public function show($id)
     {
         $offerProduct = OfferProduct::with('offer')->findOrFail($id);
+
         return response()->json($offerProduct);
     }
 
@@ -53,10 +55,11 @@ class OfferProductController extends Controller
         if ((isset($data['product_id']) && $data['product_id']) && (isset($data['product_variant_id']) && $data['product_variant_id'])) {
             return response()->json(['message' => 'Cannot set both product_id and product_variant_id.'], 422);
         }
-        if ((empty($data['product_id']) || !$data['product_id']) && (empty($data['product_variant_id']) || !$data['product_variant_id'])) {
+        if ((empty($data['product_id']) || ! $data['product_id']) && (empty($data['product_variant_id']) || ! $data['product_variant_id'])) {
             return response()->json(['message' => 'Either product_id or product_variant_id is required.'], 422);
         }
         $offerProduct->update($data);
+
         return response()->json($offerProduct->fresh(['offer', 'product', 'productVariant']));
     }
 
@@ -64,6 +67,7 @@ class OfferProductController extends Controller
     {
         $offerProduct = OfferProduct::findOrFail($id);
         $offerProduct->delete();
+
         return response()->json(['message' => 'Offer product deleted']);
     }
 }

@@ -7,12 +7,15 @@ use App\Models\Common\BaseModel;
 use App\Models\Pos\Description\LongDescription;
 use App\Models\Pos\Product\Product;
 use App\Models\Pos\Seo\Seo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RalphJSmit\Laravel\SEO\Support\HasSEO;
 
 class Category extends BaseModel
 {
-    use HasSEO, SoftDeletes, RevalidatesFrontendTrait;
+    use HasSEO, RevalidatesFrontendTrait, SoftDeletes;
 
     protected string $revalidationType = 'category';
 
@@ -31,21 +34,22 @@ class Category extends BaseModel
         'description',
         'order',
     ];
+
     public $casts = [
-        'parent_id' => 'integer'
+        'parent_id' => 'integer',
     ];
 
-    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
 
-    public function parent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
     }
 
-    public function subCategories(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function subCategories(): HasMany
     {
         return $this->hasMany(Category::class, 'parent_id', 'id');
     }
@@ -82,14 +86,14 @@ class Category extends BaseModel
         return $this->morphMany(Seo::class, 'model');
     }
 
-    public function longDescriptions(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function longDescriptions(): MorphMany
     {
         return $this->morphMany(LongDescription::class, 'model');
     }
 
     public function getLongDescriptionAttribute($tenantId = null)
     {
-        $tenantId = $tenantId ?? request('tenant_id') ?? tenant()->id ?? null;
+        $tenantId ??= request('tenant_id') ?? tenant()->id ?? null;
         if ($tenantId === 'null') {
             $tenantId = null;
         }

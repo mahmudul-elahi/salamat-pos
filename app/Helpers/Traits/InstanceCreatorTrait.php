@@ -9,11 +9,13 @@ trait InstanceCreatorTrait
     public static function new($singleton = false, ...$arguments)
     {
         if ($singleton) {
-            if (isset(static::$instances[get_called_class()])) {
-                return static::$instances[get_called_class()];
+            if (isset(static::$instances[static::class])) {
+                return static::$instances[static::class];
             }
-            return static::$instances[get_called_class()] = new static(...$arguments);
+
+            return static::$instances[static::class] = new static(...$arguments);
         }
+
         return new static(...$arguments);
     }
 }

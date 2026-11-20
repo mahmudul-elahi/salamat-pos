@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Jobs\Auth\ForgotPasswordJob;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ForgotPasswordController extends Controller
 {
-    public function forgotPassword(ForgotPasswordRequest $request): \Illuminate\Http\JsonResponse
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         $user = User::query()
             ->where('email', $request->email)
@@ -19,7 +22,7 @@ class ForgotPasswordController extends Controller
 
         // Generate a unique token
 
-        $token = Str::random(60) . microtime();
+        $token = Str::random(60).microtime();
 
         // Insert or update the password reset token in the database
         DB::table('password_reset_tokens')

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pos\Telesale;
 use App\Exceptions\GeneralException;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Telesale\TelesaleResult;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,7 +14,7 @@ class TelesaleResultController extends Controller
     public function index(Request $request)
     {
         $query = TelesaleResult::query()
-            ->when($request->search, fn($q, $search) => $q->where('name', 'like', "%{$search}%"))
+            ->when($request->search, fn ($q, $search) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('sort_order')
             ->orderBy('id');
 
@@ -25,7 +26,7 @@ class TelesaleResultController extends Controller
         return $query->paginate($request->input('per_page', 10));
     }
 
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): JsonResponse
     {
         TelesaleResult::query()->create($this->validated($request));
 
@@ -37,7 +38,7 @@ class TelesaleResultController extends Controller
         return $telesaleResult;
     }
 
-    public function update(Request $request, TelesaleResult $telesaleResult): \Illuminate\Http\JsonResponse
+    public function update(Request $request, TelesaleResult $telesaleResult): JsonResponse
     {
         $telesaleResult->update($this->validated($request, $telesaleResult->id));
 
@@ -47,7 +48,7 @@ class TelesaleResultController extends Controller
     /**
      * @throws GeneralException
      */
-    public function destroy(TelesaleResult $telesaleResult): \Illuminate\Http\JsonResponse
+    public function destroy(TelesaleResult $telesaleResult): JsonResponse
     {
         // Telesale rows null the result out on delete, which would silently
         // blank the column on old entries — refuse instead.
@@ -63,10 +64,10 @@ class TelesaleResultController extends Controller
     private function validated(Request $request, ?int $ignoreId = null): array
     {
         return $request->validate([
-            'name'       => ['required', 'string', 'max:191', Rule::unique('telesale_results', 'name')->ignore($ignoreId)],
-            'color'      => ['nullable', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:191', Rule::unique('telesale_results', 'name')->ignore($ignoreId)],
+            'color' => ['nullable', 'string', 'max:20'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
-            'status'     => ['nullable', 'boolean'],
+            'status' => ['nullable', 'boolean'],
         ]);
     }
 }

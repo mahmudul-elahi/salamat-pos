@@ -10,7 +10,7 @@ class MessengerApiService
 {
     private function baseUrl(): string
     {
-        return rtrim(config('services.messenger.base_url'), '/') . '/' . config('services.messenger.graph_api_version');
+        return rtrim(config('services.messenger.base_url'), '/').'/'.config('services.messenger.graph_api_version');
     }
 
     /**
@@ -21,9 +21,9 @@ class MessengerApiService
         $response = Http::timeout(20)
             ->acceptJson()
             ->withToken(config('services.messenger.page_access_token'))
-            ->{$method}($this->baseUrl() . $uri, $payload);
+            ->{$method}($this->baseUrl().$uri, $payload);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $message = $response->json('error.message') ?? 'Messenger API request failed';
 
             Log::error('Messenger API error', [

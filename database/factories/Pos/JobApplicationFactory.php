@@ -2,10 +2,12 @@
 
 namespace Database\Factories\Pos;
 
+use App\Models\Pos\EntryJob;
+use App\Models\Pos\JobApplication;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pos\JobApplication>
+ * @extends Factory<JobApplication>
  */
 class JobApplicationFactory extends Factory
 {
@@ -17,7 +19,7 @@ class JobApplicationFactory extends Factory
     public function definition(): array
     {
         return [
-            'entry_job_id' => \App\Models\Pos\EntryJob::inRandomOrder()->first()->id ?? \App\Models\Pos\EntryJob::factory(),
+            'entry_job_id' => EntryJob::inRandomOrder()->first()->id ?? EntryJob::factory(),
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),

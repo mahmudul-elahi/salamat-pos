@@ -22,7 +22,7 @@ class GiftProductController extends Controller
                 'giftVariants.productVariant.attributeValues.attribute',
                 'giftVariants.productVariant.price',
             ])
-            ->when(request('pre_owned_id'), fn($q) => $q->where('pre_owned_id', request('pre_owned_id')))
+            ->when(request('pre_owned_id'), fn ($q) => $q->where('pre_owned_id', request('pre_owned_id')))
             ->orderBy('id', 'desc')
             ->paginate(request()->get('pageSize', 10));
     }
@@ -30,16 +30,16 @@ class GiftProductController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'product_id'           => 'nullable|integer|exists:products,id',
-            'pre_owned_id'         => 'nullable|integer|exists:pre_owneds,id',
-            'is_active'            => 'required|boolean',
-            'variants'             => 'required|array|min:1',
-            'variants.*.product_id'         => 'required|integer|exists:products,id',
+            'product_id' => 'nullable|integer|exists:products,id',
+            'pre_owned_id' => 'nullable|integer|exists:pre_owneds,id',
+            'is_active' => 'required|boolean',
+            'variants' => 'required|array|min:1',
+            'variants.*.product_id' => 'required|integer|exists:products,id',
             'variants.*.product_variant_id' => 'nullable|integer|exists:product_variants,id',
-            'variants.*.qty'                => 'nullable|integer|min:1',
+            'variants.*.qty' => 'nullable|integer|min:1',
         ]);
 
-        if (!$request->product_id && !$request->pre_owned_id) {
+        if (! $request->product_id && ! $request->pre_owned_id) {
             return response()->json(['message' => 'Either product or pre-owned product is required.'], 422);
         }
 
@@ -59,17 +59,17 @@ class GiftProductController extends Controller
         DB::beginTransaction();
         try {
             $giftProduct = GiftProduct::create([
-                'product_id'   => $request->product_id,
+                'product_id' => $request->product_id,
                 'pre_owned_id' => $request->pre_owned_id,
-                'is_active'    => $request->is_active,
+                'is_active' => $request->is_active,
             ]);
 
             foreach ($request->variants as $variantData) {
                 GiftProductVariant::create([
-                    'gift_product_id'   => $giftProduct->id,
-                    'product_id'        => $variantData['product_id'],
+                    'gift_product_id' => $giftProduct->id,
+                    'product_id' => $variantData['product_id'],
                     'product_variant_id' => $variantData['product_variant_id'] ?? null,
-                    'qty'               => $variantData['qty'] ?? 1,
+                    'qty' => $variantData['qty'] ?? 1,
                 ]);
             }
 
@@ -77,9 +77,9 @@ class GiftProductController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to create gift product. Please try again later.');
+                throw new GeneralException('Failed to create gift product. Please try again later.', $e->getCode(), $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
 
         return response()->json(
@@ -107,13 +107,13 @@ class GiftProductController extends Controller
     public function update(Request $request, GiftProduct $giftProduct)
     {
         $request->validate([
-            'product_id'           => 'nullable|integer|exists:products,id',
-            'pre_owned_id'         => 'nullable|integer|exists:pre_owneds,id',
-            'is_active'            => 'sometimes|required|boolean',
-            'variants'             => 'sometimes|required|array|min:1',
-            'variants.*.product_id'         => 'required_with:variants|integer|exists:products,id',
+            'product_id' => 'nullable|integer|exists:products,id',
+            'pre_owned_id' => 'nullable|integer|exists:pre_owneds,id',
+            'is_active' => 'sometimes|required|boolean',
+            'variants' => 'sometimes|required|array|min:1',
+            'variants.*.product_id' => 'required_with:variants|integer|exists:products,id',
             'variants.*.product_variant_id' => 'nullable|integer|exists:product_variants,id',
-            'variants.*.qty'                => 'nullable|integer|min:1',
+            'variants.*.qty' => 'nullable|integer|min:1',
         ]);
 
         if ($request->has('pre_owned_id') && $request->pre_owned_id != $giftProduct->pre_owned_id) {
@@ -139,10 +139,10 @@ class GiftProductController extends Controller
 
                 foreach ($request->variants as $variantData) {
                     GiftProductVariant::create([
-                        'gift_product_id'   => $giftProduct->id,
-                        'product_id'        => $variantData['product_id'],
+                        'gift_product_id' => $giftProduct->id,
+                        'product_id' => $variantData['product_id'],
                         'product_variant_id' => $variantData['product_variant_id'] ?? null,
-                        'qty'               => $variantData['qty'] ?? 1,
+                        'qty' => $variantData['qty'] ?? 1,
                     ]);
                 }
             }
@@ -151,9 +151,9 @@ class GiftProductController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to update gift product. Please try again later.', 500);
+                throw new GeneralException('Failed to update gift product. Please try again later.', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
 
         return response()->json(
@@ -180,6 +180,7 @@ class GiftProductController extends Controller
             DB::commit();
         } catch (\Throwable) {
             DB::rollBack();
+
             return response()->json(['message' => 'Failed to delete gift product.'], 500);
         }
 
@@ -188,7 +189,7 @@ class GiftProductController extends Controller
 
     public function statusToggle(GiftProduct $giftProduct)
     {
-        $giftProduct->update(['is_active' => !$giftProduct->is_active]);
+        $giftProduct->update(['is_active' => ! $giftProduct->is_active]);
 
         return response()->json([
             'message' => 'Gift product status updated successfully.',
@@ -207,7 +208,7 @@ class GiftProductController extends Controller
             ])
             ->first();
 
-        if (!$giftProduct) {
+        if (! $giftProduct) {
             return response()->json(['message' => 'No active gift found for this pre-owned product.'], 404);
         }
 
@@ -225,7 +226,7 @@ class GiftProductController extends Controller
             ])
             ->first();
 
-        if (!$giftProduct) {
+        if (! $giftProduct) {
             return response()->json(['message' => 'No active gift found for this product.'], 404);
         }
 

@@ -39,7 +39,7 @@ class InvestmentCategoryController extends Controller
     {
         $request->validate([
             'director_id' => ['required', 'exists:users,id'],
-            'tenant_id'   => ['required', 'exists:tenants,id'],
+            'tenant_id' => ['required', 'exists:tenants,id'],
         ]);
 
         $user = User::query()->findOrFail($request->director_id);
@@ -58,18 +58,19 @@ class InvestmentCategoryController extends Controller
             DB::beginTransaction();
             InvestmentCategory::query()->create($request->all());
 
-            if (!$user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
+            if (! $user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
                 $user->tenants()->attach($request->tenant_id);
             }
 
             DB::commit();
+
             return successResponse('Investment category created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Investment category created failed', 500);
+                throw new GeneralException('Investment category created failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -88,7 +89,7 @@ class InvestmentCategoryController extends Controller
     {
         $request->validate([
             'director_id' => ['required', 'exists:users,id'],
-            'tenant_id'   => ['required', 'exists:tenants,id'],
+            'tenant_id' => ['required', 'exists:tenants,id'],
         ]);
 
         $user = User::query()->findOrFail($request->director_id);
@@ -108,19 +109,19 @@ class InvestmentCategoryController extends Controller
             DB::beginTransaction();
             $investmentCategory->update($request->only(['director_id', 'tenant_id', 'name']));
 
-
-            if (!$user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
+            if (! $user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
                 $user->tenants()->attach($request->tenant_id);
             }
 
             DB::commit();
+
             return successResponse('Investment category updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Investment category updated failed', 500);
+                throw new GeneralException('Investment category updated failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 

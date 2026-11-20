@@ -7,6 +7,8 @@ use App\Models\Pos\Transaction\Transaction;
 use App\Models\Tenant\PaymentMethod\PaymentMethod;
 use App\Models\TenantBaseModel;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -29,29 +31,25 @@ class Expense extends TenantBaseModel implements HasMedia
     ];
 
     protected $casts = [
-        'amount' => 'float'
+        'amount' => 'float',
     ];
 
-
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
     }
 
-    public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-
     public function getImagesAttribute(): array
     {
-        return $this->getMedia('images')->map(function ($media) {
-            return [
-                'id' => $media->id,
-                'url' => $media->getFullUrl(),
-            ];
-        })->toArray();
+        return $this->getMedia('images')->map(fn ($media) => [
+            'id' => $media->id,
+            'url' => $media->getFullUrl(),
+        ])->toArray();
     }
 
     public function registerMediaCollections(): void
@@ -72,11 +70,12 @@ class Expense extends TenantBaseModel implements HasMedia
         return $this->payments()->sum('amount');
     }
 
-    public function payments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function payments(): MorphMany
     {
         return $this->morphMany(Transaction::class, 'model', 'model_type', 'model_id', 'id');
     }
-    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+
+    public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'model');
     }

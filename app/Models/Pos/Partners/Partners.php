@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Pos\Partners;
 
-use App\Enums\StatusEnum;
 use App\Enums\CustomerTypeEnum;
+use App\Enums\StatusEnum;
 use App\Models\Common\BaseModel;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Pos\Address\Area;
 
 class Partners extends BaseModel
 {
@@ -32,18 +34,20 @@ class Partners extends BaseModel
         'status' => StatusEnum::class,
         'partner_type' => CustomerTypeEnum::class,
     ];
+
     protected $appends = ['full_address'];
 
     public function area()
     {
-        return $this->belongsTo(\App\Models\Pos\Address\Area::class);
+        return $this->belongsTo(Area::class);
     }
+
     public function getFullAddressAttribute()
     {
         $street = $this->street_address;
-        $area   = $this->area->name ?? '';
+        $area = $this->area->name ?? '';
         $district = $this->area->district->name ?? '';
 
-        return trim("$street, $area, $district", " ,");
+        return trim("$street, $area, $district", ' ,');
     }
 }

@@ -42,28 +42,29 @@ class ReconcileLedgerTransactions extends Command
 
     public function handle(): int
     {
-        $apply   = (bool) $this->option('apply');
-        $onlyIds = array_map('intval', $this->option('id'));
+        $apply = (bool) $this->option('apply');
+        $onlyIds = array_map(intval(...), $this->option('id'));
 
         $broken = Ledger::withoutGlobalScope(TenantScope::class)
             ->whereIn('type', ['payment_sent', 'payment_received'])
             ->whereDoesntHave('transactions')
-            ->when($onlyIds, fn($q) => $q->whereIn('id', $onlyIds))
+            ->when($onlyIds, fn ($q) => $q->whereIn('id', $onlyIds))
             ->with('contact:id,name')
             ->orderBy('id')
             ->get();
 
-        $this->info(($apply ? 'APPLYING CHANGES' : 'DRY RUN (pass --apply to actually write)') . ' - ' . $broken->count() . ' ledger entr' . ($broken->count() === 1 ? 'y' : 'ies') . ' to process.');
+        $this->info(($apply ? 'APPLYING CHANGES' : 'DRY RUN (pass --apply to actually write)').' - '.$broken->count().' ledger entr'.($broken->count() === 1 ? 'y' : 'ies').' to process.');
         $this->newLine();
 
         if ($broken->isEmpty()) {
             $this->info('Nothing to do.');
+
             return self::SUCCESS;
         }
 
         $nextInvoiceNumber = Transaction::query()->withoutGlobalScope(TenantScope::class)->max('invoice_number') ?? 0;
 
-        $rows    = [];
+        $rows = [];
         $summary = ['matched' => 0, 'advance' => 0, 'skipped' => 0];
 
         foreach ($broken as $ledger) {
@@ -91,7 +92,7 @@ class ReconcileLedgerTransactions extends Command
         $this->info("Treated as pure advance: {$summary['advance']}");
         $this->info("Skipped (shared/generic contact): {$summary['skipped']}");
 
-        if (!$apply) {
+        if (! $apply) {
             $this->newLine();
             $this->comment('This was a dry run - nothing was saved. Re-run with --apply to write these changes.');
         }
@@ -108,7 +109,7 @@ class ReconcileLedgerTransactions extends Command
      * couple of stuck payments has a handful of sales at most, so a high
      * total count is a reliable signal this contact is a shared bucket.
      */
-    private const SHARED_CONTACT_SALES_THRESHOLD = 20;
+    private const int SHARED_CONTACT_SALES_THRESHOLD = 20;
 
     /**
      * @return array{0: string, 1: string} [category, human-readable detail]
@@ -116,8 +117,8 @@ class ReconcileLedgerTransactions extends Command
     private function reconcileOne(Ledger $ledger, bool $apply, int &$nextInvoiceNumber): array
     {
         $isReceived = $ledger->type === 'payment_received';
-        $model      = $isReceived ? Sale::class : Purchase::class;
-        $label      = $isReceived ? 'sale' : 'purchase';
+        $model = $isReceived ? Sale::class : Purchase::class;
+        $label = $isReceived ? 'sale' : 'purchase';
 
         $totalForContact = $model::query()
             ->withoutGlobalScope(TenantScope::class)
@@ -136,7 +137,7 @@ class ReconcileLedgerTransactions extends Command
             ->where('tenant_id', $ledger->tenant_id)
             ->where('contact_id', $ledger->contact_id)
             ->whereIn('status', ['due', 'partially_paid'])
-            ->withSum(['payments' => fn($q) => $q->where('model_type', $model)], 'amount')
+            ->withSum(['payments' => fn ($q) => $q->where('model_type', $model)], 'amount')
             ->orderBy('date')
             ->orderBy('id')
             ->get();
@@ -157,15 +158,15 @@ class ReconcileLedgerTransactions extends Command
 
             if ($apply) {
                 $transaction = Transaction::query()->create([
-                    'date'                => $ledger->date,
-                    'invoice_number'      => ++$nextInvoiceNumber,
-                    'full_invoice_number' => ($isReceived ? 'CLT-' : 'SLT-') . $nextInvoiceNumber,
-                    'model_type'          => $model,
-                    'model_id'            => $item->id,
-                    'amount'              => $amount,
-                    'payment_method_id'   => $ledger->payment_method_id,
-                    'tenant_id'           => $ledger->tenant_id,
-                    'note'                => 'Reconciled from ' . $ledger->full_invoice_number,
+                    'date' => $ledger->date,
+                    'invoice_number' => ++$nextInvoiceNumber,
+                    'full_invoice_number' => ($isReceived ? 'CLT-' : 'SLT-').$nextInvoiceNumber,
+                    'model_type' => $model,
+                    'model_id' => $item->id,
+                    'amount' => $amount,
+                    'payment_method_id' => $ledger->payment_method_id,
+                    'tenant_id' => $ledger->tenant_id,
+                    'note' => 'Reconciled from '.$ledger->full_invoice_number,
                 ]);
                 $ledger->transactions()->attach($transaction->id);
 
@@ -175,47 +176,47 @@ class ReconcileLedgerTransactions extends Command
                 ]);
             }
 
-            $appliedTo[] = "{$item->full_invoice_number} (৳" . number_format($amount, 2) . ')';
-            $remaining  -= $amount;
+            $appliedTo[] = "{$item->full_invoice_number} (৳".number_format($amount, 2).')';
+            $remaining -= $amount;
         }
 
-        if (empty($appliedTo)) {
+        if ($appliedTo === []) {
             // Nothing due right now for this contact under this tenant -
             // can't attribute it to a specific invoice anymore, so it's
             // recorded as a pure advance instead, same as the live flow does
             // when a payment has nothing due to apply to.
             if ($apply) {
                 AdvanceCredit::query()->create([
-                    'tenant_id'  => $ledger->tenant_id,
+                    'tenant_id' => $ledger->tenant_id,
                     'contact_id' => $ledger->contact_id,
-                    'date'       => $ledger->date,
-                    'type'       => $isReceived ? 'receivable' : 'payable',
-                    'amount'     => $payAmount,
-                    'note'       => 'Reconciled from ' . $ledger->full_invoice_number . ' - no due ' . $label . ' found',
+                    'date' => $ledger->date,
+                    'type' => $isReceived ? 'receivable' : 'payable',
+                    'amount' => $payAmount,
+                    'note' => 'Reconciled from '.$ledger->full_invoice_number.' - no due '.$label.' found',
                 ]);
                 $ledger->update([
-                    'type'                => $isReceived ? 'advance_received' : 'advance_sent',
-                    'full_invoice_number' => ($isReceived ? 'ADV-' : 'SADV-') . $ledger->invoice_number,
+                    'type' => $isReceived ? 'advance_received' : 'advance_sent',
+                    'full_invoice_number' => ($isReceived ? 'ADV-' : 'SADV-').$ledger->invoice_number,
                 ]);
             }
 
-            return ['advance', "No due {$label}s for this contact - full ৳" . number_format($payAmount, 2) . ' recorded as advance'];
+            return ['advance', "No due {$label}s for this contact - full ৳".number_format($payAmount, 2).' recorded as advance'];
         }
 
-        $detail = 'Applied to: ' . implode(', ', $appliedTo);
+        $detail = 'Applied to: '.implode(', ', $appliedTo);
 
         if ($remaining > 0.01) {
             if ($apply) {
                 AdvanceCredit::query()->create([
-                    'tenant_id'  => $ledger->tenant_id,
+                    'tenant_id' => $ledger->tenant_id,
                     'contact_id' => $ledger->contact_id,
-                    'date'       => $ledger->date,
-                    'type'       => $isReceived ? 'receivable' : 'payable',
-                    'amount'     => $remaining,
-                    'note'       => 'Reconciled from ' . $ledger->full_invoice_number . ' - surplus after covering due ' . $label . 's',
+                    'date' => $ledger->date,
+                    'type' => $isReceived ? 'receivable' : 'payable',
+                    'amount' => $remaining,
+                    'note' => 'Reconciled from '.$ledger->full_invoice_number.' - surplus after covering due '.$label.'s',
                 ]);
             }
-            $detail .= '; surplus ৳' . number_format($remaining, 2) . ' -> advance';
+            $detail .= '; surplus ৳'.number_format($remaining, 2).' -> advance';
         }
 
         return ['matched', $detail];

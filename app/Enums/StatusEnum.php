@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 enum StatusEnum: int
@@ -46,7 +48,4 @@ enum StatusEnum: int
             self::Hold => 'dark',            // dark gray - paused out of the normal flow
         };
     }
-
 }
-
-

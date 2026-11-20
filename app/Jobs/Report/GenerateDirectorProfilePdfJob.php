@@ -20,6 +20,7 @@ class GenerateDirectorProfilePdfJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
+
     public int $tries = 1;
 
     public function __construct(
@@ -61,19 +62,19 @@ class GenerateDirectorProfilePdfJob implements ShouldQueue
 
         $deposits = Investment::query()
             ->where('user_id', $director->id)
-            ->when($this->tenantId, fn($q) => $q->where('tenant_id', $this->tenantId))
+            ->when($this->tenantId, fn ($q) => $q->where('tenant_id', $this->tenantId))
             ->with('tenant')
             ->latest()
             ->get();
 
         $withdrawals = Income::query()
             ->where('user_id', $director->id)
-            ->when($this->tenantId, fn($q) => $q->where('tenant_id', $this->tenantId))
+            ->when($this->tenantId, fn ($q) => $q->where('tenant_id', $this->tenantId))
             ->with('tenant')
             ->latest()
             ->get();
 
-        $totalDeposit  = (float) $deposits->sum('amount');
+        $totalDeposit = (float) $deposits->sum('amount');
         $totalWithdraw = (float) $withdrawals->sum('amount');
 
         $shops = $this->tenantId
@@ -96,29 +97,29 @@ class GenerateDirectorProfilePdfJob implements ShouldQueue
             ->pluck('total', 'tenant_id');
 
         $shopBalances = $shops->map(function ($name, $shopId) use ($shopDeposits, $shopWithdraws) {
-            $deposit  = (float) ($shopDeposits[$shopId] ?? 0);
+            $deposit = (float) ($shopDeposits[$shopId] ?? 0);
             $withdraw = (float) ($shopWithdraws[$shopId] ?? 0);
 
             return [
-                'shop_name'      => $name,
-                'total_deposit'  => $deposit,
+                'shop_name' => $name,
+                'total_deposit' => $deposit,
                 'total_withdraw' => $withdraw,
-                'balance'        => $deposit - $withdraw,
+                'balance' => $deposit - $withdraw,
             ];
         })->values();
 
         $pdf = Pdf::loadView('pdf.director-profile', [
-            'logo'          => config('settings.application.company_logo'),
-            'companyName'   => config('settings.application.company_name'),
-            'director'      => $director,
-            'reportTitle'   => $this->tenantId ? 'Director Shop Profile' : 'Director Profile',
-            'shopName'      => $this->tenantId ? $shops->first() : null,
-            'totalDeposit'  => $totalDeposit,
+            'logo' => config('settings.application.company_logo'),
+            'companyName' => config('settings.application.company_name'),
+            'director' => $director,
+            'reportTitle' => $this->tenantId ? 'Director Shop Profile' : 'Director Profile',
+            'shopName' => $this->tenantId ? $shops->first() : null,
+            'totalDeposit' => $totalDeposit,
             'totalWithdraw' => $totalWithdraw,
-            'totalBalance'  => $totalDeposit - $totalWithdraw,
-            'deposits'      => $deposits,
-            'withdrawals'   => $withdrawals,
-            'shopBalances'  => $shopBalances,
+            'totalBalance' => $totalDeposit - $totalWithdraw,
+            'deposits' => $deposits,
+            'withdrawals' => $withdrawals,
+            'shopBalances' => $shopBalances,
         ])
             ->setPaper('a4', 'portrait')
             ->setOption('isHtml5ParserEnabled', true)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Events\Chat;
 
 use App\Models\Pos\Chat\ChatConversation;
@@ -14,9 +16,7 @@ class ChatConversationAssigned implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public ChatConversation $conversation)
-    {
-    }
+    public function __construct(public ChatConversation $conversation) {}
 
     /**
      * @return array<int, Channel>
@@ -25,7 +25,7 @@ class ChatConversationAssigned implements ShouldBroadcast
     {
         return [
             new PrivateChannel('chat-inbox'),
-            new PrivateChannel('chat-conversation.' . $this->conversation->id),
+            new PrivateChannel('chat-conversation.'.$this->conversation->id),
         ];
     }
 

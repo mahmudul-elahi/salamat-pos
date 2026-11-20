@@ -15,13 +15,13 @@ class PayslipController extends Controller
     {
         return Payslip::query()
             ->with(['employee', 'employee.media', 'department:id,name', 'payrun:id,name,type,uuid'])
-            ->when(request('payrun_id'), fn($q, $id) => $q->where('payrun_id', $id))
-            ->when(request('employee_id'), fn($q, $id) => $q->where('employee_id', $id))
-            ->when(request('year'), fn($q, $year) => $q->whereYear('start_date', $year))
-            ->when(request('status'), fn($q, $status) => $q->where('status', $status))
+            ->when(request('payrun_id'), fn ($q, $id) => $q->where('payrun_id', $id))
+            ->when(request('employee_id'), fn ($q, $id) => $q->where('employee_id', $id))
+            ->when(request('year'), fn ($q, $year) => $q->whereYear('start_date', $year))
+            ->when(request('status'), fn ($q, $status) => $q->where('status', $status))
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(fn(Payslip $payslip) => [
+            ->through(fn (Payslip $payslip) => [
                 'id' => $payslip->id,
                 'employee' => $payslip->employee?->name,
                 'profile_picture' => $payslip->employee?->profile_picture,
@@ -31,7 +31,7 @@ class PayslipController extends Controller
                 'payrun_uuid' => $payslip->payrun?->uuid,
                 'payrun_type' => $payslip->payrun?->type,
                 'payrun_period' => $payslip->period,
-                'period' => $payslip->start_date->format('d M') . ' - ' . $payslip->end_date->format('d M Y'),
+                'period' => $payslip->start_date->format('d M').' - '.$payslip->end_date->format('d M Y'),
                 'consider_type' => $payslip->consider_type,
                 'basic_salary' => $payslip->basic_salary,
                 'net_salary' => $payslip->net_salary,
@@ -62,7 +62,7 @@ class PayslipController extends Controller
             'items.beneficiary:id,name',
         ]);
 
-        $fileName = 'payslip-' . $payslip->employee?->name . '-' . $payslip->start_date->format('M-Y') . '.pdf';
+        $fileName = 'payslip-'.$payslip->employee?->name.'-'.$payslip->start_date->format('M-Y').'.pdf';
 
         $pdf = Pdf::loadView('pdf.payslip', [
             'payslip' => $payslip,
@@ -72,7 +72,7 @@ class PayslipController extends Controller
         if (request()->boolean('preview')) {
             return response()->make($pdf->stream(), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+                'Content-Disposition' => 'inline; filename="'.$fileName.'"',
             ]);
         }
 
@@ -86,7 +86,7 @@ class PayslipController extends Controller
     {
         $payslip->loadMissing('employee:id,name,email');
 
-        if (!$payslip->employee?->email) {
+        if (! $payslip->employee?->email) {
             return errorResponse('This employee has no email address');
         }
 
@@ -109,7 +109,7 @@ class PayslipController extends Controller
             ->get();
 
         foreach ($payslips as $payslip) {
-            if (!$payslip->employee?->email) {
+            if (! $payslip->employee?->email) {
                 continue;
             }
 

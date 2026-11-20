@@ -38,13 +38,13 @@ class Outlet extends BaseModel
     protected static function booted(): void
     {
         static::creating(function (Outlet $outlet) {
-            if (!$outlet->slug) {
+            if (! $outlet->slug) {
                 $outlet->slug = static::generateSlug($outlet->name);
             }
         });
 
         static::updating(function (Outlet $outlet) {
-            if ($outlet->isDirty('name') && !$outlet->isDirty('slug')) {
+            if ($outlet->isDirty('name') && ! $outlet->isDirty('slug')) {
                 $outlet->slug = static::generateSlug($outlet->name, $outlet->id);
             }
         });
@@ -59,11 +59,11 @@ class Outlet extends BaseModel
 
         while (
             static::query()
-            ->where('slug', $candidate)
-            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()
+                ->where('slug', $candidate)
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
         ) {
-            $candidate = $baseSlug . '-' . $count++;
+            $candidate = $baseSlug.'-'.$count++;
         }
 
         return $candidate;

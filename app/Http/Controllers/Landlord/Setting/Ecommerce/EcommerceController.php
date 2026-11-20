@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Landlord\Setting\Ecommerce;
 
-use App\Models\Setting\Setting;
-use Illuminate\Http\Request;
-use App\Models\Tenant\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\Shop\ShopRequest;
+use App\Models\Setting\Setting;
+use App\Models\Tenant\Tenant;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class EcommerceController extends Controller
 {
@@ -22,7 +23,7 @@ class EcommerceController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ShopRequest $request): \Illuminate\Http\JsonResponse
+    public function store(ShopRequest $request): JsonResponse
     {
         $tenant = Tenant::query()->create(array_merge($request->validated(), ['is_ecommerce' => true]));
 
@@ -30,29 +31,28 @@ class EcommerceController extends Controller
             [
                 'name' => 'company_logo',
                 'value' => config('settings.application.company_logo'),
-                'settingable_type' => get_class($tenant),
+                'settingable_type' => $tenant::class,
                 'settingable_id' => $tenant->id,
-                'context' => 'tenant'
+                'context' => 'tenant',
             ],
             [
                 'name' => 'company_icon',
                 'value' => config('settings.application.company_icon'),
-                'settingable_type' => get_class($tenant),
+                'settingable_type' => $tenant::class,
                 'settingable_id' => $tenant->id,
-                'context' => 'tenant'
+                'context' => 'tenant',
             ],
             [
                 'name' => 'company_name',
                 'value' => $tenant->name,
-                'settingable_type' => get_class($tenant),
+                'settingable_type' => $tenant::class,
                 'settingable_id' => $tenant->id,
-                'context' => 'tenant'
+                'context' => 'tenant',
             ],
 
         ];
 
         Setting::query()->insert($settings);
-
 
         return successResponse('Ecommerce created successfully');
     }
@@ -88,11 +88,12 @@ class EcommerceController extends Controller
     public function updateStatus(Request $request, Tenant $shop)
     {
         $request->validate([
-            'status' => ['required', 'string', 'in:active,inactive']
+            'status' => ['required', 'string', 'in:active,inactive'],
         ]);
         $shop->update([
-            'status' => $request->status
+            'status' => $request->status,
         ]);
+
         return successResponse('Status updated successfully');
     }
 }

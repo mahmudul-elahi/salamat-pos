@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NewCoupon extends Model
 {
-    use SoftDeletes, RevalidatesFrontendTrait;
+    use RevalidatesFrontendTrait, SoftDeletes;
 
     protected $revalidationType = 'coupon';
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pos\People;
 use App\Filters\Pos\Customer\CustomerFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Contact\Contact;
+use Illuminate\Http\Request;
 
 /**
  * Offline customers, online customers, and suppliers are all rows on the
@@ -18,9 +19,9 @@ class PeopleController extends Controller
     public function index()
     {
         $perPage = request('per_page', 10);
-        //$user = auth()->user();
-        //$isAdmin = $user->isAppAdmin();
-        //$can = fn(string $permission) => $isAdmin || $user->can($permission);
+        // $user = auth()->user();
+        // $isAdmin = $user->isAppAdmin();
+        // $can = fn(string $permission) => $isAdmin || $user->can($permission);
 
         // Same three-way split as CustomerFilter::contactType(), but as an
         // OR across whichever types this user is actually allowed to see —
@@ -46,19 +47,17 @@ class PeopleController extends Controller
                             'supplier' => $q->where('type', 'supplier'),
                             'online' => $q->where('online', true),
                             'offline' => $q->where('type', 'consumer')
-                                ->where(fn($q2) => $q2->where('online', false)->orWhereNull('online')),
+                                ->where(fn ($q2) => $q2->where('online', false)->orWhereNull('online')),
                         };
                     });
                 }
             })
             ->orderByDesc('id')
             ->paginate($perPage)
-            ->through(function ($contact) {
-                return [
-                    ...$contact->toArray(),
-                    'created_at' => $contact->created_at->diffForHumans(),
-                ];
-            });
+            ->through(fn ($contact) => [
+                ...$contact->toArray(),
+                'created_at' => $contact->created_at->diffForHumans(),
+            ]);
     }
 
     /**
@@ -70,7 +69,7 @@ class PeopleController extends Controller
      * a user who can only delete_customers must not be able to bulk-delete
      * suppliers or online contacts just because they share this endpoint.
      */
-    public function bulkDelete(\Illuminate\Http\Request $request)
+    public function bulkDelete(Request $request)
     {
         $data = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
@@ -98,8 +97,9 @@ class PeopleController extends Controller
                 'offline' => 'delete_customers',
             };
 
-            if (!$isAdmin && !$user->can($permission)) {
+            if (! $isAdmin && ! $user->can($permission)) {
                 $skipped++;
+
                 continue;
             }
 

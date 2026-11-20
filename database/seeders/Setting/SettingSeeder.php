@@ -25,7 +25,6 @@ class SettingSeeder extends Seeder
             'value' => $logo->getFirstMediaUrl('company_logo'),
         ]);
 
-
         // Store icon and update
         $icon = Setting::query()->create([
             'name' => 'company_icon',

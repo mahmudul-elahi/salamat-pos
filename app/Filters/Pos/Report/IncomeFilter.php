@@ -38,7 +38,7 @@ class IncomeFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return $this->builder->whereDate('date', Carbon::today());
         }
 
@@ -47,48 +47,61 @@ class IncomeFilter extends BaseFilter
         try {
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
+
             return $this->builder->whereBetween('date', [$start, $end]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid your date range');
         }
     }
 
     public function category($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('income_category_id', $ids);
     }
 
     public function shop($shopId = null): void
     {
-        if (!$shopId) return;
+        if (! $shopId) {
+            return;
+        }
         $this->builder->where('tenant_id', $shopId);
     }
 
     public function warehouse($shopId = null): void
     {
-        if (!$shopId) return;
+        if (! $shopId) {
+            return;
+        }
         $this->builder->where('tenant_id', $shopId);
     }
 
     public function director($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('user_id', $ids);
     }
 
     public function party($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('contact_id', $ids);
     }
 
     public function createdBy($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('created_by', $ids);
     }

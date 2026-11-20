@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Chat\ChatConversationController;
 use App\Http\Controllers\Pos\Chat\ChatLabelController;
 use App\Http\Controllers\Pos\Chat\ChatMessageController;

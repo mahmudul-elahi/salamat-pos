@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Pos\Widget;
 
-use Illuminate\Http\Request;
-use App\Models\Pos\Widget\Widget;
 use App\Http\Controllers\Controller;
+use App\Models\Pos\Widget\Widget;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class WidgetController extends Controller
 {
-    public function index(): \Illuminate\Http\JsonResponse
+    public function index(): JsonResponse
     {
         $type = request('type');
         $tenantId = request('tenant_id');
 
-        if (!$type) {
-            return errorResponse("You must provide a type");
+        if (! $type) {
+            return errorResponse('You must provide a type');
         }
 
         $query = Widget::query()->where('type', $type);
@@ -33,10 +34,10 @@ class WidgetController extends Controller
 
         $widgets = $query->get();
 
-        return successResponse("Widget featch successfully", $widgets);
+        return successResponse('Widget featch successfully', $widgets);
     }
 
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): JsonResponse
     {
         // Check if exists to prevent duplicates
         $exists = Widget::where('type', $request->type)
@@ -45,31 +46,32 @@ class WidgetController extends Controller
 
         if ($exists) {
             $exists->update(['value' => $request->value]);
-            return successResponse("Policy updated successfully", $exists);
+
+            return successResponse('Policy updated successfully', $exists);
         }
 
         $widget = Widget::create([
             'type' => $request->type,
             'value' => $request->value,
             'tenant_id' => $request->tenant_id,
-            'name' => ucwords(str_replace('-', ' ', $request->type))
+            'name' => ucwords(str_replace('-', ' ', $request->type)),
         ]);
 
-        return successResponse("Policy created successfully", $widget);
+        return successResponse('Policy created successfully', $widget);
     }
 
-    public function update(Request $request, $id): \Illuminate\Http\JsonResponse
+    public function update(Request $request, $id): JsonResponse
     {
         $widget = Widget::find($id);
 
-        if (!$widget) {
-            return errorResponse("Widget not found");
+        if (! $widget) {
+            return errorResponse('Widget not found');
         }
 
         $widget->update([
-            'value' => $request->value
+            'value' => $request->value,
         ]);
 
-        return successResponse("Policy updated successfully", $widget);
+        return successResponse('Policy updated successfully', $widget);
     }
 }

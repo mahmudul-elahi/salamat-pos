@@ -4,7 +4,6 @@ namespace Database\Seeders\Contact;
 
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\SaleReturn\SaleReturn;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SaleReturnCustomerToContactSeeder extends Seeder
@@ -26,7 +25,7 @@ class SaleReturnCustomerToContactSeeder extends Seeder
 
                 if ($contact) {
                     $sale->update([
-                        'contact_id' => $contact->id
+                        'contact_id' => $contact->id,
                     ]);
                 }
             }

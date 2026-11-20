@@ -3,8 +3,9 @@
 namespace App\Models\Pos\PurchaseReturn;
 
 use App\Models\Pos\Product\Product;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Pos\Product\ProductVariant;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PurchaseReturnItem extends Model
@@ -24,17 +25,17 @@ class PurchaseReturnItem extends Model
         'note',
     ];
 
-    public function purchaseReturn(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function purchaseReturn(): BelongsTo
     {
         return $this->belongsTo(PurchaseReturn::class);
     }
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function productVariant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
     }

@@ -3,10 +3,8 @@
 namespace Database\Seeders\Ledger;
 
 use App\Models\Pos\Ledger\Ledger;
-use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\Transaction\Transaction;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -47,7 +45,7 @@ class PurchaseReturnTransactionLedgerSeeder extends Seeder
                 ->where('type', 'return_payment_received')
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 // ✅ clean notes
                 $notes = collect(explode(',', $transaction->notes))
                     ->filter()
@@ -71,7 +69,7 @@ class PurchaseReturnTransactionLedgerSeeder extends Seeder
                 $ledger = Ledger::query()->create([
                     'date' => $transaction->date,
                     'invoice_number' => $lastInvoice + 1,
-                    'full_invoice_number' => 'PRRT-' . $lastInvoice + 1,
+                    'full_invoice_number' => 'PRRT-'.$lastInvoice + 1,
                     'contact_id' => $transaction->contact_id,
                     'tenant_id' => $transaction->tenant_id,
                     'payment_method_id' => $paymentMethodId,

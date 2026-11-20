@@ -1,10 +1,12 @@
 <?php
 
+use App\Models\Pos\Country\Country;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -17,7 +19,7 @@ return new class extends Migration {
             $table->string('phone')->nullable()->unique()->index('customer_phone');
             $table->string('secondary_phone')->nullable();
             $table->string('business_name')->nullable();
-            $table->foreignIdFor(\App\Models\Pos\Country\Country::class)->nullable()->constrained('countries');
+            $table->foreignIdFor(Country::class)->nullable()->constrained('countries');
             $table->foreignId('new_district_id')->nullable()
                 ->constrained('new_districts');
             $table->foreignId('area_id')

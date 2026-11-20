@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Pos\PurchaseReturn;
 
-use Illuminate\Validation\Rule;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\ValidationRule;
 use App\Http\Requests\CustomRule\MaxDigitsPrecision;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PurchaseReturnRequest extends FormRequest
 {
@@ -24,8 +26,8 @@ class PurchaseReturnRequest extends FormRequest
      */
     public function rules(): array
     {
-        $purchaseReturn = $this->route('purchase_return');
-        $purchaseReturnId = is_object($purchaseReturn) ? $purchaseReturn->id : $purchaseReturn;
+        $this->route('purchase_return');
+
         return [
             'contact_id' => ['required', 'exists:contacts,id'],
             'date' => ['required', 'date'],
@@ -41,8 +43,8 @@ class PurchaseReturnRequest extends FormRequest
             'items.*.serial_number' => [
                 'required',
                 'exists:product_serials,serial_number',
-//                Rule::unique('purchase_return_items', 'serial_number')
-//                    ->ignore($purchaseReturnId, 'purchase_return_id'),
+                //                Rule::unique('purchase_return_items', 'serial_number')
+                //                    ->ignore($purchaseReturnId, 'purchase_return_id'),
 
             ],
             'items.*.purchase_id' => ['required', 'exists:purchases,id'],
@@ -59,7 +61,7 @@ class PurchaseReturnRequest extends FormRequest
     {
         return [
             'supplier_id' => 'supplier',
-            'tenant_id' => 'shop'
+            'tenant_id' => 'shop',
         ];
     }
 

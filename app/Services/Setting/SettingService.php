@@ -5,7 +5,6 @@ namespace App\Services\Setting;
 use App\Models\Tenant\Tenant;
 use App\Repositories\Settings\SettingRepository;
 use App\Services\BaseService;
-use Illuminate\Http\UploadedFile;
 
 class SettingService extends BaseService
 {
@@ -25,7 +24,6 @@ class SettingService extends BaseService
 
             if (request()->file($key)) {
 
-
                 $setting->clearMediaCollection($key);
 
                 $media = $setting->addMedia(request()->file($key))->toMediaCollection($key);
@@ -39,7 +37,7 @@ class SettingService extends BaseService
                 'value' => $settings[$key],
                 'context' => $context,
                 'settingable_type' => $tenantId ? Tenant::class : null,
-                'settingable_id' => $tenantId ?? null
+                'settingable_id' => $tenantId ?? null,
             ]);
         });
     }
@@ -50,6 +48,7 @@ class SettingService extends BaseService
             return resolve(SettingRepository::class)
                 ->getFormattedSettings($context, Tenant::class, $tenantId);
         }
+
         return resolve(SettingRepository::class)
             ->getFormattedSettings($context);
     }
@@ -64,7 +63,7 @@ class SettingService extends BaseService
             'value' => $value,
             'context' => $context,
             'settingable_type' => $settingAbleType,
-            'settingable_id' => $settingAbleId
+            'settingable_id' => $settingAbleId,
         ]);
 
         return $setting->save();

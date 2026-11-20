@@ -16,7 +16,7 @@ class EmployeeDocumentController extends Controller
             ->with('addedBy:id,name')
             ->latest('id')
             ->get()
-            ->map(fn(EmployeeDocument $document) => [
+            ->map(fn (EmployeeDocument $document) => [
                 'id' => $document->id,
                 'name' => $document->name,
                 'file_url' => $document->file_url,
@@ -28,8 +28,8 @@ class EmployeeDocumentController extends Controller
     public function store(Request $request, User $employee)
     {
         $request->validate([
-            'name'    => ['required', 'string', 'max:255'],
-            'files'   => ['required', 'array', 'min:1'],
+            'name' => ['required', 'string', 'max:255'],
+            'files' => ['required', 'array', 'min:1'],
             'files.*' => ['required', 'file', 'max:20480'],
         ]);
 
@@ -37,9 +37,9 @@ class EmployeeDocumentController extends Controller
             $path = $file->store('employee-documents');
 
             $employee->documents()->create([
-                'name'       => $request->name,
-                'file_path'  => $path,
-                'added_by'   => auth()->id(),
+                'name' => $request->name,
+                'file_path' => $path,
+                'added_by' => auth()->id(),
             ]);
         }
 

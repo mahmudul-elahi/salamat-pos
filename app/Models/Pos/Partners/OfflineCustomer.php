@@ -2,12 +2,12 @@
 
 namespace App\Models\Pos\Partners;
 
-use App\Enums\StatusEnum;
 use App\Enums\CustomerTypeEnum;
+use App\Enums\StatusEnum;
 use App\Models\Common\BaseModel;
 use App\Models\Pos\Address\Area;
 use App\Models\Pos\Address\NewDistrict;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OfflineCustomer extends BaseModel
 {
@@ -33,23 +33,25 @@ class OfflineCustomer extends BaseModel
         'status' => StatusEnum::class,
         'customer_type' => CustomerTypeEnum::class,
     ];
+
     protected $appends = ['full_address'];
 
-    public function district(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id');
     }
 
-    public function area(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'area_id');
     }
+
     public function getFullAddressAttribute()
     {
         $street = $this->street_address;
-        $area   = $this->area->name ?? '';
+        $area = $this->area->name ?? '';
         $district = $this->area->district->name ?? '';
 
-        return trim("$street, $area, $district", " ,");
+        return trim("$street, $area, $district", ' ,');
     }
 }

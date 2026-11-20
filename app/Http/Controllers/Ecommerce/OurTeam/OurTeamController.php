@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ecommerce\OurTeam;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\Ecommerce\OurTeam\OurTeamRequest;
 use App\Models\Ecommerce\OurTeam\OurTeam;
+use Illuminate\Http\JsonResponse;
 
 class OurTeamController extends Controller
 {
@@ -21,7 +22,7 @@ class OurTeamController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(OurTeamRequest $request): \Illuminate\Http\JsonResponse
+    public function store(OurTeamRequest $request): JsonResponse
     {
         OurTeam::query()->create($request->validated());
 
@@ -39,7 +40,7 @@ class OurTeamController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(OurTeamRequest $request, OurTeam $ourTeam): \Illuminate\Http\JsonResponse
+    public function update(OurTeamRequest $request, OurTeam $ourTeam): JsonResponse
     {
         $ourTeam->update($request->validated());
 
@@ -49,7 +50,7 @@ class OurTeamController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(OurTeam $ourTeam): \Illuminate\Http\JsonResponse
+    public function destroy(OurTeam $ourTeam): JsonResponse
     {
         $ourTeam->delete();
 

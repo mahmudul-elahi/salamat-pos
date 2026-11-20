@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Pos\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Ledger\Ledger;
+use App\Models\Pos\Purchase\Purchase;
+use App\Models\Pos\PurchaseReturn\PurchaseReturn;
+use App\Models\Pos\Sale\Sale;
+use App\Models\Pos\SaleReturn\SaleReturn;
 use App\Models\Pos\Transaction\Transaction;
 use App\Models\Tenant\Balance\AdvanceCredit;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -13,13 +17,14 @@ use Illuminate\Support\Facades\DB;
 class PaymentHistoryController extends Controller
 {
     // Allowed model whitelist — security এর জন্য
-    private const ALLOWED_MODEL_TYPES = [
-        'App\Models\Pos\Purchase\Purchase',
-        'App\Models\Pos\Sale\Sale',
-        'App\Models\Pos\SaleReturn\SaleReturn',
-        'App\Models\Pos\PurchaseReturn\PurchaseReturn',
+    private const array ALLOWED_MODEL_TYPES = [
+        Purchase::class,
+        Sale::class,
+        SaleReturn::class,
+        PurchaseReturn::class,
 
     ];
+
     public function index()
     {
         $perPage = request('per_page', 10);
@@ -75,36 +80,36 @@ class PaymentHistoryController extends Controller
                 'amount' => $amount,
                 'amountInWords' => $amountInWords,
             ]);
+
             return response()->make($pdf->stream(), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $ledger->full_invoice_number . '.pdf"',
+                'Content-Disposition' => 'inline; filename="'.$ledger->full_invoice_number.'.pdf"',
             ]);
-        } elseif ($voucherType === 'credit_voucher') {
+        }
+        if ($voucherType === 'credit_voucher') {
             $pdf = Pdf::loadView('pdf.voucher.credit_voucher', [
                 'ledger' => $ledgerData,
                 'amount' => $amount,
                 'amountInWords' => $amountInWords,
             ]);
+
             return response()->make($pdf->stream(), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $ledger->full_invoice_number . '.pdf"',
+                'Content-Disposition' => 'inline; filename="'.$ledger->full_invoice_number.'.pdf"',
             ]);
         }
     }
-
-
-
 
     public function delete($ledgerId)
     {
         $isAppAdmin = auth()->user()->isAppAdmin();
 
         $ledger = Ledger::query()
-            ->when(!$isAppAdmin, fn($q) => $q->where('tenant_id', tenant()->id))
+            ->when(! $isAppAdmin, fn ($q) => $q->where('tenant_id', tenant()->id))
             ->where('id', $ledgerId)
             ->first();
 
-        if (!$ledger) {
+        if (! $ledger) {
             throw new Exception('Ledger entry not found');
         }
 
@@ -119,7 +124,7 @@ class PaymentHistoryController extends Controller
         ]);
 
         // ✅ Fix: pure advance হলে transaction না থাকলেও চলবে
-        if (!$isPureAdvance && $relatedTransactions->isEmpty()) {
+        if (! $isPureAdvance && $relatedTransactions->isEmpty()) {
             throw new Exception('No transactions found for this ledger entry');
         }
 
@@ -130,11 +135,11 @@ class PaymentHistoryController extends Controller
             // 1. Transaction সহ ledger মুছো
             // =====================================================
             if ($relatedTransactions->isNotEmpty()) {
-                $affectedModels = $relatedTransactions->map(fn($t) => [
+                $affectedModels = $relatedTransactions->map(fn ($t) => [
                     'model_type' => $t->model_type,
-                    'model_id'   => $t->model_id,
-                    'tenant_id'  => $t->tenant_id,
-                ])->unique(fn($item) => $item['model_type'] . '-' . $item['model_id']);
+                    'model_id' => $t->model_id,
+                    'tenant_id' => $t->tenant_id,
+                ])->unique(fn ($item) => $item['model_type'].'-'.$item['model_id']);
 
                 $ledger->transactions()->detach();
                 $relatedTransactions->each->delete();
@@ -184,22 +189,22 @@ class PaymentHistoryController extends Controller
             $ledger->delete();
 
             DB::commit();
+
             return successResponse('Ledger entry deleted successfully');
         } catch (Exception $e) {
             DB::rollBack();
 
             if (app()->environment('production')) {
-                throw new Exception('Failed to delete ledger entry. Please try again later.', 500);
+                throw new Exception('Failed to delete ledger entry. Please try again later.', 500, $e);
             }
 
-            throw new Exception($e->getMessage(), 500);
+            throw new Exception($e->getMessage(), 500, $e);
         }
     }
 
-
     private function recalculateByModel(string $modelType, int $modelId, int $tenantId): void
     {
-        if (!in_array($modelType, self::ALLOWED_MODEL_TYPES)) {
+        if (! in_array($modelType, self::ALLOWED_MODEL_TYPES)) {
             throw new Exception("Invalid model type: {$modelType}");
         }
 
@@ -208,7 +213,9 @@ class PaymentHistoryController extends Controller
             ->where('tenant_id', $tenantId)
             ->first();
 
-        if (!$model) return;
+        if (! $model) {
+            return;
+        }
 
         $totalPaid = Transaction::query()
             ->where('model_type', $modelType)
@@ -217,14 +224,13 @@ class PaymentHistoryController extends Controller
             ->sum('amount');
 
         $status = match (true) {
-            round($totalPaid, 2) <= 0                             => 'due',
+            round($totalPaid, 2) <= 0 => 'due',
             round($totalPaid, 2) >= round($model->grand_total, 2) => 'paid',
-            default                                               => 'partially_paid',
+            default => 'partially_paid',
         };
 
         $model->update(['status' => $status]);
     }
-
 
     public function numberToWords(float $amount): string
     {
@@ -264,7 +270,7 @@ class PaymentHistoryController extends Controller
             'Ninety',
         ];
 
-        $parts   = explode('.', number_format($amount, 2, '.', ''));
+        $parts = explode('.', number_format($amount, 2, '.', ''));
         $intPart = (int) $parts[0];
         $decPart = (int) $parts[1];
 
@@ -273,17 +279,17 @@ class PaymentHistoryController extends Controller
             $result = '';
 
             if ($n >= 100) {
-                $result .= $ones[(int)($n / 100)] . ' Hundred ';
+                $result .= $ones[(int) ($n / 100)].' Hundred ';
                 $n %= 100;
             }
 
             if ($n >= 20) {
-                $result .= $tens[(int)($n / 10)] . ' ';
+                $result .= $tens[(int) ($n / 10)].' ';
                 $n %= 10;
             }
 
             if ($n > 0) {
-                $result .= $ones[$n] . ' ';
+                $result .= $ones[$n].' ';
             }
 
             return $result;
@@ -291,22 +297,24 @@ class PaymentHistoryController extends Controller
 
         function convert(int $number, array $ones, array $tens): string
         {
-            if ($number === 0) return 'Zero';
+            if ($number === 0) {
+                return 'Zero';
+            }
 
             $result = '';
 
             if ($number >= 10_000_000) {
-                $result .= convertGroup((int)($number / 10_000_000), $ones, $tens) . 'Crore ';
+                $result .= convertGroup((int) ($number / 10_000_000), $ones, $tens).'Crore ';
                 $number %= 10_000_000;
             }
 
             if ($number >= 100_000) {
-                $result .= convertGroup((int)($number / 100_000), $ones, $tens) . 'Lakh ';
+                $result .= convertGroup((int) ($number / 100_000), $ones, $tens).'Lakh ';
                 $number %= 100_000;
             }
 
             if ($number >= 1_000) {
-                $result .= convertGroup((int)($number / 1_000), $ones, $tens) . 'Thousand ';
+                $result .= convertGroup((int) ($number / 1_000), $ones, $tens).'Thousand ';
                 $number %= 1_000;
             }
 
@@ -317,12 +325,12 @@ class PaymentHistoryController extends Controller
             return $result;
         }
 
-        $words = convert($intPart, $ones, $tens) . 'Taka';
+        $words = convert($intPart, $ones, $tens).'Taka';
 
         if ($decPart > 0) {
-            $words .= ' And ' . convert($decPart, $ones, $tens) . 'Paisa';
+            $words .= ' And '.convert($decPart, $ones, $tens).'Paisa';
         }
 
-        return trim($words) . ' Only';
+        return trim($words).' Only';
     }
 }

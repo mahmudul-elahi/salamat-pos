@@ -4,7 +4,6 @@ namespace Database\Seeders\Director;
 
 use App\Models\Pos\Income\Income;
 use App\Models\Pos\Income\IncomeCategory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DirectorWithdrawalSeeder extends Seeder
@@ -25,7 +24,7 @@ class DirectorWithdrawalSeeder extends Seeder
 
             $income->update([
                 'user_id' => $incomeCategory->director_id,
-                'income_category_id' => $incomeCategory->id
+                'income_category_id' => $incomeCategory->id,
             ]);
         }
     }

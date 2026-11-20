@@ -6,6 +6,7 @@ use App\Exceptions\GeneralException;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\OrderConfirmation\OrderConfirmation;
 use App\Models\Pos\OrderConfirmation\OrderConfirmationOption;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,7 @@ class OrderConfirmationOptionController extends Controller
     {
         $query = OrderConfirmationOption::query()
             ->ofType($request->type)
-            ->when($request->search, fn($q, $search) => $q->where('name', 'like', "%{$search}%"))
+            ->when($request->search, fn ($q, $search) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('type')
             ->orderBy('sort_order')
             ->orderBy('id');
@@ -28,7 +29,7 @@ class OrderConfirmationOptionController extends Controller
         return $query->paginate($request->input('per_page', 10));
     }
 
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): JsonResponse
     {
         OrderConfirmationOption::query()->create($this->validated($request));
 
@@ -40,7 +41,7 @@ class OrderConfirmationOptionController extends Controller
         return $orderConfirmationOption;
     }
 
-    public function update(Request $request, OrderConfirmationOption $orderConfirmationOption): \Illuminate\Http\JsonResponse
+    public function update(Request $request, OrderConfirmationOption $orderConfirmationOption): JsonResponse
     {
         $orderConfirmationOption->update($this->validated($request, $orderConfirmationOption));
 
@@ -50,7 +51,7 @@ class OrderConfirmationOptionController extends Controller
     /**
      * @throws GeneralException
      */
-    public function destroy(OrderConfirmationOption $orderConfirmationOption): \Illuminate\Http\JsonResponse
+    public function destroy(OrderConfirmationOption $orderConfirmationOption): JsonResponse
     {
         // Order rows null the option out on delete, which would silently blank
         // the column on old entries — refuse instead.
@@ -66,10 +67,10 @@ class OrderConfirmationOptionController extends Controller
     private function isInUse(OrderConfirmationOption $option): bool
     {
         $column = match ($option->type) {
-            OrderConfirmationOption::TYPE_ADVANCE_MEDIA   => 'advance_media_id',
+            OrderConfirmationOption::TYPE_ADVANCE_MEDIA => 'advance_media_id',
             OrderConfirmationOption::TYPE_DELIVERY_STATUS => 'delivery_status_id',
-            OrderConfirmationOption::TYPE_DELIVERY_BY     => 'delivery_by_id',
-            default                                       => null,
+            OrderConfirmationOption::TYPE_DELIVERY_BY => 'delivery_by_id',
+            default => null,
         };
 
         return $column && OrderConfirmation::withTrashed()->where($column, $option->id)->exists();
@@ -82,18 +83,18 @@ class OrderConfirmationOptionController extends Controller
         $type = $option?->type ?? $request->type;
 
         return $request->validate([
-            'type'       => ['required', Rule::in(OrderConfirmationOption::TYPES)],
-            'name'       => [
+            'type' => ['required', Rule::in(OrderConfirmationOption::TYPES)],
+            'name' => [
                 'required',
                 'string',
                 'max:191',
                 Rule::unique('order_confirmation_options', 'name')
-                    ->where(fn($query) => $query->where('type', $type))
+                    ->where(fn ($query) => $query->where('type', $type))
                     ->ignore($option?->id),
             ],
-            'color'      => ['nullable', 'string', 'max:20'],
+            'color' => ['nullable', 'string', 'max:20'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
-            'status'     => ['nullable', 'boolean'],
+            'status' => ['nullable', 'boolean'],
         ]);
     }
 }

@@ -45,7 +45,7 @@ class ContactHistoryController extends Controller
     {
         $user = auth()->user();
         $isAdmin = $user->isAppAdmin();
-        $can = fn(string $permission) => $isAdmin || $user->can($permission);
+        $can = fn (string $permission) => $isAdmin || $user->can($permission);
 
         $entries = collect();
 
@@ -54,8 +54,8 @@ class ContactHistoryController extends Controller
                 Sale::query()->where('contact_id', $contact->id)
                     ->with(['tenant:id,name', 'createdBy:id,name,profile_photo'])
                     ->orderByDesc('id')->limit(200)->get()
-                    ->map(fn(Sale $sale) => $this->entry(
-                        'sale-' . $sale->id, 'sale', $sale->created_at,
+                    ->map(fn (Sale $sale) => $this->entry(
+                        'sale-'.$sale->id, 'sale', $sale->created_at,
                         "Sale {$sale->full_invoice_number} created",
                         [
                             ['label' => 'Amount', 'value' => number_format((float) $sale->grand_total, 2)],
@@ -72,8 +72,8 @@ class ContactHistoryController extends Controller
                 SaleReturn::query()->where('contact_id', $contact->id)
                     ->with(['tenant:id,name', 'createdBy:id,name,profile_photo'])
                     ->orderByDesc('id')->limit(200)->get()
-                    ->map(fn(SaleReturn $return) => $this->entry(
-                        'sale_return-' . $return->id, 'sale_return', $return->created_at,
+                    ->map(fn (SaleReturn $return) => $this->entry(
+                        'sale_return-'.$return->id, 'sale_return', $return->created_at,
                         "Sale return {$return->full_invoice_number} created",
                         [
                             ['label' => 'Amount', 'value' => number_format((float) $return->grand_total, 2)],
@@ -90,8 +90,8 @@ class ContactHistoryController extends Controller
                 Purchase::query()->where('contact_id', $contact->id)
                     ->with(['tenant:id,name', 'createdBy:id,name,profile_photo'])
                     ->orderByDesc('id')->limit(200)->get()
-                    ->map(fn(Purchase $purchase) => $this->entry(
-                        'purchase-' . $purchase->id, 'purchase', $purchase->created_at,
+                    ->map(fn (Purchase $purchase) => $this->entry(
+                        'purchase-'.$purchase->id, 'purchase', $purchase->created_at,
                         "Purchase {$purchase->full_invoice_number} created",
                         [
                             ['label' => 'Amount', 'value' => number_format((float) $purchase->grand_total, 2)],
@@ -108,8 +108,8 @@ class ContactHistoryController extends Controller
                 PurchaseReturn::query()->where('contact_id', $contact->id)
                     ->with(['tenant:id,name', 'createdBy:id,name,profile_photo'])
                     ->orderByDesc('id')->limit(200)->get()
-                    ->map(fn(PurchaseReturn $return) => $this->entry(
-                        'purchase_return-' . $return->id, 'purchase_return', $return->created_at,
+                    ->map(fn (PurchaseReturn $return) => $this->entry(
+                        'purchase_return-'.$return->id, 'purchase_return', $return->created_at,
                         "Purchase return {$return->full_invoice_number} created",
                         [
                             ['label' => 'Amount', 'value' => number_format((float) $return->grand_total, 2)],
@@ -130,7 +130,7 @@ class ContactHistoryController extends Controller
                         $paymentStatus = OnlinePaymentStatusEnum::tryFrom($order->payment_status);
 
                         return $this->entry(
-                            'order-' . $order->id, 'order', $order->created_at,
+                            'order-'.$order->id, 'order', $order->created_at,
                             "Order {$order->invoice_number} placed",
                             [
                                 ['label' => 'Amount', 'value' => number_format((float) ($order->payable_amount ?? $order->grand_total), 2)],
@@ -148,8 +148,8 @@ class ContactHistoryController extends Controller
                 Telesale::query()->where('contact_id', $contact->id)
                     ->with(['result:id,name', 'createdBy:id,name,profile_photo'])
                     ->orderByDesc('id')->limit(200)->get()
-                    ->map(fn(Telesale $telesale) => $this->entry(
-                        'telesale-' . $telesale->id, 'telesale', $telesale->created_at,
+                    ->map(fn (Telesale $telesale) => $this->entry(
+                        'telesale-'.$telesale->id, 'telesale', $telesale->created_at,
                         'Telesales call logged',
                         [
                             ['label' => 'Demand', 'value' => $telesale->demand_product],
@@ -166,9 +166,9 @@ class ContactHistoryController extends Controller
                 OrderConfirmation::query()->where('contact_id', $contact->id)
                     ->with(['deliveryStatus:id,name', 'createdBy:id,name,profile_photo'])
                     ->orderByDesc('id')->limit(200)->get()
-                    ->map(fn(OrderConfirmation $order) => $this->entry(
-                        'order_confirmation-' . $order->id, 'order_confirmation', $order->created_at,
-                        'Order confirmation ' . ($order->invoice_no ?: '#' . $order->id) . ' created',
+                    ->map(fn (OrderConfirmation $order) => $this->entry(
+                        'order_confirmation-'.$order->id, 'order_confirmation', $order->created_at,
+                        'Order confirmation '.($order->invoice_no ?: '#'.$order->id).' created',
                         [
                             ['label' => 'Product', 'value' => $order->product_name],
                             ['label' => 'Amount', 'value' => number_format((float) $order->selling_price, 2)],
@@ -212,7 +212,7 @@ class ContactHistoryController extends Controller
             'type' => $type,
             'timestamp' => $timestamp,
             'title' => $title,
-            'meta' => array_values(array_filter($meta, fn($item) => filled($item['value'] ?? null))),
+            'meta' => array_values(array_filter($meta, fn ($item) => filled($item['value'] ?? null))),
             'actor' => $actor ? ['name' => $actor->name, 'avatar' => $actor->profile_photo] : null,
         ];
     }

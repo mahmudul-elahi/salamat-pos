@@ -18,14 +18,14 @@ class PopupDialogController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'         => ['required', 'string', 'max:255'],
-            'image'        => ['required', 'string'],
+            'name' => ['required', 'string', 'max:255'],
+            'image' => ['required', 'string'],
             'mobile_image' => ['nullable', 'string'],
-            'url'          => ['nullable', 'string', 'max:2048'],
-            'status'       => ['required', 'boolean'],
+            'url' => ['nullable', 'string', 'max:2048'],
+            'status' => ['required', 'boolean'],
         ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             PopupDialog::query()->update(['status' => false]);
         }
 
@@ -42,14 +42,14 @@ class PopupDialogController extends Controller
     public function update(Request $request, PopupDialog $popupDialog)
     {
         $validated = $request->validate([
-            'name'         => ['sometimes', 'string', 'max:255'],
-            'image'        => ['sometimes', 'nullable', 'string'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'image' => ['sometimes', 'nullable', 'string'],
             'mobile_image' => ['sometimes', 'nullable', 'string'],
-            'url'          => ['sometimes', 'nullable', 'string', 'max:2048'],
-            'status'       => ['sometimes', 'boolean'],
+            'url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'status' => ['sometimes', 'boolean'],
         ]);
 
-        if (!empty($validated['status'])) {
+        if (! empty($validated['status'])) {
             PopupDialog::query()->where('id', '!=', $popupDialog->id)->update(['status' => false]);
         }
 

@@ -85,12 +85,12 @@ trait HasAttrs
 
     public function hasAttribute($key): bool
     {
-        return !!array_key_exists($key, $this->attributes);
+        return array_key_exists($key, $this->attributes);
     }
 
     public function hasAttributes($keys = null): bool
     {
-        if (!$this->attributes) {
+        if (! $this->attributes) {
             return false;
         }
 
@@ -101,7 +101,9 @@ trait HasAttrs
         }
 
         foreach ($keys as $k) {
-            if (!array_key_exists($k, $this->attributes)) return false;
+            if (! array_key_exists($k, $this->attributes)) {
+                return false;
+            }
         }
 
         return true;
@@ -119,7 +121,7 @@ trait HasAttrs
 
     public function filledAttr($key): bool
     {
-        if (!isset($this->attributes[$key])) {
+        if (! isset($this->attributes[$key])) {
             return false;
         }
 

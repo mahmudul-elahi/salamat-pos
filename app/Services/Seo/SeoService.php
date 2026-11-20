@@ -20,7 +20,7 @@ class SeoService extends BaseService
             }
 
             // Prepare title and description with fallbacks
-            $title = $seoData['meta_title']  ?? null;
+            $title = $seoData['meta_title'] ?? null;
             $description = $seoData['meta_desc'] ?? null;
             $tags = $seoData['tags'] ?? null;
 
@@ -40,24 +40,25 @@ class SeoService extends BaseService
             if ($seo) {
                 // Update existing
                 $seo->update([
-                    'tenant_id'   => $tenantId,
-                    'title'       => $title,
+                    'tenant_id' => $tenantId,
+                    'title' => $title,
                     'description' => $description,
-                    'tags'         => $seoData['tags'] ?? null,
+                    'tags' => $seoData['tags'] ?? null,
                 ]);
             } else {
                 // Create new record
                 $this->model->seos()->create([
-                    'tenant_id'   => $tenantId,
-                    'title'       => $title,
+                    'tenant_id' => $tenantId,
+                    'title' => $title,
                     'description' => $description,
-                    'tags'         => $seoData['tags'] ?? null,
+                    'tags' => $seoData['tags'] ?? null,
                 ]);
             }
         }
 
         return $this;
     }
+
     public function updateSeo(Request $request): static
     {
         $this->model->refresh();
@@ -97,26 +98,27 @@ class SeoService extends BaseService
                 continue;
             }
 
-            if (!empty($seoData['id'])) {
+            if (! empty($seoData['id'])) {
                 // Update existing SEO by id
                 $seo = $this->model->seos()->find($seoData['id']);
                 if ($seo) {
                     $seo->update([
-                        'tenant_id'   => $tenantId,
-                        'title'       => $title,
+                        'tenant_id' => $tenantId,
+                        'title' => $title,
                         'description' => $description,
-                        'tags'         => $tags,
+                        'tags' => $tags,
                     ]);
+
                     continue;
                 }
             }
 
             // If no id or SEO not found, create new SEO record
             $this->model->seos()->create([
-                'tenant_id'   => $tenantId,
-                'title'       => $title,
+                'tenant_id' => $tenantId,
+                'title' => $title,
                 'description' => $description,
-                'tags'         => $tags,
+                'tags' => $tags,
             ]);
         }
 

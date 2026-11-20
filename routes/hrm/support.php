@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Hrm\EmployeeDetailController;
 use App\Http\Controllers\Hrm\Support\SupportController;
 use Illuminate\Routing\Router;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Hrm;
 
 use App\Http\Controllers\Controller;
@@ -13,8 +15,9 @@ class BeneficiaryValueController extends Controller
      * Sentinel "owner" used for the organization-wide default values shown
      * on the "Badge Value" settings page.
      */
-    private const DEFAULT_MODEL_NAME = 'default';
-    private const DEFAULT_MODEL_ID = 0;
+    private const string DEFAULT_MODEL_NAME = 'default';
+
+    private const int DEFAULT_MODEL_ID = 0;
 
     /**
      * The org-wide default beneficiary values, split into allowances and
@@ -29,9 +32,9 @@ class BeneficiaryValueController extends Controller
             ->get();
 
         return [
-            'allowances' => $values->filter(fn(BeneficiaryValue $v) => $v->beneficiary?->type === 'allowance')
+            'allowances' => $values->filter(fn (BeneficiaryValue $v) => $v->beneficiary?->type === 'allowance')
                 ->values(),
-            'deductions' => $values->filter(fn(BeneficiaryValue $v) => $v->beneficiary?->type === 'deduction')
+            'deductions' => $values->filter(fn (BeneficiaryValue $v) => $v->beneficiary?->type === 'deduction')
                 ->values(),
         ];
     }

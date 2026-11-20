@@ -23,32 +23,32 @@ class OrderConfirmationFilter extends BaseFilter
 
     public function sourceMedia($media = null): void
     {
-        $this->builder->when($media, fn($q, $media) => $q->whereIn('source_media', explode(',', $media)));
+        $this->builder->when($media, fn ($q, $media) => $q->whereIn('source_media', explode(',', $media)));
     }
 
     public function orderType($type = null): void
     {
-        $this->builder->when(in_array($type, ['online', 'offline'], true), fn($q) => $q->where('order_type', $type));
+        $this->builder->when(in_array($type, ['online', 'offline'], true), fn ($q) => $q->where('order_type', $type));
     }
 
     public function orderPerson($personId = null): void
     {
-        $this->builder->when($personId, fn($q, $personId) => $q->whereIn('order_person_id', explode(',', $personId)));
+        $this->builder->when($personId, fn ($q, $personId) => $q->whereIn('order_person_id', explode(',', $personId)));
     }
 
     public function advanceMedia($optionId = null): void
     {
-        $this->builder->when($optionId, fn($q, $optionId) => $q->whereIn('advance_media_id', explode(',', $optionId)));
+        $this->builder->when($optionId, fn ($q, $optionId) => $q->whereIn('advance_media_id', explode(',', $optionId)));
     }
 
     public function deliveryStatus($optionId = null): void
     {
-        $this->builder->when($optionId, fn($q, $optionId) => $q->whereIn('delivery_status_id', explode(',', $optionId)));
+        $this->builder->when($optionId, fn ($q, $optionId) => $q->whereIn('delivery_status_id', explode(',', $optionId)));
     }
 
     public function deliveryBy($optionId = null): void
     {
-        $this->builder->when($optionId, fn($q, $optionId) => $q->whereIn('delivery_by_id', explode(',', $optionId)));
+        $this->builder->when($optionId, fn ($q, $optionId) => $q->whereIn('delivery_by_id', explode(',', $optionId)));
     }
 
     public function confirmed($state = null): void
@@ -72,7 +72,7 @@ class OrderConfirmationFilter extends BaseFilter
                 $range = json_decode($range, true);
             }
 
-            if (!is_array($range) || count($range) < 2) {
+            if (! is_array($range) || count($range) < 2) {
                 return;
             }
 
@@ -82,7 +82,7 @@ class OrderConfirmationFilter extends BaseFilter
                 Carbon::parse($startDate)->toDateString(),
                 Carbon::parse($endDate)->toDateString(),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range format.');
         }
     }

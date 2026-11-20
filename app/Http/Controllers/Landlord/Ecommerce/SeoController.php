@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers\Landlord\Ecommerce;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Pos\Product\Product;
-use App\Models\Landlord\Category\Category;
-use App\Models\Landlord\Brand\Brand;
-use App\Models\Pos\Seo\Seo;
-use App\Models\Pos\Description\BranchDescription;
 use App\Exceptions\GeneralException;
-
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\Ecommerce\SeoUpdateRequest;
+use App\Models\Landlord\Brand\Brand;
+use App\Models\Landlord\Category\Category;
+use App\Models\Pos\Product\Product;
+use App\Models\Pos\Seo\Seo;
 
 class SeoController extends Controller
 {
@@ -38,20 +35,20 @@ class SeoController extends Controller
     {
         $modelClass = $this->getModelClass($model);
 
-        if (!$modelClass) {
-            throw new \App\Exceptions\GeneralException('Invalid model type');
+        if (! $modelClass) {
+            throw new GeneralException('Invalid model type');
         }
 
         $entity = $modelClass::find($id);
 
-        if (!$entity) {
-            throw new \App\Exceptions\GeneralException('Resource not found');
+        if (! $entity) {
+            throw new GeneralException('Resource not found');
         }
 
         $tenantId = $request->input('tenant_id');
 
-        if (!$tenantId) {
-            throw new \App\Exceptions\GeneralException('Tenant not found');
+        if (! $tenantId) {
+            throw new GeneralException('Tenant not found');
         }
 
         if ($model === 'product') {
@@ -71,7 +68,6 @@ class SeoController extends Controller
                 'slug' => $request->slug,
             ]);
         }
-
 
         // Always save/update the branch-specific description
         $entity->longDescriptions()->updateOrCreate(
@@ -94,7 +90,7 @@ class SeoController extends Controller
                 'description' => $request->meta_description, // Map Meta Description
                 'tags' => $tags,
                 'model_type' => $modelClass,
-                'model_id' => $id
+                'model_id' => $id,
             ]
         );
 
@@ -109,14 +105,14 @@ class SeoController extends Controller
     {
         $modelClass = $this->getModelClass($model);
 
-        if (!$modelClass) {
-            throw new \App\Exceptions\GeneralException('Invalid model type');
+        if (! $modelClass) {
+            throw new GeneralException('Invalid model type');
         }
 
         $entity = $modelClass::query()->find($id);
 
-        if (!$entity) {
-            throw new \App\Exceptions\GeneralException('Resource not found');
+        if (! $entity) {
+            throw new GeneralException('Resource not found');
         }
 
         // Determine title/name field based on model

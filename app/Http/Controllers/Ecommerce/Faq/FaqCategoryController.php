@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ecommerce\Faq;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecommerce\Faq\FaqCategoryRequest;
 use App\Models\Ecommerce\Faq\FaqCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FaqCategoryController extends Controller
@@ -13,13 +14,13 @@ class FaqCategoryController extends Controller
     {
         return FaqCategory::query()
             ->withCount('faqs')
-            ->when($request->search, fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
+            ->when($request->search, fn ($q) => $q->where('name', 'like', '%'.$request->search.'%'))
             ->orderBy('order')
             ->orderByDesc('id')
             ->paginate($request->input('per_page', 10));
     }
 
-    public function store(FaqCategoryRequest $request): \Illuminate\Http\JsonResponse
+    public function store(FaqCategoryRequest $request): JsonResponse
     {
 
         FaqCategory::query()->create($request->validated());
@@ -32,7 +33,7 @@ class FaqCategoryController extends Controller
         return $faqCategory;
     }
 
-    public function update(FaqCategoryRequest $request, FaqCategory $faqCategory): \Illuminate\Http\JsonResponse
+    public function update(FaqCategoryRequest $request, FaqCategory $faqCategory): JsonResponse
     {
         $data = $request->validated();
 
@@ -45,7 +46,7 @@ class FaqCategoryController extends Controller
         return successResponse('FAQ category updated successfully');
     }
 
-    public function destroy(FaqCategory $faqCategory): \Illuminate\Http\JsonResponse
+    public function destroy(FaqCategory $faqCategory): JsonResponse
     {
         $faqCategory->delete();
 
@@ -62,4 +63,3 @@ class FaqCategoryController extends Controller
             ->get();
     }
 }
-

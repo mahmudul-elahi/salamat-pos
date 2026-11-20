@@ -3,6 +3,9 @@
 namespace App\Models\Hrm;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Asset extends Model
 {
@@ -23,12 +26,12 @@ class Asset extends Model
 
     protected $appends = ['status'];
 
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(AssetCategory::class, 'asset_category_id');
     }
 
-    public function assignments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function assignments(): HasMany
     {
         return $this->hasMany(AssetAssignment::class);
     }
@@ -37,7 +40,7 @@ class Asset extends Model
     // in AssetController always close out the previous open row (returned_date
     // set) before a new one is opened, so a plain whereNull is enough here
     // without needing hasOne()->latestOfMany().
-    public function currentAssignment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function currentAssignment(): HasOne
     {
         return $this->hasOne(AssetAssignment::class)->whereNull('returned_date');
     }

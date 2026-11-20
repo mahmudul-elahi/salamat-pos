@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pos\Purchase;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\Transaction\Transaction;
-use Illuminate\Http\Request;
 
 class PurchaseTransactionController extends Controller
 {

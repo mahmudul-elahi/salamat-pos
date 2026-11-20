@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Report\DepositReportController;
 use App\Http\Controllers\Pos\Report\ExpenseReportController;
 use App\Http\Controllers\Pos\Report\PurchaseReportController;
@@ -11,7 +13,6 @@ use App\Http\Controllers\Pos\Statement\StatementController;
 use App\Http\Controllers\Pos\Statement\StatementPDFController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-
 
 Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (Router $router) {
 

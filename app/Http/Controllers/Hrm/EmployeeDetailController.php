@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Hrm;
 use App\Http\Controllers\Controller;
 use App\Models\Customization\Customization;
 use App\Models\Hrm\Attendance;
+use App\Models\Hrm\EmployeeLeave;
 use App\Models\Hrm\Holiday;
 use App\Models\Hrm\LeaveRequest;
-use App\Models\Hrm\EmployeeLeave;
 use App\Models\Hrm\WorkShift;
 use App\Models\User;
 use App\Services\Hrm\WorkShiftScheduleService;
@@ -50,10 +50,10 @@ class EmployeeDetailController extends Controller
 
         $details = $latestAttendance?->details->sortBy('in_time')->values() ?? collect();
         $firstIn = $details->first();
-        $lastOut = $details->filter(fn($d) => $d->out_time)->sortBy('out_time')->last();
+        $lastOut = $details->filter(fn ($d) => $d->out_time)->sortBy('out_time')->last();
 
         $todaySeconds = $todayAttendance
-            ? $todayAttendance->details->sum(fn($d) => $this->workedSeconds($d))
+            ? $todayAttendance->details->sum(fn ($d) => $this->workedSeconds($d))
             : 0;
 
         return [
@@ -119,7 +119,7 @@ class EmployeeDetailController extends Controller
     {
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', 'unique:users,email,' . $employee->id],
+            'email' => ['sometimes', 'email', 'unique:users,email,'.$employee->id],
             'gender' => ['sometimes', 'nullable', 'in:male,female,others'],
             'date_of_birth' => ['sometimes', 'nullable', 'date'],
             'place_of_birth' => ['sometimes', 'nullable', 'string', 'max:255'],
@@ -136,12 +136,12 @@ class EmployeeDetailController extends Controller
         ]);
 
         $userFields = array_intersect_key($validated, ['name' => null, 'email' => null]);
-        if (!empty($userFields)) {
+        if ($userFields !== []) {
             $employee->update($userFields);
         }
 
         $profileFields = array_diff_key($validated, ['name' => null, 'email' => null]);
-        if (!empty($profileFields)) {
+        if ($profileFields !== []) {
             $employee->employeeProfile()->updateOrCreate([], $profileFields);
         }
 
@@ -174,7 +174,7 @@ class EmployeeDetailController extends Controller
             ->whereNotIn('status', ['rejected', 'cancel'])
             ->with('details')
             ->get()
-            ->keyBy(fn(Attendance $a) => $a->in_date->toDateString());
+            ->keyBy(fn (Attendance $a) => $a->in_date->toDateString());
 
         // "leave" isn't one of the 6 pie-chart categories the UI asks for,
         // but it's tracked here too so the counts still add up to the full
@@ -189,11 +189,13 @@ class EmployeeDetailController extends Controller
 
             if (in_array($date->format('l'), $weekendDays, true)) {
                 $counts['weekend']++;
+
                 continue;
             }
 
             if ($holidayDates->contains($dateKey)) {
                 $counts['holiday']++;
+
                 continue;
             }
 
@@ -206,16 +208,18 @@ class EmployeeDetailController extends Controller
             // Always accumulate actual worked seconds even when the day is also
             // covered by an approved leave (employee may have come in anyway).
             if ($attendance) {
-                $attendanceSeconds += $attendance->details->sum(fn($d) => $this->workedSeconds($d));
+                $attendanceSeconds += $attendance->details->sum(fn ($d) => $this->workedSeconds($d));
             }
 
             if ($paidLeaveDates->contains($dateKey)) {
                 $counts['leave']++;
+
                 continue;
             }
 
-            if (!$attendance) {
+            if (! $attendance) {
                 $counts['absent']++;
+
                 continue;
             }
 
@@ -228,7 +232,7 @@ class EmployeeDetailController extends Controller
         $availability = $scheduledSeconds > 0 ? round($attendanceSeconds / $scheduledSeconds * 100, 2) : 0;
 
         $markedDays = $counts['late'] + $counts['regular'] + $counts['absent'] + $counts['early'];
-        $percent = fn(string $key) => $markedDays > 0 ? round($counts[$key] / $markedDays * 100, 1) : 0;
+        $percent = fn (string $key) => $markedDays > 0 ? round($counts[$key] / $markedDays * 100, 1) : 0;
 
         $threshold = (int) Customization::where('type', 'attendance')
             ->where('name', 'work_availability_percentage')
@@ -237,18 +241,18 @@ class EmployeeDetailController extends Controller
         return [
             'counts' => $counts,
             'average_behavior' => [
-                'late'    => $percent('late'),
+                'late' => $percent('late'),
                 'regular' => $percent('regular'),
-                'absent'  => $percent('absent'),
-                'early'   => $percent('early'),
+                'absent' => $percent('absent'),
+                'early' => $percent('early'),
             ],
-            'work_shift_hours'             => $this->formatSecondsAsTime($scheduledSeconds),
-            'attendance_hours'             => $this->formatSecondsAsTime($attendanceSeconds),
-            'leave_hours'                  => $this->formatSecondsAsTime($leaveSeconds),
-            'balance_hours'                => $this->formatSecondsAsTime($balanceSeconds),
-            'work_availability_percent'    => $availability,
-            'work_availability_threshold'  => $threshold,
-            'work_availability_status'     => $threshold > 0
+            'work_shift_hours' => $this->formatSecondsAsTime($scheduledSeconds),
+            'attendance_hours' => $this->formatSecondsAsTime($attendanceSeconds),
+            'leave_hours' => $this->formatSecondsAsTime($leaveSeconds),
+            'balance_hours' => $this->formatSecondsAsTime($balanceSeconds),
+            'work_availability_percent' => $availability,
+            'work_availability_threshold' => $threshold,
+            'work_availability_status' => $threshold > 0
                 ? ($availability >= $threshold ? 'good' : 'bad')
                 : null,
         ];
@@ -281,7 +285,7 @@ class EmployeeDetailController extends Controller
             ->whereBetween('in_date', [$start->toDateString(), $end->toDateString()])
             ->whereNotIn('status', ['rejected', 'cancel'])
             ->get()
-            ->keyBy(fn(Attendance $a) => $a->in_date->toDateString());
+            ->keyBy(fn (Attendance $a) => $a->in_date->toDateString());
 
         $days = [];
 
@@ -335,20 +339,18 @@ class EmployeeDetailController extends Controller
 
         return $employeeLeaves
             ->map(function (Collection $months, $leaveTypeId) use ($approvedLeaves, $yearStart, $yearEnd) {
-                $type     = $months->first()->leaveType;
+                $type = $months->first()->leaveType;
                 $requests = $approvedLeaves->get($leaveTypeId, collect());
 
                 // Only leaves falling inside this leave year count against it.
                 $taken = $requests
-                    ->filter(fn(LeaveRequest $leave) => $this->leaveFallsInYear($leave, $yearStart, $yearEnd))
-                    ->sum(function (LeaveRequest $leave) {
-                        return match ($leave->leave_duration) {
-                            'multi_day' => ($leave->start_date && $leave->end_date)
-                                ? $leave->start_date->diffInDays($leave->end_date) + 1
-                                : 0,
-                            'single_day' => 1,
-                            default      => 0,
-                        };
+                    ->filter(fn (LeaveRequest $leave) => $this->leaveFallsInYear($leave, $yearStart, $yearEnd))
+                    ->sum(fn (LeaveRequest $leave) => match ($leave->leave_duration) {
+                        'multi_day' => ($leave->start_date && $leave->end_date)
+                            ? $leave->start_date->diffInDays($leave->end_date) + 1
+                            : 0,
+                        'single_day' => 1,
+                        default => 0,
                     });
 
                 // The latest assigned month carries the rate in force today.
@@ -359,14 +361,14 @@ class EmployeeDetailController extends Controller
                 $availability = max(0, $earned - $taken);
 
                 return [
-                    'id'              => $type?->id,
-                    'name'            => $type?->name,
-                    'type'            => $type?->type,
-                    'allowance'       => round($allowance, 2),
+                    'id' => $type?->id,
+                    'name' => $type?->name,
+                    'type' => $type?->type,
+                    'allowance' => round($allowance, 2),
                     'months_assigned' => $months->count(),
-                    'earned'          => round($earned, 2),
-                    'taken'           => round((float) $taken, 2),
-                    'availability'    => round($availability, 2),
+                    'earned' => round($earned, 2),
+                    'taken' => round((float) $taken, 2),
+                    'availability' => round($availability, 2),
                 ];
             })
             ->values()
@@ -384,11 +386,11 @@ class EmployeeDetailController extends Controller
     {
         $startMonth = (int) ($settingService->getFormattedSettings('leave')['start_month'] ?? 1);
 
-        $today     = Carbon::now();
+        $today = Carbon::now();
         $startYear = $today->month >= $startMonth ? $today->year : $today->year - 1;
 
         $start = Carbon::createFromDate($startYear, $startMonth, 1)->startOfMonth();
-        $end   = $start->copy()->addYear()->subDay();
+        $end = $start->copy()->addYear()->subDay();
 
         return [$start, $end];
     }
@@ -415,16 +417,16 @@ class EmployeeDetailController extends Controller
     public function leaveSummary(Request $request, User $employee)
     {
         $month = (int) $request->input('month', now()->month);
-        $year  = (int) $request->input('year',  now()->year);
+        $year = (int) $request->input('year', now()->year);
 
         $start = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $end   = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        $end = Carbon::createFromDate($year, $month, 1)->endOfMonth();
 
         $leaveRequests = LeaveRequest::query()
             ->where('user_id', $employee->id)
             ->with('leaveType:id,name,type')
             ->where(
-                fn($q) => $q
+                fn ($q) => $q
                     ->whereBetween('start_date', [$start, $end])
                     ->orWhereBetween('date', [$start, $end])
             )
@@ -433,20 +435,20 @@ class EmployeeDetailController extends Controller
 
         return [
             'counts' => [
-                'pending'  => $leaveRequests->where('status', 'pending')->count(),
+                'pending' => $leaveRequests->where('status', 'pending')->count(),
                 'approved' => $leaveRequests->where('status', 'approved')->count(),
                 'rejected' => $leaveRequests->where('status', 'rejected')->count(),
             ],
-            'requests' => $leaveRequests->map(fn(LeaveRequest $leave) => [
-                'id'             => $leave->id,
-                'leave_type'     => $leave->leaveType?->name,
+            'requests' => $leaveRequests->map(fn (LeaveRequest $leave) => [
+                'id' => $leave->id,
+                'leave_type' => $leave->leaveType?->name,
                 'leave_duration' => $leave->leave_duration,
-                'date'           => $leave->date?->format('d M Y'),
-                'start_date'     => $leave->start_date?->format('d M Y'),
-                'end_date'       => $leave->end_date?->format('d M Y'),
-                'note'           => $leave->note,
-                'attachments'    => $leave->attachments ?? [],
-                'status'         => $leave->status,
+                'date' => $leave->date?->format('d M Y'),
+                'start_date' => $leave->start_date?->format('d M Y'),
+                'end_date' => $leave->end_date?->format('d M Y'),
+                'note' => $leave->note,
+                'attachments' => $leave->attachments ?? [],
+                'status' => $leave->status,
             ])->values(),
         ];
     }
@@ -464,7 +466,7 @@ class EmployeeDetailController extends Controller
             'employeeSalaries',
         ]);
 
-        $mapRange = fn($item, $labelKey, $label) => [
+        $mapRange = fn ($item, $labelKey, $label) => [
             'id' => $item->id,
             'label' => $item->{$labelKey}?->{$label},
             'start_date' => $item->start_date?->format('Y-m-d'),
@@ -474,12 +476,12 @@ class EmployeeDetailController extends Controller
 
         return [
             'departments' => $employee->employeeDepartments->sortByDesc('start_date')
-                ->map(fn($d) => $mapRange($d, 'department', 'name'))->values(),
+                ->map(fn ($d) => $mapRange($d, 'department', 'name'))->values(),
             'designations' => $employee->employeeDesignations->sortByDesc('start_date')
-                ->map(fn($d) => $mapRange($d, 'designation', 'name'))->values(),
+                ->map(fn ($d) => $mapRange($d, 'designation', 'name'))->values(),
             'statuses' => $employee->employeeStatuses->sortByDesc('start_date')
-                ->map(fn($s) => $mapRange($s, 'employeeStatus', 'name'))->values(),
-            'salaries' => $employee->employeeSalaries->sortByDesc('start_date')->map(fn($s) => [
+                ->map(fn ($s) => $mapRange($s, 'employeeStatus', 'name'))->values(),
+            'salaries' => $employee->employeeSalaries->sortByDesc('start_date')->map(fn ($s) => [
                 'id' => $s->id,
                 'amount' => $s->amount,
                 'start_date' => $s->start_date?->format('Y-m-d'),
@@ -492,17 +494,17 @@ class EmployeeDetailController extends Controller
     public function updateJobHistory(Request $request, User $employee)
     {
         $data = $request->validate([
-            'type'               => ['required', Rule::in(['department', 'designation', 'status', 'salary'])],
-            'department_id'      => ['required_if:type,department', 'nullable', 'exists:departments,id'],
-            'designation_id'     => ['required_if:type,designation', 'nullable', 'exists:designations,id'],
+            'type' => ['required', Rule::in(['department', 'designation', 'status', 'salary'])],
+            'department_id' => ['required_if:type,department', 'nullable', 'exists:departments,id'],
+            'designation_id' => ['required_if:type,designation', 'nullable', 'exists:designations,id'],
             'employee_status_id' => ['required_if:type,status', 'nullable', 'exists:employee_statuses,id'],
-            'amount'             => ['required_if:type,salary', 'nullable', 'numeric', 'min:0'],
+            'amount' => ['required_if:type,salary', 'nullable', 'numeric', 'min:0'],
         ]);
 
         $effectiveDate = now()->toDateString();
 
         match ($data['type']) {
-            'department'  => $this->transitionHistory(
+            'department' => $this->transitionHistory(
                 $employee->currentDepartment,
                 $employee->employeeDepartments(),
                 'department_id',
@@ -520,7 +522,7 @@ class EmployeeDetailController extends Controller
                 $effectiveDate,
                 'Designation is already set to the selected value.'
             ),
-            'status'      => $this->transitionHistory(
+            'status' => $this->transitionHistory(
                 $employee->currentEmployeeStatus,
                 $employee->employeeStatuses(),
                 'employee_status_id',
@@ -529,7 +531,7 @@ class EmployeeDetailController extends Controller
                 $effectiveDate,
                 'Employee status is already set to the selected value.'
             ),
-            'salary'      => $this->transitionHistory(
+            'salary' => $this->transitionHistory(
                 $employee->currentSalary,
                 $employee->employeeSalaries(),
                 'amount',
@@ -537,7 +539,7 @@ class EmployeeDetailController extends Controller
                 ['amount' => $data['amount']],
                 $effectiveDate,
                 'Salary is already set to this amount.',
-                fn($a, $b) => abs((float) $a - (float) $b) < 0.01
+                fn ($a, $b) => abs((float) $a - (float) $b) < 0.01
             ),
         };
 
@@ -569,7 +571,7 @@ class EmployeeDetailController extends Controller
 
     private function workedSeconds($detail): int
     {
-        if (!$detail->in_time || !$detail->out_time) {
+        if (! $detail->in_time || ! $detail->out_time) {
             return 0;
         }
 
@@ -596,7 +598,7 @@ class EmployeeDetailController extends Controller
         Holiday::query()
             ->where('start_date', '<=', $end)
             ->where('end_date', '>=', $start)
-            ->where(fn($q) => $q->whereNull('department_id')->orWhere('department_id', $departmentId))
+            ->where(fn ($q) => $q->whereNull('department_id')->orWhere('department_id', $departmentId))
             ->get()
             ->each(function (Holiday $holiday) use ($start, $end, &$dates) {
                 $from = $holiday->start_date->max($start);
@@ -618,7 +620,7 @@ class EmployeeDetailController extends Controller
         return LeaveRequest::query()
             ->where('user_id', $employeeId)
             ->where('status', 'approved')
-            ->whereHas('leaveType', fn($q) => $q->where('type', 'paid'))
+            ->whereHas('leaveType', fn ($q) => $q->where('type', 'paid'))
             ->get();
     }
 

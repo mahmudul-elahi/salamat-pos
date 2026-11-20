@@ -16,6 +16,7 @@ use App\Models\Pos\Product\ProductVideo;
 use App\Models\Pos\Product\VariantPrice;
 use App\Services\Product\ProductService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Throwable;
@@ -35,7 +36,7 @@ class ProductController extends Controller
             ->select(['id', 'product_name', 'category_id', 'brand_id', 'status', 'a_status', 'product_image', 'created_at', 'has_official_warranty', 'is_ecommerce', 'is_chinese', 'is_unofficial', 'is_refurbished'])
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(fn($order) => $this->transformOrder($order));
+            ->through(fn ($order) => $this->transformOrder($order));
     }
 
     private function transformOrder(Product $product): array
@@ -53,10 +54,9 @@ class ProductController extends Controller
             'type_status' => [
                 'name' => $productTypeStatus->name,
                 'color' => $productTypeStatus->color(),
-            ]
+            ],
         ];
     }
-
 
     /**
      * @throws Throwable
@@ -82,9 +82,9 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment() == 'production') {
-                throw new GeneralException('Product creation failed', 500);
+                throw new GeneralException('Product creation failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -99,7 +99,7 @@ class ProductController extends Controller
                 $q->where('status', '1');
             },
             'variants.attributeValues',
-            'variants.price'
+            'variants.price',
         ]);
 
         $imageMap = $product->productImages
@@ -123,25 +123,26 @@ class ProductController extends Controller
                     $product->variants->pluck('id')->toArray(),
                     $attribute->attribute_id
                 );
+
                 return [
                     'name' => $attribute->attribute->name,
                     'attribute_id' => $attribute->attribute->id,
-                    'attribute_value_id' => array_map('intval', $variantAttributeValuesIds),
+                    'attribute_value_id' => array_map(intval(...), $variantAttributeValuesIds),
                     'values' => $this->attributeValues($attribute->attribute->id),
                     'images' => $this->attributeValueProductFeaturedImage($variantAttributeValuesIds, $product->id)
-                        ->sortBy(fn($img) => array_search($img['id'], $variantAttributeValuesIds))->values(),
+                        ->sortBy(fn ($img) => array_search($img['id'], $variantAttributeValuesIds))->values(),
                 ];
             }) : [],
             'variants' => $product->variants->map(function ($variant) use ($imageMap) {
                 $attributeValueIds = $variant->attributeValues
                     ->pluck('pivot.attribute_value_id')
-                    ->map(fn($id) => (int)$id)
+                    ->map(fn ($id) => (int) $id)
                     ->toArray();
 
                 $price = $variant->price;
 
                 return [
-                    'id' => (int)$variant->id,
+                    'id' => (int) $variant->id,
                     'sku' => $variant->sku,
                     'stock' => $variant->stock,
                     'image' => $this->resolveVariantImage($variant, $imageMap),
@@ -152,25 +153,21 @@ class ProductController extends Controller
                 ];
             }),
 
-
         ];
     }
 
-
-    public function attributeValueProductFeaturedImage($ids, $productId): \Illuminate\Database\Eloquent\Collection|\Illuminate\Support\Collection
+    public function attributeValueProductFeaturedImage($ids, $productId): \Illuminate\Database\Eloquent\Collection|Collection
     {
         return AttributeValue::query()
             ->whereIn('id', $ids)
             ->select(['id', 'value'])
             ->get()
-            ->map(function ($attributeValue) use ($productId) {
-                return [
-                    ...$attributeValue->toArray(),
-                    'featured_image' => $this->getFeaturedImage($attributeValue, $productId),
-                    'slider_images' => $this->getSliderImagesByProduct($attributeValue, $productId),
-                    'video_links' => $this->getVideoLinks($attributeValue, $productId),
-                ];
-            });
+            ->map(fn ($attributeValue) => [
+                ...$attributeValue->toArray(),
+                'featured_image' => $this->getFeaturedImage($attributeValue, $productId),
+                'slider_images' => $this->getSliderImagesByProduct($attributeValue, $productId),
+                'video_links' => $this->getVideoLinks($attributeValue, $productId),
+            ]);
     }
 
     private function getFeaturedImage($attributeValue, $productId)
@@ -191,7 +188,7 @@ class ProductController extends Controller
             ->where('product_id', $productId)
             ->orderBy('order')
             ->get(['id', 'video_link'])
-            ->map(fn($v) => ['id' => $v->id, 'video_link' => $v->video_link])
+            ->map(fn ($v) => ['id' => $v->id, 'video_link' => $v->video_link])
             ->toArray();
     }
 
@@ -204,12 +201,10 @@ class ProductController extends Controller
             ->orderBy('order')
             ->get();
 
-        return $images->map(function ($image) {
-            return [
-                'id' => $image->id,
-                'image_path' => $image->image_path,
-            ];
-        });
+        return $images->map(fn ($image) => [
+            'id' => $image->id,
+            'image_path' => $image->image_path,
+        ]);
     }
 
     private function variantAttributeValues($ids, $attributeId)
@@ -224,7 +219,7 @@ class ProductController extends Controller
             )
             ->where('attribute_values.attribute_id', $attributeId)
             ->pluck('attribute_values.id')
-            ->map(fn($id) => (int)$id)
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values()
             ->toArray();
@@ -240,6 +235,7 @@ class ProductController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function update(ProductRequest $request, Product $product)
@@ -251,19 +247,19 @@ class ProductController extends Controller
             // Update product info
             // -------------------------
             $product->update([
-                'product_name'      => $request->name,
-                'headline'          => $request->headline,
-                'long_description'  => $request->long_description,
+                'product_name' => $request->name,
+                'headline' => $request->headline,
+                'long_description' => $request->long_description,
                 'short_description' => $request->short_description,
-                'warranty_day'      => $request->warranty_day,
-                'booking_amount'    => $request->booking_amount,
-                'purchase_point'    => $request->purchase_point,
-                'warranty_text'     => $request->warranty_text,
-                'service_warranty'  => $request->service_warranty,
-                'product_image'     => $request->thumbnail_image,
-                'category_id'       => $request->category_id,
-                'brand_id'          => $request->brand_id,
-                'slug'              => str_replace([' ', '/', ',', '.'], '-', strtolower($request->name)) ?? null,
+                'warranty_day' => $request->warranty_day,
+                'booking_amount' => $request->booking_amount,
+                'purchase_point' => $request->purchase_point,
+                'warranty_text' => $request->warranty_text,
+                'service_warranty' => $request->service_warranty,
+                'product_image' => $request->thumbnail_image,
+                'category_id' => $request->category_id,
+                'brand_id' => $request->brand_id,
+                'slug' => str_replace([' ', '/', ',', '.'], '-', strtolower($request->name)) ?? null,
             ]);
 
             // -------------------------
@@ -316,14 +312,15 @@ class ProductController extends Controller
 
                 $matched = $existingVariants->first(function ($existing) use ($requestedVals) {
                     $existingVals = $existing->attributeValues->pluck('id')->sort()->values()->toArray();
+
                     return $existingVals == $requestedVals;
                 });
 
                 if ($matched) {
                     // Exist করলে update করো + status active করো
                     $matched->update([
-                        'sku'    => $variantData['sku'],
-                        'stock'  => $variantData['stock'],
+                        'sku' => $variantData['sku'],
+                        'stock' => $variantData['stock'],
                         'status' => '1',
                     ]);
                     $variant = $matched;
@@ -332,9 +329,9 @@ class ProductController extends Controller
                     // নতুন হলে create করো
                     $variant = ProductVariant::query()->create([
                         'product_id' => $product->id,
-                        'sku'        => $variantData['sku'],
-                        'stock'      => $variantData['stock'],
-                        'status'     => '1',
+                        'sku' => $variantData['sku'],
+                        'stock' => $variantData['stock'],
+                        'status' => '1',
                     ]);
                     $matchedExistingIds[] = $variant->id;
                 }
@@ -347,16 +344,15 @@ class ProductController extends Controller
                 VariantPrice::query()->updateOrCreate(
                     ['product_variant_id' => $variant->id],
                     [
-                        'dealer_price'     => $variantData['dealer_price'] ?? null,
-                        'retail_price'     => $variantData['retail_price'] ?? null,
+                        'dealer_price' => $variantData['dealer_price'] ?? null,
+                        'retail_price' => $variantData['retail_price'] ?? null,
                         'max_retail_price' => $variantData['max_retail_price'] ?? null,
                         'discount_percent' => $variantData['discount_percent'] ?? null,
-                        'discount_fixed'   => $variantData['discount_fixed'] ?? null,
-                        'b2b_price'        => $variantData['b2b_price'] ?? null,
+                        'discount_fixed' => $variantData['discount_fixed'] ?? null,
+                        'b2b_price' => $variantData['b2b_price'] ?? null,
                     ]
                 );
             }
-
 
             // -------------------------
             $variantsToDeactivate = ProductVariant::query()
@@ -371,7 +367,7 @@ class ProductController extends Controller
                 // Price soft delete করো
                 VariantPrice::query()
                     ->where('product_variant_id', $inactiveVariant->id)
-                    ->each(fn($price) => $price->delete());
+                    ->each(fn ($price) => $price->delete());
             }
 
             // -------------------------
@@ -381,9 +377,11 @@ class ProductController extends Controller
                 foreach ($request->color_images as $colorImage) {
 
                     $attributeValue = AttributeValue::query()->find($colorImage['color_id']);
-                    if (!$attributeValue) continue;
+                    if (! $attributeValue) {
+                        continue;
+                    }
 
-                    if (!empty($colorImage['featured_image'])) {
+                    if (! empty($colorImage['featured_image'])) {
                         ProductImage::query()
                             ->where('product_id', $product->id)
                             ->where('attribute_value_id', $attributeValue->id)
@@ -391,12 +389,12 @@ class ProductController extends Controller
                             ->delete();
 
                         ProductImage::query()->create([
-                            'product_id'         => $product->id,
+                            'product_id' => $product->id,
                             'attribute_value_id' => $attributeValue->id,
-                            'image_path'         => $colorImage['featured_image'],
-                            'is_primary'         => true,
-                            'alt_text'           => 'Featured image for color ' . $attributeValue->value,
-                            'order'              => 0,
+                            'image_path' => $colorImage['featured_image'],
+                            'is_primary' => true,
+                            'alt_text' => 'Featured image for color '.$attributeValue->value,
+                            'order' => 0,
                         ]);
                     }
 
@@ -408,14 +406,14 @@ class ProductController extends Controller
                             ->where('is_primary', false)
                             ->exists();
 
-                        if (!$exists) {
+                        if (! $exists) {
                             ProductImage::query()->create([
-                                'product_id'         => $product->id,
+                                'product_id' => $product->id,
                                 'attribute_value_id' => $attributeValue->id,
-                                'image_path'         => $sliderFile,
-                                'alt_text'           => 'Slider image for color ' . $attributeValue->value,
-                                'order'              => $key + 1,
-                                'is_primary'         => false,
+                                'image_path' => $sliderFile,
+                                'alt_text' => 'Slider image for color '.$attributeValue->value,
+                                'order' => $key + 1,
+                                'is_primary' => false,
                             ]);
                         }
                     }
@@ -425,7 +423,7 @@ class ProductController extends Controller
             // -------------------------
             // 5. Remove Slider Images
             // -------------------------
-            if (!empty($request->remove_slider_images)) {
+            if (! empty($request->remove_slider_images)) {
                 $imageIds = collect($request->input('remove_slider_images'))->toArray();
                 ProductImage::query()->whereIn('id', $imageIds)->delete();
             }
@@ -436,18 +434,20 @@ class ProductController extends Controller
 
             // Product-level video links (attribute_value_id = null)
             foreach ($request->input('video_links', []) as $order => $videoLink) {
-                if (empty($videoLink)) continue;
+                if (empty($videoLink)) {
+                    continue;
+                }
                 $exists = ProductVideo::query()
                     ->where('product_id', $product->id)
                     ->whereNull('attribute_value_id')
                     ->where('video_link', $videoLink)
                     ->exists();
-                if (!$exists) {
+                if (! $exists) {
                     ProductVideo::query()->create([
-                        'product_id'         => $product->id,
+                        'product_id' => $product->id,
                         'attribute_value_id' => null,
-                        'video_link'         => $videoLink,
-                        'order'              => $order + 1,
+                        'video_link' => $videoLink,
+                        'order' => $order + 1,
                     ]);
                 }
             }
@@ -464,25 +464,27 @@ class ProductController extends Controller
             // Per-color video links
             if (isset($request->color_images)) {
                 foreach ($request->color_images as $colorImage) {
-                    if (!empty($colorImage['remove_video_links'])) {
+                    if (! empty($colorImage['remove_video_links'])) {
                         ProductVideo::query()
                             ->where('product_id', $product->id)
                             ->whereIn('id', $colorImage['remove_video_links'])
                             ->delete();
                     }
                     foreach ($colorImage['video_links'] ?? [] as $order => $videoLink) {
-                        if (empty($videoLink)) continue;
+                        if (empty($videoLink)) {
+                            continue;
+                        }
                         $exists = ProductVideo::query()
                             ->where('product_id', $product->id)
                             ->where('attribute_value_id', $colorImage['color_id'])
                             ->where('video_link', $videoLink)
                             ->exists();
-                        if (!$exists) {
+                        if (! $exists) {
                             ProductVideo::query()->create([
-                                'product_id'         => $product->id,
+                                'product_id' => $product->id,
                                 'attribute_value_id' => $colorImage['color_id'],
-                                'video_link'         => $videoLink,
-                                'order'              => $order + 1,
+                                'video_link' => $videoLink,
+                                'order' => $order + 1,
                             ]);
                         }
                     }
@@ -495,16 +497,16 @@ class ProductController extends Controller
             $this->service->setModel($product)->revalidate();
 
             DB::commit();
+
             return successResponse('Product updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment() === 'production') {
-                throw new GeneralException('Product update failed', 500);
+                throw new GeneralException('Product update failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -516,6 +518,7 @@ class ProductController extends Controller
             ->productVariantDeletable()
             ->productDelete()
             ->revalidate();
+
         return successResponse('Product deleted successfully');
     }
 
@@ -532,9 +535,8 @@ class ProductController extends Controller
                 ProductStatusEnum::Arrival->value,
                 ProductStatusEnum::Comming->value,
                 ProductStatusEnum::Featured->value,
-            ])]
+            ])],
         ]);
-
 
         if (in_array($request->type, ['active', 'inactive'])) {
             if ($product->status == $request->status) {
@@ -542,7 +544,7 @@ class ProductController extends Controller
             }
 
             $product->update([
-                'status' => $request->status
+                'status' => $request->status,
             ]);
 
             $this->service->setModel($product)->revalidate();
@@ -555,7 +557,7 @@ class ProductController extends Controller
         }
 
         $product->update([
-            'a_status' => $request->status
+            'a_status' => $request->status,
         ]);
 
         $this->service->setModel($product)->revalidate();
@@ -566,7 +568,7 @@ class ProductController extends Controller
     public function toggleOfficialWarranty(Product $product)
     {
         $product->update([
-            'has_official_warranty' => !$product->has_official_warranty,
+            'has_official_warranty' => ! $product->has_official_warranty,
         ]);
 
         $label = $product->has_official_warranty ? 'added' : 'removed';
@@ -579,7 +581,7 @@ class ProductController extends Controller
     public function toggleEcommerce(Product $product)
     {
         $product->update([
-            'is_ecommerce' => !$product->is_ecommerce,
+            'is_ecommerce' => ! $product->is_ecommerce,
         ]);
 
         $label = $product->is_ecommerce ? 'enabled' : 'disabled';
@@ -592,7 +594,7 @@ class ProductController extends Controller
     public function toggleChinese(Product $product)
     {
         $product->update([
-            'is_chinese' => !$product->is_chinese,
+            'is_chinese' => ! $product->is_chinese,
         ]);
 
         $label = $product->is_chinese ? 'added' : 'removed';
@@ -605,7 +607,7 @@ class ProductController extends Controller
     public function toggleUnofficial(Product $product)
     {
         $product->update([
-            'is_unofficial' => !$product->is_unofficial,
+            'is_unofficial' => ! $product->is_unofficial,
         ]);
 
         $label = $product->is_unofficial ? 'added' : 'removed';
@@ -618,7 +620,7 @@ class ProductController extends Controller
     public function toggleRefurbished(Product $product)
     {
         $product->update([
-            'is_refurbished' => !$product->is_refurbished,
+            'is_refurbished' => ! $product->is_refurbished,
         ]);
 
         $label = $product->is_refurbished ? 'added' : 'removed';
@@ -636,7 +638,7 @@ class ProductController extends Controller
             },
             'variants.attributeValues',
             'variants.price',
-            'productImages'
+            'productImages',
         ]);
 
         $imageMap = $product->productImages
@@ -644,21 +646,21 @@ class ProductController extends Controller
 
         return [
             ...$product->toArray(),
-            'name'            => $product->product_name,
+            'name' => $product->product_name,
             'thumbnail_image' => $product->product_image,
-            'variants'        => $product->variants->map(fn($variant) => [
-                'id'               => (int) $variant->id,
-                'sku'              => $variant->sku,
-                'stock'            => $variant->stock,
-                'is_prebook'       => $variant->is_prebook,
-                'image'            => $this->resolveVariantImage($variant, $imageMap),
+            'variants' => $product->variants->map(fn ($variant) => [
+                'id' => (int) $variant->id,
+                'sku' => $variant->sku,
+                'stock' => $variant->stock,
+                'is_prebook' => $variant->is_prebook,
+                'image' => $this->resolveVariantImage($variant, $imageMap),
                 'attribute_values' => $variant->attributeValues,
-                'dealer_price'     => $variant->price->dealer_price,
-                'b2b_price'        => $variant->price->b2b_price,
+                'dealer_price' => $variant->price->dealer_price,
+                'b2b_price' => $variant->price->b2b_price,
                 'max_retail_price' => $variant->price->max_retail_price,
                 'discount_percent' => $variant->price->discount_percent,
-                'discount_fixed'   => $variant->price->discount_fixed,
-                'sale_price'       => max(0, $variant->price->max_retail_price - ($variant->price->discount_fixed ?? 0)),
+                'discount_fixed' => $variant->price->discount_fixed,
+                'sale_price' => max(0, $variant->price->max_retail_price - ($variant->price->discount_fixed ?? 0)),
             ]),
         ];
     }
@@ -666,7 +668,7 @@ class ProductController extends Controller
     private function resolveVariantImage($variant, $imageMap): ?string
     {
         return $variant->attributeValues
-            ->map(fn($av) => $imageMap->get($av->id)?->image_path)
+            ->map(fn ($av) => $imageMap->get($av->id)?->image_path)
             ->filter()
             ->first();
     }
@@ -678,10 +680,10 @@ class ProductController extends Controller
     public function updateVariant(Request $request)
     {
         $request->validate([
-            'id'               => 'required|exists:product_variants,id',
-            'stock'            => 'required',
+            'id' => 'required|exists:product_variants,id',
+            'stock' => 'required',
             'max_retail_price' => 'required|numeric',
-            'sale_price'       => 'required|numeric',
+            'sale_price' => 'required|numeric',
         ]);
 
         $variant = ProductVariant::query()
@@ -703,17 +705,18 @@ class ProductController extends Controller
                 [
                     'max_retail_price' => $request->max_retail_price,
                     'discount_percent' => null,
-                    'discount_fixed'   => $discountFixed,
+                    'discount_fixed' => $discountFixed,
                 ]
             );
 
             $this->service->setModel($variant->product)->revalidate();
 
             DB::commit();
+
             return successResponse('Variant updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 }

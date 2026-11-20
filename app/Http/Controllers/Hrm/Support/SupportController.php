@@ -33,7 +33,7 @@ class SupportController extends Controller
     public function employees()
     {
         return User::query()
-            ->filters(new NameFilter())
+            ->filters(new NameFilter)
             ->where('is_employee', true)
             ->where('status', 'active')
             ->orderBy('name')

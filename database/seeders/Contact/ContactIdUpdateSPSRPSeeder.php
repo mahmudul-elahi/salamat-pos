@@ -8,7 +8,7 @@ use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\Sale\Sale;
 use App\Models\Pos\SaleReturn\SaleReturn;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Scopes\TenantScope;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -22,42 +22,42 @@ class ContactIdUpdateSPSRPSeeder extends Seeder
         try {
             DB::beginTransaction();
             Purchase::query()
-                ->withoutGlobalScope(new \App\Scopes\TenantScope())
+                ->withoutGlobalScope(new TenantScope)
                 ->where('contact_id', 3332)
                 ->get()
                 ->each(function ($saleReturn) {
                     $saleReturn->update([
-                        'contact_id' => 3028
+                        'contact_id' => 3028,
                     ]);
                 });
 
             PurchaseReturn::query()
-                ->withoutGlobalScope(new \App\Scopes\TenantScope())
+                ->withoutGlobalScope(new TenantScope)
                 ->where('contact_id', 3332)
                 ->get()
                 ->each(function ($saleReturn) {
                     $saleReturn->update([
-                        'contact_id' => 3028
+                        'contact_id' => 3028,
                     ]);
                 });
 
             Sale::query()
-                ->withoutGlobalScope(new \App\Scopes\TenantScope())
+                ->withoutGlobalScope(new TenantScope)
                 ->where('contact_id', 3332)
                 ->get()
                 ->each(function ($saleReturn) {
                     $saleReturn->update([
-                        'contact_id' => 3028
+                        'contact_id' => 3028,
                     ]);
                 });
 
             SaleReturn::query()
-                ->withoutGlobalScope(new \App\Scopes\TenantScope())
+                ->withoutGlobalScope(new TenantScope)
                 ->where('contact_id', 3332)
                 ->get()
                 ->each(function ($saleReturn) {
                     $saleReturn->update([
-                        'contact_id' => 3028
+                        'contact_id' => 3028,
                     ]);
                 });
 
@@ -66,7 +66,7 @@ class ContactIdUpdateSPSRPSeeder extends Seeder
                 ->get()
                 ->each(function ($saleReturn) {
                     $saleReturn->update([
-                        'contact_id' => 3028
+                        'contact_id' => 3028,
                     ]);
                 });
 

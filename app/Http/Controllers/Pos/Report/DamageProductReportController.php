@@ -16,23 +16,21 @@ class DamageProductReportController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $damageQuery = DamageProduct::query()
-            ->filters(new DamageProductReportFilter())
+            ->filters(new DamageProductReportFilter)
             ->with(['tenant:id,name', 'createdBy:id,name', 'approvedBy:id,name'])
             ->withCount('items as total_items')
             ->orderByDesc('id');
 
-        $paginated = (clone $damageQuery)->paginate($perPage)->through(function ($row) {
-            return [
-                'id' => $row->id,
-                'reference_no' => $row->reference_no,
-                'damage_date' => $row->damage_date,
-                'warehouse_name' => $row->tenant?->name ?? '-',
-                'total_items' => $row->total_items,
-                'status' => $row->status,
-                'created_by_name' => $row->createdBy?->name ?? '-',
-                'approved_by_name' => $row->approvedBy?->name ?? '-',
-            ];
-        });
+        $paginated = (clone $damageQuery)->paginate($perPage)->through(fn ($row) => [
+            'id' => $row->id,
+            'reference_no' => $row->reference_no,
+            'damage_date' => $row->damage_date,
+            'warehouse_name' => $row->tenant?->name ?? '-',
+            'total_items' => $row->total_items,
+            'status' => $row->status,
+            'created_by_name' => $row->createdBy?->name ?? '-',
+            'approved_by_name' => $row->approvedBy?->name ?? '-',
+        ]);
 
         $totalRecords = (clone $damageQuery)->count();
         $totalItems = (clone $damageQuery)
@@ -55,22 +53,20 @@ class DamageProductReportController extends Controller
         $tenantId = $isAppAdmin ? $warehouse : tenant()->id;
 
         $damageQuery = DamageProduct::query()
-            ->filters(new DamageProductReportFilter())
+            ->filters(new DamageProductReportFilter)
             ->with(['tenant:id,name', 'createdBy:id,name', 'approvedBy:id,name'])
             ->withCount('items as total_items')
             ->orderByDesc('id');
 
-        $records = (clone $damageQuery)->get()->map(function ($row) {
-            return [
-                'reference_no' => $row->reference_no,
-                'damage_date' => $row->damage_date,
-                'warehouse_name' => $row->tenant?->name ?? '-',
-                'total_items' => $row->total_items,
-                'status' => $row->status,
-                'created_by_name' => $row->createdBy?->name ?? '-',
-                'approved_by_name' => $row->approvedBy?->name ?? '-',
-            ];
-        });
+        $records = (clone $damageQuery)->get()->map(fn ($row) => [
+            'reference_no' => $row->reference_no,
+            'damage_date' => $row->damage_date,
+            'warehouse_name' => $row->tenant?->name ?? '-',
+            'total_items' => $row->total_items,
+            'status' => $row->status,
+            'created_by_name' => $row->createdBy?->name ?? '-',
+            'approved_by_name' => $row->approvedBy?->name ?? '-',
+        ]);
 
         $totalRecords = (clone $damageQuery)->count();
         $totalItems = (clone $damageQuery)

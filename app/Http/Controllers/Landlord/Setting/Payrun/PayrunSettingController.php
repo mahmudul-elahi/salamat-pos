@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class PayrunSettingController extends Controller
 {
-    private const CONTEXT = 'payrun';
+    private const string CONTEXT = 'payrun';
 
     /**
      * Settings whose value is a list of IDs, stored as a JSON string in the
@@ -20,11 +20,9 @@ class PayrunSettingController extends Controller
      * App\Http\Controllers\Hrm\PayrunTypeController. This controller only
      * backs the "Manage Audience" tab's restriction lists.
      */
-    private const ARRAY_KEYS = ['restricted_departments', 'restricted_employees', 'restricted_employee_statuses'];
+    private const array ARRAY_KEYS = ['restricted_departments', 'restricted_employees', 'restricted_employee_statuses'];
 
-    public function __construct(protected SettingService $service)
-    {
-    }
+    public function __construct(protected SettingService $service) {}
 
     public function index(): array
     {

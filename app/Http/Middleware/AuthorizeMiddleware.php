@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Common\User\UserProfile;
 use App\Models\User;
 use App\Repositories\User\UserRepository;
 use Closure;
@@ -12,16 +11,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthorizeMiddleware
 {
-    public function __construct(protected UserRepository $userRepository)
-    {
-    }
+    public function __construct(protected UserRepository $userRepository) {}
 
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param \Closure(Request): (Response) $next
-     * @return Response
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -31,17 +26,16 @@ class AuthorizeMiddleware
             return $next($request);
         }
         $user = $this->userRepository->getCachedAuthUserWithRoleAndPermissions();
-        
 
-        if ($user && $user->roles) {
+        if ($user instanceof User && $user->roles) {
             foreach ($user->roles as $role) {
                 foreach ($role->permissions ?? [] as $permission) {
-                    Gate::define($permission->name, fn(User $user) => true);
+                    Gate::define($permission->name, fn (User $user) => true);
                 }
             }
         }
 
-        Gate::define('manage_dashboard', fn(User $user) => true);
+        Gate::define('manage_dashboard', fn (User $user) => true);
 
         return $next($request);
     }

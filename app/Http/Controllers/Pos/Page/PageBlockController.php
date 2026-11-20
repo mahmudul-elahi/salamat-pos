@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pos\Page\Page;
 use App\Models\Pos\Page\PageBlock;
 use App\Models\Tenant\Tenant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -33,24 +34,22 @@ class PageBlockController extends Controller
 
     protected function buildTree($blocks, ?int $parentId): array
     {
-        return $blocks->where('parent_id', $parentId)->values()->map(function ($block) use ($blocks) {
-            return [
-                'id' => $block->id,
-                'type' => $block->type,
-                'props' => $block->props ?? [],
-                'is_active' => $block->is_active,
-                'children' => in_array($block->type, $this->containerTypes)
-                    ? $this->buildTree($blocks, $block->id)
-                    : [],
-            ];
-        })->all();
+        return $blocks->where('parent_id', $parentId)->values()->map(fn ($block) => [
+            'id' => $block->id,
+            'type' => $block->type,
+            'props' => $block->props ?? [],
+            'is_active' => $block->is_active,
+            'children' => in_array($block->type, $this->containerTypes)
+                ? $this->buildTree($blocks, $block->id)
+                : [],
+        ])->all();
     }
 
     /**
      * @throws Throwable
      * @throws GeneralException
      */
-    public function saveTree(Request $request, Page $page): \Illuminate\Http\JsonResponse
+    public function saveTree(Request $request, Page $page): JsonResponse
     {
         $request->validate([
             'blocks' => ['array'],
@@ -67,7 +66,7 @@ class PageBlockController extends Controller
             $this->persistNodes($request->input('blocks', []), $page, null, $keptIds);
 
             $toDelete = array_diff($existingIds, $keptIds);
-            if (!empty($toDelete)) {
+            if ($toDelete !== []) {
                 PageBlock::query()->whereIn('id', $toDelete)->delete();
             }
 
@@ -77,9 +76,9 @@ class PageBlockController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Page sections save has been failed', 500);
+                throw new GeneralException('Page sections save has been failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
@@ -120,12 +119,12 @@ class PageBlockController extends Controller
     public function publicShow(string $tenantSlug, string $pageSlug)
     {
         $tenant = Tenant::query()->where('slug', $tenantSlug)->where('is_ecommerce', true)->first();
-        if (!$tenant) {
+        if (! $tenant) {
             throw new GeneralException('Shop not found', 404);
         }
 
         $page = Page::query()->where('tenant_id', $tenant->id)->where('slug', $pageSlug)->first();
-        if (!$page) {
+        if (! $page) {
             throw new GeneralException('Page not found', 404);
         }
 

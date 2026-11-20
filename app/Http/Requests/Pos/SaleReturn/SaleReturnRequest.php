@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Pos\SaleReturn;
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\ValidationRule;
 use App\Http\Requests\CustomRule\MaxDigitsPrecision;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
 
 class SaleReturnRequest extends FormRequest
 {
@@ -50,7 +52,7 @@ class SaleReturnRequest extends FormRequest
     {
         return [
             'customer_id' => 'customer',
-            'tenant_id' => 'shop'
+            'tenant_id' => 'shop',
         ];
     }
 
@@ -64,5 +66,4 @@ class SaleReturnRequest extends FormRequest
             'items.*.unit_price.required' => 'The unit price is required',
         ];
     }
-
 }

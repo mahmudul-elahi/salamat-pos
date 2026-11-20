@@ -16,13 +16,13 @@ class BlogTag extends BaseModel
     protected static function booted(): void
     {
         static::creating(function (BlogTag $tag) {
-            if (!$tag->slug) {
+            if (! $tag->slug) {
                 $tag->slug = static::generateSlug($tag->name);
             }
         });
 
         static::updating(function (BlogTag $tag) {
-            if ($tag->isDirty('name') && !$tag->isDirty('slug')) {
+            if ($tag->isDirty('name') && ! $tag->isDirty('slug')) {
                 $tag->slug = static::generateSlug($tag->name, $tag->id);
             }
         });
@@ -38,10 +38,10 @@ class BlogTag extends BaseModel
         while (
             static::query()
                 ->where('slug', $candidate)
-                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
                 ->exists()
         ) {
-            $candidate = $baseSlug . '-' . $count++;
+            $candidate = $baseSlug.'-'.$count++;
         }
 
         return $candidate;

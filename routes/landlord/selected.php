@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Landlord\Setting\PaymentMethod\PaymentMethodController;
 use App\Http\Controllers\Pos\Brand\BrandController;
 use App\Http\Controllers\Pos\Customer\CustomerController;
 use App\Http\Controllers\Pos\Expense\ExpenseCategoryController;
+use App\Http\Controllers\Pos\OrderConfirmation\OrderConfirmationOptionController;
 use App\Http\Controllers\Pos\Selected\SelectedController;
 use App\Http\Controllers\Pos\Supplier\SupplierController;
-use App\Http\Controllers\Pos\OrderConfirmation\OrderConfirmationOptionController;
 use App\Http\Controllers\Pos\Telesale\TelesaleResultController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-
 
 Route::group(['prefix' => 'selected'], function (Router $router) {
 

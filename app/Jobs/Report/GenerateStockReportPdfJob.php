@@ -29,6 +29,7 @@ class GenerateStockReportPdfJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
+
     public int $tries = 1;
 
     public function __construct(
@@ -57,7 +58,7 @@ class GenerateStockReportPdfJob implements ShouldQueue
      * message asking the user to narrow their filters than to let the
      * worker crash mid-render.
      */
-    private const MAX_ROWS = 1500;
+    private const int MAX_ROWS = 1500;
 
     /**
      * SL, product name, and the three stock-quantity columns are always
@@ -66,32 +67,32 @@ class GenerateStockReportPdfJob implements ShouldQueue
      * normalized to 100% over whichever columns end up visible, so hiding
      * a column hands its space to the rest instead of leaving it blank.
      */
-    private const COLUMN_DEFS = [
-        'sl'                  => ['label' => 'SL', 'weight' => 3, 'align' => 'center', 'mandatory' => true],
-        'product_name'        => ['label' => 'Product Name', 'weight' => 9, 'mandatory' => true],
-        'brand'               => ['label' => 'Brand', 'weight' => 6],
-        'category'            => ['label' => 'Category', 'weight' => 9],
-        'purchase_date'       => ['label' => 'Purchase Date', 'weight' => 9],
-        'supplier_name'       => ['label' => 'Supplier', 'weight' => 7],
+    private const array COLUMN_DEFS = [
+        'sl' => ['label' => 'SL', 'weight' => 3, 'align' => 'center', 'mandatory' => true],
+        'product_name' => ['label' => 'Product Name', 'weight' => 9, 'mandatory' => true],
+        'brand' => ['label' => 'Brand', 'weight' => 6],
+        'category' => ['label' => 'Category', 'weight' => 9],
+        'purchase_date' => ['label' => 'Purchase Date', 'weight' => 9],
+        'supplier_name' => ['label' => 'Supplier', 'weight' => 7],
         'full_invoice_number' => ['label' => 'Invoice No.', 'weight' => 9],
-        'warehouse_name'      => ['label' => 'Warehouse', 'weight' => 18],
-        'serial_numbers'      => ['label' => 'Serial Number', 'weight' => 14],
-        'total'               => ['label' => 'Total', 'weight' => 5, 'align' => 'center', 'mandatory' => true],
-        'sale'                => ['label' => 'Sale', 'weight' => 4, 'align' => 'center', 'mandatory' => true],
-        'in_stock'            => ['label' => 'In Stock', 'weight' => 7, 'align' => 'center', 'mandatory' => true],
+        'warehouse_name' => ['label' => 'Warehouse', 'weight' => 18],
+        'serial_numbers' => ['label' => 'Serial Number', 'weight' => 14],
+        'total' => ['label' => 'Total', 'weight' => 5, 'align' => 'center', 'mandatory' => true],
+        'sale' => ['label' => 'Sale', 'weight' => 4, 'align' => 'center', 'mandatory' => true],
+        'in_stock' => ['label' => 'In Stock', 'weight' => 7, 'align' => 'center', 'mandatory' => true],
     ];
 
     private function resolveColumns(array $selectedKeys): array
     {
         $visible = array_filter(
             self::COLUMN_DEFS,
-            fn($def, $key) => ($def['mandatory'] ?? false) || in_array($key, $selectedKeys, true),
+            fn ($def, $key) => ($def['mandatory'] ?? false) || in_array($key, $selectedKeys, true),
             ARRAY_FILTER_USE_BOTH
         );
 
         $totalWeight = array_sum(array_column($visible, 'weight'));
 
-        return array_map(fn($def) => [
+        return array_map(fn ($def) => [
             'label' => $def['label'],
             'align' => $def['align'] ?? null,
             'width' => round($def['weight'] / $totalWeight * 100, 2),
@@ -127,20 +128,20 @@ class GenerateStockReportPdfJob implements ShouldQueue
 
     private function generate(): string
     {
-        $tenantId  = $this->tenantId;
-        $brand     = $this->filters['brand'] ?? null;
-        $category  = $this->filters['category'] ?? null;
-        $product   = $this->filters['product'] ?? null;
-        $supplier  = $this->filters['supplier'] ?? null;
+        $tenantId = $this->tenantId;
+        $brand = $this->filters['brand'] ?? null;
+        $category = $this->filters['category'] ?? null;
+        $product = $this->filters['product'] ?? null;
+        $supplier = $this->filters['supplier'] ?? null;
         $dateRange = $this->filters['date'] ?? null;
-        $columns   = $this->resolveColumns($this->filters['columns'] ?? []);
+        $columns = $this->resolveColumns($this->filters['columns'] ?? []);
 
         // Same descendant expansion as the on-screen report — a parent
         // category filter should include its children's/grandchildren's stock.
         $categoryIds = $category ? Category::query()
             ->whereIn('id', explode(',', $category))
             ->get()
-            ->flatMap(fn(Category $cat) => $cat->getAllDescendantIds())
+            ->flatMap(fn (Category $cat) => $cat->getAllDescendantIds())
             ->unique()
             ->values()
             ->all() : null;
@@ -152,7 +153,7 @@ class GenerateStockReportPdfJob implements ShouldQueue
             ->groupBy('product_id', 'product_variant_id', 'serial_number');
 
         $baseQuery = DB::table('purchase_items as pi')
-            ->joinSub($latestPurchaseItems, 'lpi', fn($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
+            ->joinSub($latestPurchaseItems, 'lpi', fn ($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
             ->join('purchases as pur', 'pur.id', '=', 'pi.purchase_id')
             ->join('products as p', 'p.id', '=', 'pi.product_id')
             ->leftJoin('product_variants as pv', 'pv.id', '=', 'pi.product_variant_id')
@@ -167,7 +168,7 @@ class GenerateStockReportPdfJob implements ShouldQueue
             })
             ->leftJoin('tenant_product_serials as tps', function ($join) use ($tenantId) {
                 $join->on('tps.product_serial_id', '=', 'ps.id')
-                    ->when($tenantId, fn($j) => $j->where('tps.tenant_id', $tenantId));
+                    ->when($tenantId, fn ($j) => $j->where('tps.tenant_id', $tenantId));
             })
             ->when($tenantId, function ($q) use ($tenantId) {
                 $q->whereExists(function ($sub) use ($tenantId) {
@@ -181,10 +182,10 @@ class GenerateStockReportPdfJob implements ShouldQueue
             ->whereNull('pur.deleted_at')
             ->whereNull('pi.deleted_at')
             ->whereNotNull('pi.serial_number')
-            ->when($brand, fn($q) => $q->whereIn('p.brand_id', explode(',', $brand)))
-            ->when($categoryIds, fn($q) => $q->whereIn('p.category_id', $categoryIds))
-            ->when($product, fn($q) => $q->whereIn('p.id', explode(',', $product)))
-            ->when($supplier, fn($q) => $q->whereIn('pur.contact_id', explode(',', $supplier)))
+            ->when($brand, fn ($q) => $q->whereIn('p.brand_id', explode(',', $brand)))
+            ->when($categoryIds, fn ($q) => $q->whereIn('p.category_id', $categoryIds))
+            ->when($product, fn ($q) => $q->whereIn('p.id', explode(',', $product)))
+            ->when($supplier, fn ($q) => $q->whereIn('pur.contact_id', explode(',', $supplier)))
             ->when($dateRange, function ($q) use ($dateRange) {
                 $range = is_string($dateRange) ? json_decode($dateRange, true) : $dateRange;
                 if (is_array($range) && count($range) >= 2) {
@@ -222,8 +223,8 @@ class GenerateStockReportPdfJob implements ShouldQueue
 
         if ($batches->count() > self::MAX_ROWS) {
             throw new GeneralException(
-                'This report has ' . $batches->count() . ' rows, which is too large to export as a PDF at once. '
-                    . 'Please narrow it down with a date range, brand, category, or supplier filter and try again.'
+                'This report has '.$batches->count().' rows, which is too large to export as a PDF at once. '
+                    .'Please narrow it down with a date range, brand, category, or supplier filter and try again.'
             );
         }
 
@@ -242,13 +243,13 @@ class GenerateStockReportPdfJob implements ShouldQueue
         // that made up its purchased_qty (matching how that count itself is
         // computed, with no status filter).
         $serialNumbers = $purchaseIds->isEmpty() ? collect() : DB::table('purchase_items as pi')
-            ->joinSub($latestPurchaseItems, 'lpi', fn($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
+            ->joinSub($latestPurchaseItems, 'lpi', fn ($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
             ->whereIn('pi.purchase_id', $purchaseIds)
             ->whereNull('pi.deleted_at')
             ->whereNotNull('pi.serial_number')
             ->select('pi.purchase_id', 'pi.product_id', 'pi.product_variant_id', 'pi.serial_number')
             ->get()
-            ->groupBy(fn($row) => "{$row->purchase_id}-{$row->product_id}-{$row->product_variant_id}");
+            ->groupBy(fn ($row) => "{$row->purchase_id}-{$row->product_id}-{$row->product_variant_id}");
 
         $sl = 1;
         $grandPurchased = 0;
@@ -259,44 +260,44 @@ class GenerateStockReportPdfJob implements ShouldQueue
             $groupKey = "{$row->purchase_id}-{$row->product_id}-{$row->product_variant_id}";
 
             $grandPurchased += (int) $row->purchased_qty;
-            $grandSold      += (int) $row->sold_qty;
-            $grandQuantity  += (int) $row->quantity;
+            $grandSold += (int) $row->sold_qty;
+            $grandQuantity += (int) $row->quantity;
 
             return [
-                'product_id'          => $row->product_id,
-                'sl'                  => $sl++,
-                'product_name'        => $row->product_name,
-                'brand'               => $row->brand_name ?? '-',
-                'category'            => $row->category_name ?? '-',
-                'warehouse_name'      => $row->warehouse_name ?? '-',
-                'purchase_date'       => $row->purchase_date,
-                'supplier_name'       => $row->supplier_name ?? '-',
+                'product_id' => $row->product_id,
+                'sl' => $sl++,
+                'product_name' => $row->product_name,
+                'brand' => $row->brand_name ?? '-',
+                'category' => $row->category_name ?? '-',
+                'warehouse_name' => $row->warehouse_name ?? '-',
+                'purchase_date' => $row->purchase_date,
+                'supplier_name' => $row->supplier_name ?? '-',
                 'full_invoice_number' => $row->full_invoice_number,
-                'attribute_values'    => $variantAttributes
+                'attribute_values' => $variantAttributes
                     ->get($row->product_variant_id, collect())
                     ->pluck('value')
                     ->implode('/'),
-                'serial_numbers'      => $serialNumbers
+                'serial_numbers' => $serialNumbers
                     ->get($groupKey, collect())
                     ->pluck('serial_number')
                     ->unique()
                     ->values()
                     ->toArray(),
-                'total'               => (int) $row->purchased_qty,
-                'sale'                => (int) $row->sold_qty,
-                'in_stock'            => (int) $row->quantity,
+                'total' => (int) $row->purchased_qty,
+                'sale' => (int) $row->sold_qty,
+                'in_stock' => (int) $row->quantity,
             ];
         });
 
         $pdf = Pdf::loadView('pdf.stock-report', [
-            'stocks'         => $data,
-            'columns'        => $columns,
-            'date'           => Carbon::now()->format('d-m-Y'),
-            'time'           => Carbon::now()->format('H:i:s'),
+            'stocks' => $data,
+            'columns' => $columns,
+            'date' => Carbon::now()->format('d-m-Y'),
+            'time' => Carbon::now()->format('H:i:s'),
             'total_quantity' => $grandPurchased,
-            'total_sale'     => $grandSold,
+            'total_sale' => $grandSold,
             'total_in_stock' => $grandQuantity,
-            'shop_info'      => $tenantId ? DB::table('tenants')->where('id', $tenantId)->first() : null,
+            'shop_info' => $tenantId ? DB::table('tenants')->where('id', $tenantId)->first() : null,
             'tenantSettings' => resolve(SettingService::class)->getFormattedSettings('tenant', $tenantId),
         ])->setPaper('a4', 'portrait')
             ->setOption('isHtml5ParserEnabled', true)

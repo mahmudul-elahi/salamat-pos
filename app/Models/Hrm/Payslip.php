@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Payslip extends Model
 {
     public const STATUS_GENERATED = 'generated';
+
     public const STATUS_SENT = 'sent';
 
     protected $fillable = [

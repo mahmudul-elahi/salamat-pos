@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filters\Pos\Customer;
 
 use App\Filters\BaseFilter;
@@ -10,7 +12,7 @@ class CustomerFilter extends BaseFilter
     use SupplierShopFilterTrait;
 
     /** Columns a typed term is matched against. */
-    private const SEARCHABLE = ['name', 'email', 'business_name', 'phone'];
+    private const array SEARCHABLE = ['name', 'email', 'business_name', 'phone'];
 
     /**
      * Only used by the merged People list — Customer/Supplier/OnlineContact
@@ -26,20 +28,24 @@ class CustomerFilter extends BaseFilter
             'supplier' => $this->builder->where('type', 'supplier'),
             'online' => $this->builder->where('online', true),
             'offline' => $this->builder->where('type', 'consumer')
-                ->where(fn($q) => $q->where('online', false)->orWhereNull('online')),
+                ->where(fn ($q) => $q->where('online', false)->orWhereNull('online')),
             default => null,
         };
     }
 
     public function newDistrictId($districtId = null): void
     {
-        if (!$districtId) return;
+        if (! $districtId) {
+            return;
+        }
         $this->builder->where('new_district_id', $districtId);
     }
 
     public function areaId($areaId = null): void
     {
-        if (!$areaId) return;
+        if (! $areaId) {
+            return;
+        }
         $this->builder->where('area_id', $areaId);
     }
 

@@ -2,16 +2,12 @@
 
 namespace App\Helpers\General;
 
-
 use App\Exceptions\AuthorizeException;
 use App\Repositories\User\UserRepository;
 
 class AuthorizeHelper
 {
-    public function __construct(protected UserRepository $user)
-    {
-    }
-
+    public function __construct(protected UserRepository $user) {}
 
     /**
      * @throws AuthorizeException
@@ -22,8 +18,9 @@ class AuthorizeHelper
         if (is_array($actions)) {
 
             if (in_array(0, $this->arrayAuthorizer($actions))) {
-                throw new  AuthorizeException('Permission Denied');
+                throw new AuthorizeException('Permission Denied');
             }
+
             return true;
         }
 
@@ -31,10 +28,8 @@ class AuthorizeHelper
             return true;
         }
 
-
         throw new AuthorizeException('Permission Denied');
     }
-
 
     /**
      * @throws AuthorizeException
@@ -47,6 +42,7 @@ class AuthorizeHelper
         if ($permissions) {
             return $permissions;
         }
+
         return [];
     }
 
@@ -58,7 +54,7 @@ class AuthorizeHelper
         $authorized = $this->getAuthorized($action);
 
         if (count($authorized) > 0) {
-            if (!in_array($payload, $authorized)) {
+            if (! in_array($payload, $authorized)) {
                 throw new AuthorizeException('Permission Denied');
             }
         }
@@ -78,8 +74,6 @@ class AuthorizeHelper
 
     public function arrayAuthorizer(array $actions): array
     {
-        return collect($actions)->map(function ($action) {
-            return auth()->user()->can($action) ? 1 : 0;
-        })->toArray();
+        return collect($actions)->map(fn ($action) => auth()->user()->can($action) ? 1 : 0)->toArray();
     }
 }

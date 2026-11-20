@@ -19,7 +19,7 @@ class Role extends BaseModel
 
     public $casts = [
         'is_admin' => 'boolean',
-        'is_default' => 'boolean'
+        'is_default' => 'boolean',
     ];
 
     public function isDefault()

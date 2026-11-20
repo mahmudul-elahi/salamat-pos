@@ -1,10 +1,13 @@
 <?php
 
+use App\Models\Pos\Expense\ExpenseCategory;
+use App\Models\Tenant\Tenant;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('expenses', function (Blueprint $table) {
@@ -13,14 +16,14 @@ return new class extends Migration {
             $table->string('title', 191)->index();
             $table->date('date')->index();
 
-            $table->foreignIdFor(\App\Models\Pos\Expense\ExpenseCategory::class, 'expense_category_id')
+            $table->foreignIdFor(ExpenseCategory::class, 'expense_category_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
             $table->decimal('amount', 15, 2)->index();
             $table->text('note')->nullable();
             $table->enum('status', ['due', 'partially_paid', 'paid'])->default('due');
-            $table->foreignIdFor(\App\Models\Tenant\Tenant::class, 'tenant_id')
+            $table->foreignIdFor(Tenant::class, 'tenant_id')
                 ->nullable()
                 ->constrained()
                 ->cascadeOnDelete();

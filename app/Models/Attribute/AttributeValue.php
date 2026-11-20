@@ -2,10 +2,9 @@
 
 namespace App\Models\Attribute;
 
-use App\Models\Attribute\Attribute;
 use App\Models\Common\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttributeValue extends BaseModel
 {
@@ -17,7 +16,7 @@ class AttributeValue extends BaseModel
         'status',
     ];
 
-    public function attribute(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function attribute(): BelongsTo
     {
         return $this->belongsTo(Attribute::class);
     }

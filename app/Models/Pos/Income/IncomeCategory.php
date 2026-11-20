@@ -1,16 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Pos\Income;
 
-use App\Models\Common\BaseModel;
-use App\Models\Tenant\Tenant;
 use App\Models\TenantBaseModel;
 use App\Models\User;
 
 class IncomeCategory extends TenantBaseModel
 {
     protected $fillable = [
-        'name', 'director_id','tenant_id'
+        'name', 'director_id', 'tenant_id',
 
     ];
 

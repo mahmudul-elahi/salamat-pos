@@ -11,6 +11,7 @@ use App\Models\Pos\Investment\Investment;
 use App\Models\Pos\Investment\InvestmentCategory;
 use App\Models\Tenant\PaymentMethod\PaymentMethod;
 use App\Services\Setting\SettingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -35,20 +36,19 @@ class ExpenseController extends Controller
             }])
             ->orderByDesc('id')
             ->paginate($perPage)
-            ->through(function ($expense) {
-                return [
-                    ...$expense->toArray(),
-                    'invoice_number' => "EXP-{$expense->id}",
-                    'images' => $expense->attachments()->pluck('link')->toArray(),
-                ];
-            })->toArray();
+            ->through(fn ($expense) => [
+                ...$expense->toArray(),
+                'invoice_number' => "EXP-{$expense->id}",
+                'images' => $expense->attachments()->pluck('link')->toArray(),
+            ])->toArray();
     }
 
     /**
      * Store a newly created resource in storage.
+     *
      * @throws Throwable
      */
-    public function store(ExpenseRequest $request): \Illuminate\Http\JsonResponse
+    public function store(ExpenseRequest $request): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -66,15 +66,15 @@ class ExpenseController extends Controller
 
             $this->syncExpenseDeposit($expense, $request->payment_method_id);
 
-
             DB::commit();
+
             return successResponse('Expense has been created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Expense has been created failed', 500);
+                throw new GeneralException('Expense has been created failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -87,7 +87,6 @@ class ExpenseController extends Controller
 
         return $expense;
     }
-
 
     /**
      * @throws Throwable
@@ -111,7 +110,7 @@ class ExpenseController extends Controller
                 $expense->attachments()->whereIn('id', $request->deletable_attachment_ids)->delete();
             }
 
-            if ($request->has('attachments') && !$request->hasFile('attachments')) {
+            if ($request->has('attachments') && ! $request->hasFile('attachments')) {
                 foreach ($request->attachments as $attachmentUrl) {
                     $expense->attachments()->create([
                         'link' => $attachmentUrl,
@@ -121,15 +120,15 @@ class ExpenseController extends Controller
 
             $this->syncExpenseDeposit($expense, $request->payment_method_id);
 
-
             DB::commit();
+
             return successResponse('Expense has been updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Expense has been updated failed', 500);
+                throw new GeneralException('Expense has been updated failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -146,7 +145,7 @@ class ExpenseController extends Controller
 
         return response()->json([
             'id' => $expense->id,
-            'invoice_number' => 'EXP-' . $expense->id,
+            'invoice_number' => 'EXP-'.$expense->id,
             'title' => $expense->title,
             'date' => $expense->date,
             'amount' => (float) $expense->amount,
@@ -163,11 +162,12 @@ class ExpenseController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Expense $expense): \Illuminate\Http\JsonResponse
+    public function destroy(Expense $expense): JsonResponse
     {
         $expense->attachments()->delete();
         Investment::where('expense_id', $expense->id)->delete();
         $expense->delete();
+
         return successResponse('Expense deleted successfully');
     }
 
@@ -175,23 +175,29 @@ class ExpenseController extends Controller
     {
         Investment::where('expense_id', $expense->id)->delete();
 
-        if (!$paymentMethodId) return;
+        if (! $paymentMethodId) {
+            return;
+        }
 
         $paymentMethod = PaymentMethod::find($paymentMethodId);
-        if (!$paymentMethod?->director_id) return;
+        if (! $paymentMethod?->director_id) {
+            return;
+        }
 
         $depositCategory = InvestmentCategory::where('director_id', $paymentMethod->director_id)->first();
-        if (!$depositCategory) return;
+        if (! $depositCategory) {
+            return;
+        }
 
         Investment::create([
-            'user_id'        => $paymentMethod->director_id,
-            'title'               => $expense->title,
-            'date'               => $expense->date,
+            'user_id' => $paymentMethod->director_id,
+            'title' => $expense->title,
+            'date' => $expense->date,
             'investment_category_id' => $depositCategory->id,
-            'amount'             => $expense->amount,
-            'note'               => $expense->note,
-            'tenant_id'          => $expense->tenant_id,
-            'expense_id'         => $expense->id,
+            'amount' => $expense->amount,
+            'note' => $expense->note,
+            'tenant_id' => $expense->tenant_id,
+            'expense_id' => $expense->id,
         ]);
     }
 }

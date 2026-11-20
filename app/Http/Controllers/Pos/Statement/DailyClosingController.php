@@ -31,7 +31,7 @@ class DailyClosingController extends Controller
         $isAppAdmin = auth()->user()->isAppAdmin();
         $search = $request->get('search', '');
         $perPage = $request->get('per_page', 10);
-        $warehouse = $isAppAdmin ? $request->get('warehouse', null) : tenant()->id;
+        $warehouse = $isAppAdmin ? $request->get('warehouse') : tenant()->id;
         $filters = $this->extractFilters($request);
 
         $today = Carbon::now('Asia/Dhaka')->toDateString();
@@ -42,7 +42,7 @@ class DailyClosingController extends Controller
         // Build the same filtered base query, used both for totals AND pagination
         $baseQuery = DB::query()
             ->fromSub($mergedToday, 'combined')
-            ->when($search, fn($q) => $q->whereRaw("LOWER(full_invoice_number) LIKE ?", ['%' . strtolower($search) . '%']));
+            ->when($search, fn ($q) => $q->whereRaw('LOWER(full_invoice_number) LIKE ?', ['%'.strtolower($search).'%']));
 
         // ---- Grand total over the FULL filtered set (no pagination) ----
         $grandTotals = DB::query()
@@ -63,10 +63,11 @@ class DailyClosingController extends Controller
         $collection = $data->getCollection()->map(function ($item) use (&$currentBalance) {
             $currentBalance += ($item->debit - $item->credit);
             $item->balance = $currentBalance;
+
             return $item;
         });
 
-        $openingRow = (object)[
+        $openingRow = (object) [
             'id' => '-',
             'date' => '-',
             'full_invoice_number' => '-',
@@ -85,11 +86,12 @@ class DailyClosingController extends Controller
             'status' => null,
             'model_type' => null,
             'tenant_name' => null,
-            'sl' => 1
+            'sl' => 1,
         ];
 
         $finalCollection = collect([$openingRow])->concat($collection)->map(function ($item, $key) {
             $item->sl = $key + 1;
+
             return $item;
         });
 
@@ -97,7 +99,7 @@ class DailyClosingController extends Controller
 
         return response()->json([
             ...$data->toArray(),
-            'grand_total' => ['balance' => $grandBalance]
+            'grand_total' => ['balance' => $grandBalance],
         ]);
     }
 
@@ -136,13 +138,13 @@ class DailyClosingController extends Controller
         $purchases = DB::table('purchases as p')
             ->whereNull('p.deleted_at')
             ->whereDate('p.date', $today)
-            ->when($warehouse, fn($q) => $q->where('p.tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->where('p.contact_id', $contact))
-            ->when($seller, fn($q) => $q->whereRaw('0=1'))
-            ->when($status, fn($q) => $q->whereIn('p.status', $statusList))
+            ->when($warehouse, fn ($q) => $q->where('p.tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->where('p.contact_id', $contact))
+            ->when($seller, fn ($q) => $q->whereRaw('0=1'))
+            ->when($status, fn ($q) => $q->whereIn('p.status', $statusList))
             ->when(
                 $paymentMethod,
-                fn($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
+                fn ($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
                     $sub->selectRaw('1')
                         ->from('transactions as t')
                         ->whereColumn('t.model_id', 'p.id')
@@ -156,8 +158,8 @@ class DailyClosingController extends Controller
                 'p.full_invoice_number',
                 DB::raw("'Purchase' as type"),
                 'p.grand_total as total',
-                DB::raw("0 as debit"),
-                DB::raw("0 as credit"),
+                DB::raw('0 as debit'),
+                DB::raw('0 as credit'),
                 'p.created_at',
                 'p.status',
                 DB::raw("'purchase' as model_type")
@@ -172,27 +174,27 @@ class DailyClosingController extends Controller
                 [Purchase::class]
             )
             ->selectRaw(
-                "(SELECT pm.logo FROM transactions t
+                '(SELECT pm.logo FROM transactions t
                     INNER JOIN payment_methods pm ON pm.id = t.payment_method_id
-                    WHERE t.model_type = ? AND t.model_id = p.id LIMIT 1) as payment_method_logo",
+                    WHERE t.model_type = ? AND t.model_id = p.id LIMIT 1) as payment_method_logo',
                 [Purchase::class]
             )
             ->selectRaw('NULL as seller_name')
             ->selectRaw('NULL as seller_image')
             ->selectRaw('(SELECT tn.name FROM tenants tn WHERE tn.id = p.tenant_id) as tenant_name')
-            ->selectRaw($this->productsSubquery('purchase_items', 'purchase_id', 'p') . ' as products');
+            ->selectRaw($this->productsSubquery('purchase_items', 'purchase_id', 'p').' as products');
 
         // 2. Purchase Returns
         $pReturns = DB::table('purchase_returns as pr')
             ->whereNull('pr.deleted_at')
             ->whereDate('pr.date', $today)
-            ->when($warehouse, fn($q) => $q->where('pr.tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->where('pr.contact_id', $contact))
-            ->when($seller, fn($q) => $q->whereRaw('0=1'))
-            ->when($status, fn($q) => $q->whereIn('pr.status', $statusList))
+            ->when($warehouse, fn ($q) => $q->where('pr.tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->where('pr.contact_id', $contact))
+            ->when($seller, fn ($q) => $q->whereRaw('0=1'))
+            ->when($status, fn ($q) => $q->whereIn('pr.status', $statusList))
             ->when(
                 $paymentMethod,
-                fn($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
+                fn ($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
                     $sub->selectRaw('1')
                         ->from('transactions as t')
                         ->whereColumn('t.model_id', 'pr.id')
@@ -206,8 +208,8 @@ class DailyClosingController extends Controller
                 'pr.full_invoice_number',
                 DB::raw("'Purchase Return' as type"),
                 'pr.grand_total as total',
-                DB::raw("0 as debit"),
-                DB::raw("0 as credit"),
+                DB::raw('0 as debit'),
+                DB::raw('0 as credit'),
                 'pr.created_at',
                 'pr.status',
                 DB::raw("'purchase_return' as model_type")
@@ -222,26 +224,26 @@ class DailyClosingController extends Controller
                 [PurchaseReturn::class]
             )
             ->selectRaw(
-                "(SELECT pm.logo FROM transactions t
+                '(SELECT pm.logo FROM transactions t
                     INNER JOIN payment_methods pm ON pm.id = t.payment_method_id
-                    WHERE t.model_type = ? AND t.model_id = pr.id LIMIT 1) as payment_method_logo",
+                    WHERE t.model_type = ? AND t.model_id = pr.id LIMIT 1) as payment_method_logo',
                 [PurchaseReturn::class]
             )
             ->selectRaw('NULL as seller_name')
             ->selectRaw('NULL as seller_image')
             ->selectRaw('(SELECT tn.name FROM tenants tn WHERE tn.id = pr.tenant_id) as tenant_name')
-            ->selectRaw($this->productsSubquery('purchase_return_items', 'purchase_return_id', 'pr') . ' as products');
+            ->selectRaw($this->productsSubquery('purchase_return_items', 'purchase_return_id', 'pr').' as products');
 
         $sales = DB::table('sales as s')
             ->whereNull('s.deleted_at')
             ->whereDate('s.date', $today)
-            ->when($warehouse, fn($q) => $q->where('s.tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->where('s.contact_id', $contact))
-            ->when($seller, fn($q) => $q->where('s.seller_id', $seller))
-            ->when($status, fn($q) => $q->whereIn('s.status', $statusList))
+            ->when($warehouse, fn ($q) => $q->where('s.tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->where('s.contact_id', $contact))
+            ->when($seller, fn ($q) => $q->where('s.seller_id', $seller))
+            ->when($status, fn ($q) => $q->whereIn('s.status', $statusList))
             ->when(
                 $paymentMethod,
-                fn($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
+                fn ($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
                     $sub->selectRaw('1')
                         ->from('transactions as t')
                         ->whereColumn('t.model_id', 's.id')
@@ -255,8 +257,8 @@ class DailyClosingController extends Controller
                 's.full_invoice_number',
                 DB::raw("'Sale' as type"),
                 's.grand_total as total',
-                DB::raw("0 as debit"),
-                DB::raw("0 as credit"),
+                DB::raw('0 as debit'),
+                DB::raw('0 as credit'),
                 's.created_at',
                 's.status',
                 DB::raw("'sale' as model_type")
@@ -271,27 +273,27 @@ class DailyClosingController extends Controller
                 [Sale::class]
             )
             ->selectRaw(
-                "(SELECT pm.logo FROM transactions t
+                '(SELECT pm.logo FROM transactions t
                     INNER JOIN payment_methods pm ON pm.id = t.payment_method_id
-                    WHERE t.model_type = ? AND t.model_id = s.id LIMIT 1) as payment_method_logo",
+                    WHERE t.model_type = ? AND t.model_id = s.id LIMIT 1) as payment_method_logo',
                 [Sale::class]
             )
             ->selectRaw('(SELECT u.name FROM users u WHERE u.id = s.seller_id) as seller_name')
             ->selectRaw('(SELECT u.profile_photo FROM users u WHERE u.id = s.seller_id) as seller_image')
             ->selectRaw('(SELECT tn.name FROM tenants tn WHERE tn.id = s.tenant_id) as tenant_name')
-            ->selectRaw($this->productsSubquery('sale_items', 'sale_id', 's') . ' as products');
+            ->selectRaw($this->productsSubquery('sale_items', 'sale_id', 's').' as products');
 
         // 4. Sale Returns
         $sReturns = DB::table('sale_returns as sr')
             ->whereNull('sr.deleted_at')
             ->whereDate('sr.date', $today)
-            ->when($warehouse, fn($q) => $q->where('sr.tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->where('sr.contact_id', $contact))
-            ->when($seller, fn($q) => $q->whereRaw('0=1'))
-            ->when($status, fn($q) => $q->whereIn('sr.status', $statusList))
+            ->when($warehouse, fn ($q) => $q->where('sr.tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->where('sr.contact_id', $contact))
+            ->when($seller, fn ($q) => $q->whereRaw('0=1'))
+            ->when($status, fn ($q) => $q->whereIn('sr.status', $statusList))
             ->when(
                 $paymentMethod,
-                fn($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
+                fn ($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
                     $sub->selectRaw('1')
                         ->from('transactions as t')
                         ->whereColumn('t.model_id', 'sr.id')
@@ -305,8 +307,8 @@ class DailyClosingController extends Controller
                 'sr.full_invoice_number',
                 DB::raw("'Sale Return' as type"),
                 'sr.grand_total as total',
-                DB::raw("0 as debit"),
-                DB::raw("0 as credit"),
+                DB::raw('0 as debit'),
+                DB::raw('0 as credit'),
                 'sr.created_at',
                 'sr.status',
                 DB::raw("'sale_return' as model_type")
@@ -321,32 +323,32 @@ class DailyClosingController extends Controller
                 [SaleReturn::class]
             )
             ->selectRaw(
-                "(SELECT pm.logo FROM transactions t
+                '(SELECT pm.logo FROM transactions t
                     INNER JOIN payment_methods pm ON pm.id = t.payment_method_id
-                    WHERE t.model_type = ? AND t.model_id = sr.id LIMIT 1) as payment_method_logo",
+                    WHERE t.model_type = ? AND t.model_id = sr.id LIMIT 1) as payment_method_logo',
                 [SaleReturn::class]
             )
             ->selectRaw('NULL as seller_name')
             ->selectRaw('NULL as seller_image')
             ->selectRaw('(SELECT tn.name FROM tenants tn WHERE tn.id = sr.tenant_id) as tenant_name')
-            ->selectRaw($this->productsSubquery('sale_return_items', 'sale_return_id', 'sr') . ' as products');
+            ->selectRaw($this->productsSubquery('sale_return_items', 'sale_return_id', 'sr').' as products');
 
         // 5. Ledgers — debit/credit already exist on the table itself
         $ledgers = DB::table('ledgers as l')
             ->whereDate('l.date', $today)
-            ->when($warehouse, fn($q) => $q->where('l.tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->where('l.contact_id', $contact))
-            ->when($seller, fn($q) => $q->whereRaw('0=1'))
-            ->when($status, fn($q) => $q->whereRaw('0=1'))
-            ->when($paymentMethod, fn($q) => $q->where('l.payment_method_id', $paymentMethod))
+            ->when($warehouse, fn ($q) => $q->where('l.tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->where('l.contact_id', $contact))
+            ->when($seller, fn ($q) => $q->whereRaw('0=1'))
+            ->when($status, fn ($q) => $q->whereRaw('0=1'))
+            ->when($paymentMethod, fn ($q) => $q->where('l.payment_method_id', $paymentMethod))
             ->select(
                 'l.id',
                 'l.date',
                 'l.full_invoice_number',
                 DB::raw("CASE WHEN IFNULL(l.credit, 0) > 0 THEN 'Payment Received' WHEN IFNULL(l.debit, 0) > 0 THEN 'Payment Sent' ELSE 'Ledger' END as type"),
-                DB::raw("IFNULL(l.debit, 0) + IFNULL(l.credit, 0) as total"),
-                DB::raw("IFNULL(l.credit, 0) as debit"),
-                DB::raw("IFNULL(l.debit, 0) as credit"),
+                DB::raw('IFNULL(l.debit, 0) + IFNULL(l.credit, 0) as total'),
+                DB::raw('IFNULL(l.credit, 0) as debit'),
+                DB::raw('IFNULL(l.debit, 0) as credit'),
                 'l.created_at',
                 DB::raw('NULL as status'),
                 DB::raw('NULL as model_type')
@@ -364,11 +366,11 @@ class DailyClosingController extends Controller
         // 6. Expenses, Withdraws, Investments
         $expenses = DB::table('expenses')
             ->whereDate('expenses.date', $today)
-            ->when($warehouse, fn($q) => $q->where('tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->whereRaw('0=1'))
-            ->when($seller, fn($q) => $q->whereRaw('0=1'))
-            ->when($status, fn($q) => $q->whereRaw('0=1'))
-            ->when($paymentMethod, fn($q) => $q->where('payment_method_id', $paymentMethod))
+            ->when($warehouse, fn ($q) => $q->where('tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->whereRaw('0=1'))
+            ->when($seller, fn ($q) => $q->whereRaw('0=1'))
+            ->when($status, fn ($q) => $q->whereRaw('0=1'))
+            ->when($paymentMethod, fn ($q) => $q->where('payment_method_id', $paymentMethod))
             ->select('id', 'date', DB::raw("CONCAT('EXP-', id) as full_invoice_number"), DB::raw("'Expense' as type"), 'amount as total', DB::raw('0 as debit'), 'amount as credit', 'created_at', DB::raw('NULL as status'), DB::raw('NULL as model_type'))
             ->selectRaw('NULL as contact_name')
             ->selectRaw('NULL as contact_image')
@@ -382,13 +384,13 @@ class DailyClosingController extends Controller
 
         $withdraws = DB::table('incomes')
             ->whereDate('incomes.date', $today)
-            ->when($warehouse, fn($q) => $q->where('tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->where('incomes.contact_id', $contact))
-            ->when($seller, fn($q) => $q->whereRaw('0=1'))
-            ->when($status, fn($q) => $q->whereRaw('0=1'))
+            ->when($warehouse, fn ($q) => $q->where('tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->where('incomes.contact_id', $contact))
+            ->when($seller, fn ($q) => $q->whereRaw('0=1'))
+            ->when($status, fn ($q) => $q->whereRaw('0=1'))
             ->when(
                 $paymentMethod,
-                fn($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
+                fn ($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
                     $sub->selectRaw('1')
                         ->from('ledgers as lg')
                         ->whereColumn('lg.id', 'incomes.ledger_id')
@@ -408,13 +410,13 @@ class DailyClosingController extends Controller
 
         $investments = DB::table('investments')
             ->whereDate('investments.date', $today)
-            ->when($warehouse, fn($q) => $q->where('tenant_id', $warehouse))
-            ->when($contact, fn($q) => $q->where('investments.contact_id', $contact))
-            ->when($seller, fn($q) => $q->whereRaw('0=1'))
-            ->when($status, fn($q) => $q->whereRaw('0=1'))
+            ->when($warehouse, fn ($q) => $q->where('tenant_id', $warehouse))
+            ->when($contact, fn ($q) => $q->where('investments.contact_id', $contact))
+            ->when($seller, fn ($q) => $q->whereRaw('0=1'))
+            ->when($status, fn ($q) => $q->whereRaw('0=1'))
             ->when(
                 $paymentMethod,
-                fn($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
+                fn ($q) => $q->whereExists(function ($sub) use ($paymentMethod) {
                     $sub->selectRaw('1')
                         ->from('ledgers as lg')
                         ->whereColumn('lg.id', 'investments.ledger_id')
@@ -439,10 +441,10 @@ class DailyClosingController extends Controller
             ->whereDate('ct.transfer_date', $today)
             ->when(
                 $warehouse,
-                fn($q) => $q->where('ct.from_tenant_id', $warehouse),
-                fn($q) => $q->whereRaw('0=1')
+                fn ($q) => $q->where('ct.from_tenant_id', $warehouse),
+                fn ($q) => $q->whereRaw('0=1')
             )
-            ->when($contact || $seller || $status || $paymentMethod, fn($q) => $q->whereRaw('0=1'))
+            ->when($contact || $seller || $status || $paymentMethod, fn ($q) => $q->whereRaw('0=1'))
             ->select(
                 'ct.id',
                 'ct.transfer_date as date',
@@ -472,10 +474,10 @@ class DailyClosingController extends Controller
             ->whereDate('ct.transfer_date', $today)
             ->when(
                 $warehouse,
-                fn($q) => $q->where('ct.to_tenant_id', $warehouse),
-                fn($q) => $q->whereRaw('0=1')
+                fn ($q) => $q->where('ct.to_tenant_id', $warehouse),
+                fn ($q) => $q->whereRaw('0=1')
             )
-            ->when($contact || $seller || $status || $paymentMethod, fn($q) => $q->whereRaw('0=1'))
+            ->when($contact || $seller || $status || $paymentMethod, fn ($q) => $q->whereRaw('0=1'))
             ->select(
                 'ct.id',
                 'ct.transfer_date as date',
@@ -515,27 +517,26 @@ class DailyClosingController extends Controller
         // Ledger: credit column = debit side, debit column = credit side (same swap as getTodayDataQuery)
         $ledgers = DB::table('ledgers as l')
             ->whereDate('l.date', '<', $today)
-            ->when($warehouse, fn($q) => $q->where('l.tenant_id', $warehouse))
+            ->when($warehouse, fn ($q) => $q->where('l.tenant_id', $warehouse))
             ->select(
-                DB::raw("COALESCE(SUM(IFNULL(l.credit, 0)), 0) as debit"),
-                DB::raw("COALESCE(SUM(IFNULL(l.debit, 0)), 0) as credit")
+                DB::raw('COALESCE(SUM(IFNULL(l.credit, 0)), 0) as debit'),
+                DB::raw('COALESCE(SUM(IFNULL(l.debit, 0)), 0) as credit')
             );
 
         $expenses = DB::table('expenses')
             ->whereDate('date', '<', $today)
-            ->when($warehouse, fn($q) => $q->where('tenant_id', $warehouse))
-            ->select(DB::raw("0 as debit"), DB::raw("COALESCE(SUM(amount), 0) as credit"));
+            ->when($warehouse, fn ($q) => $q->where('tenant_id', $warehouse))
+            ->select(DB::raw('0 as debit'), DB::raw('COALESCE(SUM(amount), 0) as credit'));
 
         $withdraws = DB::table('incomes')
             ->whereDate('date', '<', $today)
-            ->when($warehouse, fn($q) => $q->where('tenant_id', $warehouse))
-            ->select(DB::raw("0 as debit"), DB::raw("COALESCE(SUM(amount), 0) as credit"));
+            ->when($warehouse, fn ($q) => $q->where('tenant_id', $warehouse))
+            ->select(DB::raw('0 as debit'), DB::raw('COALESCE(SUM(amount), 0) as credit'));
 
         $investments = DB::table('investments')
             ->whereDate('date', '<', $today)
-            ->when($warehouse, fn($q) => $q->where('tenant_id', $warehouse))
-            ->select(DB::raw("COALESCE(SUM(amount), 0) as debit"), DB::raw("0 as credit"));
-
+            ->when($warehouse, fn ($q) => $q->where('tenant_id', $warehouse))
+            ->select(DB::raw('COALESCE(SUM(amount), 0) as debit'), DB::raw('0 as credit'));
 
         // Cash Transfer OUT — money leaves this warehouse (credit side)
         $cashTransferOut = DB::table('cash_transfers as ct')
@@ -544,8 +545,8 @@ class DailyClosingController extends Controller
             ->whereDate('ct.transfer_date', '<', $today)
             ->when(
                 $warehouse,
-                fn($q) => $q->where('ct.from_tenant_id', $warehouse),
-                fn($q) => $q->whereRaw('0=1')
+                fn ($q) => $q->where('ct.from_tenant_id', $warehouse),
+                fn ($q) => $q->whereRaw('0=1')
             )
             ->select(
                 DB::raw('0 as debit'),
@@ -559,8 +560,8 @@ class DailyClosingController extends Controller
             ->whereDate('ct.transfer_date', '<', $today)
             ->when(
                 $warehouse,
-                fn($q) => $q->where('ct.to_tenant_id', $warehouse),
-                fn($q) => $q->whereRaw('0=1')
+                fn ($q) => $q->where('ct.to_tenant_id', $warehouse),
+                fn ($q) => $q->whereRaw('0=1')
             )
             ->select(
                 DB::raw('COALESCE(SUM(ct.amount), 0) as debit'),
@@ -586,7 +587,7 @@ class DailyClosingController extends Controller
     {
         $today = Carbon::now('Asia/Dhaka')->toDateString();
         $isAppAdmin = auth()->user()->isAppAdmin();
-        $warehouse = $isAppAdmin ? $request->get('warehouse', null) : tenant()->id;
+        $warehouse = $isAppAdmin ? $request->get('warehouse') : tenant()->id;
         $filters = $this->extractFilters($request);
 
         $openingBalance = $this->calculateOpeningBalance($today, $warehouse);
@@ -600,6 +601,7 @@ class DailyClosingController extends Controller
             $totalDebit += $item->debit;
             $totalCredit += $item->credit;
             $currentBal += ($item->debit - $item->credit);
+
             return [
                 'date' => $item->date,
                 'particular' => $item->type,
@@ -617,7 +619,7 @@ class DailyClosingController extends Controller
                 'total' => $item->total,
                 'debit' => $item->debit,
                 'credit' => $item->credit,
-                'balance' => $currentBal
+                'balance' => $currentBal,
             ];
         })->toArray();
 
@@ -638,7 +640,7 @@ class DailyClosingController extends Controller
             'total' => '0.00',
             'debit' => '0.00',
             'credit' => '0.00',
-            'balance' => $openingBalance
+            'balance' => $openingBalance,
         ]);
 
         $tenantId = $isAppAdmin ? (is_array($warehouse) ? ($warehouse[0] ?? null) : $warehouse) : tenant()->id;
@@ -667,25 +669,25 @@ class DailyClosingController extends Controller
         $isAppAdmin = auth()->user()->isAppAdmin();
         $search = $request->get('search', '');
         $perPage = $request->get('per_page', 10);
-        $warehouse = $isAppAdmin ? $request->get('warehouse', null) : tenant()->id;
+        $warehouse = $isAppAdmin ? $request->get('warehouse') : tenant()->id;
         $filters = $this->extractFilters($request);
 
         $today = Carbon::now('Asia/Dhaka')->toDateString();
-
 
         $mergedToday = $this->getTodayDataQuery($today, $warehouse, $filters);
 
         $balance = 0;
         // 3. Final Query with Search and Pagination
         $data = DB::query()->fromSub($mergedToday, 'combined')
-            ->when($search, fn($q) => $q->whereRaw("LOWER(full_invoice_number) LIKE ?", ['%' . strtolower($search) . '%']))
+            ->when($search, fn ($q) => $q->whereRaw('LOWER(full_invoice_number) LIKE ?', ['%'.strtolower($search).'%']))
             ->orderBy('created_at', 'asc')
             ->paginate($perPage)
             ->through(function ($item, $key) use (&$balance) {
                 $balance += ($item->debit - $item->credit);
+
                 return [
                     ...(array) $item,
-                    'sl'      => $key + 1,
+                    'sl' => $key + 1,
                     'balance' => $balance,
                 ];
             });
@@ -694,9 +696,10 @@ class DailyClosingController extends Controller
             ->fromSub($mergedToday, 'ob')
             ->selectRaw('SUM(debit) as d, SUM(credit) as c')
             ->first();
+
         return response()->json([
             ...$data->toArray(),
-            'grand_total' => ['balance' => ($totals->d ?? 0) - ($totals->c ?? 0)]
+            'grand_total' => ['balance' => ($totals->d ?? 0) - ($totals->c ?? 0)],
         ]);
     }
 
@@ -704,14 +707,13 @@ class DailyClosingController extends Controller
     {
         $isAppAdmin = auth()->user()->isAppAdmin();
         $search = $request->get('search', '');
-        $perPage = $request->get('per_page', 10);
-        $warehouse = $isAppAdmin ? $request->get('warehouse', null) : tenant()->id;
+        $request->get('per_page', 10);
+        $warehouse = $isAppAdmin ? $request->get('warehouse') : tenant()->id;
         $filters = $this->extractFilters($request);
 
-        if ($isAppAdmin && !$warehouse) {
-            throw new Exception("Warehouse is required");
+        if ($isAppAdmin && ! $warehouse) {
+            throw new Exception('Warehouse is required');
         }
-
 
         $today = Carbon::now('Asia/Dhaka')->toDateString();
 
@@ -720,11 +722,12 @@ class DailyClosingController extends Controller
         $balance = 0;
         // 3. Final Query with Search and Pagination
         $data = DB::query()->fromSub($mergedToday, 'combined')
-            ->when($search, fn($q) => $q->whereRaw("LOWER(full_invoice_number) LIKE ?", ['%' . strtolower($search) . '%']))
+            ->when($search, fn ($q) => $q->whereRaw('LOWER(full_invoice_number) LIKE ?', ['%'.strtolower($search).'%']))
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function ($item) use (&$balance) {
                 $balance += ($item->credit - $item->debit);
+
                 return [
                     'date' => $item->date,
                     'particular' => $item->type,
@@ -740,7 +743,7 @@ class DailyClosingController extends Controller
                     'total' => $item->total,
                     'debit' => $item->debit,
                     'credit' => $item->credit,
-                    'balance' => $balance
+                    'balance' => $balance,
                 ];
             });
 

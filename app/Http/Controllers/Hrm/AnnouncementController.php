@@ -22,22 +22,22 @@ class AnnouncementController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'         => ['required', 'string', 'max:255'],
-            'start_date'    => ['required', 'date'],
-            'end_date'      => ['required', 'date', 'after_or_equal:start_date'],
-            'description'   => ['nullable', 'string'],
-            'departments'   => ['nullable', 'array'],
+            'title' => ['required', 'string', 'max:255'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'description' => ['nullable', 'string'],
+            'departments' => ['nullable', 'array'],
             'departments.*' => ['exists:departments,id'],
         ]);
 
         $announcement = Announcement::query()->create([
-            'title'       => $validated['title'],
-            'start_date'  => $validated['start_date'],
-            'end_date'    => $validated['end_date'],
+            'title' => $validated['title'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
             'description' => $validated['description'] ?? null,
         ]);
 
-        if (!empty($validated['departments'])) {
+        if (! empty($validated['departments'])) {
             $announcement->departments()->sync($validated['departments']);
         }
 
@@ -54,18 +54,18 @@ class AnnouncementController extends Controller
     public function update(Request $request, Announcement $announcement)
     {
         $validated = $request->validate([
-            'title'         => ['sometimes', 'string', 'max:255'],
-            'start_date'    => ['sometimes', 'date'],
-            'end_date'      => ['sometimes', 'date', 'after_or_equal:start_date'],
-            'description'   => ['nullable', 'string'],
-            'departments'   => ['nullable', 'array'],
+            'title' => ['sometimes', 'string', 'max:255'],
+            'start_date' => ['sometimes', 'date'],
+            'end_date' => ['sometimes', 'date', 'after_or_equal:start_date'],
+            'description' => ['nullable', 'string'],
+            'departments' => ['nullable', 'array'],
             'departments.*' => ['exists:departments,id'],
         ]);
 
         $announcement->update([
-            'title'       => $validated['title'] ?? $announcement->title,
-            'start_date'  => $validated['start_date'] ?? $announcement->start_date,
-            'end_date'    => $validated['end_date'] ?? $announcement->end_date,
+            'title' => $validated['title'] ?? $announcement->title,
+            'start_date' => $validated['start_date'] ?? $announcement->start_date,
+            'end_date' => $validated['end_date'] ?? $announcement->end_date,
             'description' => $validated['description'] ?? $announcement->description,
         ]);
 
@@ -79,6 +79,7 @@ class AnnouncementController extends Controller
     public function destroy(Announcement $announcement)
     {
         $announcement->delete();
+
         return successResponse('Announcement deleted successfully');
     }
 
@@ -88,11 +89,11 @@ class AnnouncementController extends Controller
 
     private function sendNotifications(Announcement $announcement, array $departmentIds): void
     {
-        if (!empty($departmentIds)) {
+        if ($departmentIds !== []) {
             // Only employees in the selected departments
             $recipients = User::query()
                 ->where('is_employee', true)
-                ->whereHas('currentDepartment', fn($q) => $q->whereIn('department_id', $departmentIds))
+                ->whereHas('currentDepartment', fn ($q) => $q->whereIn('department_id', $departmentIds))
                 ->get();
         } else {
             // No department selected → all employees
@@ -101,7 +102,9 @@ class AnnouncementController extends Controller
                 ->get();
         }
 
-        if ($recipients->isEmpty()) return;
+        if ($recipients->isEmpty()) {
+            return;
+        }
 
         Notification::send($recipients, new AnnouncementNotification($announcement));
     }

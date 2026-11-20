@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Pos\Sale;
 
-use Throwable;
-use App\Models\Pos\Sale\Sale;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Exceptions\GeneralException;
 use App\Filters\Pos\Sale\SaleFilter;
 use App\Http\Controllers\Controller;
-use App\Services\Pos\Sale\SaleService;
-use App\Models\Pos\Purchase\PurchaseItem;
 use App\Http\Requests\Pos\Sale\SaleRequest;
+use App\Models\Pos\Purchase\PurchaseItem;
+use App\Models\Pos\Sale\Sale;
+use App\Services\Pos\Sale\SaleService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class SaleController extends Controller
 {
@@ -46,7 +46,6 @@ class SaleController extends Controller
         $totalInvoiceCount = (clone $baseQuery)->count('id');
 
         $saleIds = $baseQuery->pluck('id')->toArray();
-
 
         // Total items (fastest way)
         $totalItem = $this->service
@@ -97,7 +96,7 @@ class SaleController extends Controller
                         'name' => $item->seller->name,
                         'profile_picture' => $item->seller->profile_picture,
                     ] : null,
-                    'payment_methods' => $item->payments->map(fn($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
+                    'payment_methods' => $item->payments->map(fn ($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn ($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
                     'total_invoice' => $counter,
                     'total_item' => $item->total_item,
                     'received_amount' => $received,
@@ -122,9 +121,9 @@ class SaleController extends Controller
         ];
     }
 
-
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function store(SaleRequest $request)
@@ -152,7 +151,7 @@ class SaleController extends Controller
             // applied in PurchaseController::store()).
             try {
                 $this->service->profitLossRecalculate();
-            } catch (\Throwable $plException) {
+            } catch (Throwable $plException) {
                 report($plException);
             }
 
@@ -163,15 +162,14 @@ class SaleController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if ($exception->getCode() === 400) {
-                throw new GeneralException($exception->getMessage(), 500);
+                throw new GeneralException($exception->getMessage(), 500, $exception);
             }
             if (app()->environment('production')) {
-                throw new GeneralException('Sale creation failed', 500);
+                throw new GeneralException('Sale creation failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
-
 
     /**
      * Display the specified resource.
@@ -185,19 +183,17 @@ class SaleController extends Controller
             'items' => $sale->items()->with([
                 'product:id,product_name',
                 'product.serial:product_id,serial_number,status',
-                'productVariant:id,sku'
+                'productVariant:id,sku',
             ])
                 ->get()
-                ->map(function ($item) use ($sale) {
+                ->map(
                     //                    $matchedSerial = $item->product?->serial
                     //                        ->firstWhere('serial_number', $item->serial_number);
-
                     //                    $productSerialStatus = TenantProductSerial::query()
                     //                        ->when($isAdmin, fn($query) => $query->where('tenant_id', $sale->tenant_id))
                     //                        ->where('product_serial_id', $matchedSerial?->id)
                     //                        ->first();
-
-                    return [
+                    fn ($item) => [
                         'id' => $item->id,
                         'product_id' => $item->product_id,
                         'variant_id' => $item->product_variant_id,
@@ -212,13 +208,13 @@ class SaleController extends Controller
                         'discount_amount' => $item->discount_amount,
                         //                        'status' => $productSerialStatus?->status,
                         'attribute_values' => $item->productVariant?->attributeValues->pluck('value')->implode('/'),
-                    ];
-                }),
+                    ]),
         ];
     }
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function update(SaleRequest $request, Sale $sale)
@@ -238,7 +234,7 @@ class SaleController extends Controller
             // See the matching comment in store() - must run after commit.
             try {
                 $this->service->profitLossRecalculate();
-            } catch (\Throwable $plException) {
+            } catch (Throwable $plException) {
                 report($plException);
             }
 
@@ -246,15 +242,14 @@ class SaleController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if ($exception->getCode() === 400) {
-                throw new GeneralException($exception->getMessage(), 500);
+                throw new GeneralException($exception->getMessage(), 500, $exception);
             }
             if (app()->environment('production')) {
-                throw new GeneralException('Sale update failed', 500);
+                throw new GeneralException('Sale update failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
-
 
     /**
      * Quick update of just the seller on a sale (from the list row action).
@@ -292,7 +287,7 @@ class SaleController extends Controller
             // See the matching comment in store() - must run after commit.
             try {
                 $this->service->profitLossRecalculate();
-            } catch (\Throwable $plException) {
+            } catch (Throwable $plException) {
                 report($plException);
             }
 
@@ -300,9 +295,9 @@ class SaleController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Sale deletion failed', 500);
+                throw new GeneralException('Sale deletion failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
@@ -313,9 +308,10 @@ class SaleController extends Controller
             ->where('product_variant_id', $serial?->product_variant_id)
             ->where('serial_number', $serial->serial_number)
             ->first();
-        if (!$purchases) {
+        if (! $purchases) {
             return 0;
         }
+
         return $purchases->unit_price;
     }
 }

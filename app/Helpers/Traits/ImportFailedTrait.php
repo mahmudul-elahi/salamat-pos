@@ -4,6 +4,8 @@ namespace App\Helpers\Traits;
 
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Exception;
+use PhpOffice\PhpSpreadsheet\Reader\Csv;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 trait ImportFailedTrait
@@ -20,13 +22,13 @@ trait ImportFailedTrait
         $errors = [];
         $colCount = count($failures[0]->values());
         foreach ($failures as $failure) {
-            if (!in_array($failure->row(), $rowIndexes)) {
+            if (! in_array($failure->row(), $rowIndexes)) {
                 $rowIndexes[] = $failure->row();
                 $rowsData[] = collect($failure->values())->values()->toArray();
             }
-            //row index
+            // row index
             $rowIndex = $failure->row(); // row that went wrong
-            //column index
+            // column index
 
             $failure->attribute(); // either heading key (if using heading row concern) or column index
             // error message
@@ -39,14 +41,14 @@ trait ImportFailedTrait
         // Create a new Spreadsheet object
         // $spreadsheet = new Spreadsheet($file);
 
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Csv();
+        $reader = new Csv;
 
         $spreadsheet = $reader->load($file->getRealPath());
         // Retrieve the current active worksheet
         $sheet = $spreadsheet->getActiveSheet();
 
         foreach ($errors as $error) {
-            $cell = $cellStr[$error[0]] . $error[1];
+            $cell = $cellStr[$error[0]].$error[1];
             $sheet
                 ->getComment($cell)
                 ->getText()
@@ -54,7 +56,7 @@ trait ImportFailedTrait
             $styleArray = [
                 'borders' => [
                     'outline' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'borderStyle' => Border::BORDER_THIN,
                         'color' => ['argb' => 'FFFF0000'],
                     ],
                 ],
@@ -63,8 +65,8 @@ trait ImportFailedTrait
         }
         $successfulRows = 0;
         // remove successful data row
-        for ($i = $sheet->getHighestDataRow(); $i > 1; --$i) {
-            if (!in_array($i, $rowIndexes)) {
+        for ($i = $sheet->getHighestDataRow(); $i > 1; $i--) {
+            if (! in_array($i, $rowIndexes)) {
                 $sheet->removeRow($i, 1);
                 $successfulRows++;
             }
@@ -73,7 +75,7 @@ trait ImportFailedTrait
         // Write a new .csv file
         $writer = new Xlsx($spreadsheet);
         // Save the new .xlsx file
-        $errorFileName = Str::slug($file->getClientOriginalName(), '_') . '_' . time();
+        $errorFileName = Str::slug($file->getClientOriginalName(), '_').'_'.time();
         $pathToFile = storage_path("/app/public/{$errorFileName}.xlsx");
         $writer->save($pathToFile);
 
@@ -84,7 +86,7 @@ trait ImportFailedTrait
             'failed_rate' => round((count($rowIndexes) / ($successfulRows + count($rowIndexes))) * 100),
             'error_count' => $failures->count(),
             'error_rate' => round(($failures->count() / ($colCount * count($rowIndexes))) * 100),
-            'path_to_file' => url("storage/{$errorFileName}.xlsx")
+            'path_to_file' => url("storage/{$errorFileName}.xlsx"),
         ];
     }
 }

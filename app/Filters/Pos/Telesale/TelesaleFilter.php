@@ -60,7 +60,7 @@ class TelesaleFilter extends BaseFilter
                 $range = json_decode($range, true);
             }
 
-            if (!is_array($range) || count($range) < 2) {
+            if (! is_array($range) || count($range) < 2) {
                 return;
             }
 
@@ -70,7 +70,7 @@ class TelesaleFilter extends BaseFilter
                 Carbon::parse($startDate)->toDateString(),
                 Carbon::parse($endDate)->toDateString(),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range format.');
         }
     }

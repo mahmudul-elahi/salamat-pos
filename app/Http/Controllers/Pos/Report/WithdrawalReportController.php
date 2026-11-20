@@ -6,9 +6,9 @@ use App\Exceptions\GeneralException;
 use App\Filters\Pos\Report\IncomeFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Income\Income;
-use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\Setting\SettingService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class WithdrawalReportController extends Controller
 {
@@ -17,7 +17,7 @@ class WithdrawalReportController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $queryData = Income::query()
-            ->filters(new IncomeFilter())
+            ->filters(new IncomeFilter)
             ->with([
                 'user:id,name,profile_photo',
                 'createdBy:id,name',
@@ -29,9 +29,9 @@ class WithdrawalReportController extends Controller
 
         $paginated = (clone $queryData)
             ->paginate($perPage)
-            ->through(fn($income) => [
+            ->through(fn ($income) => [
                 ...$income->toArray(),
-                'full_invoice_number' => 'WTH-' . $income->id,
+                'full_invoice_number' => 'WTH-'.$income->id,
             ]);
 
         $withdrawalTotalSum = (clone $queryData)
@@ -53,23 +53,21 @@ class WithdrawalReportController extends Controller
         $isAppAdmin = auth()->user()->isAppAdmin();
         $wareHouse = $request->input('warehouse');
 
-        if ($isAppAdmin && !$wareHouse) {
+        if ($isAppAdmin && ! $wareHouse) {
             throw new GeneralException('Select warehouse first');
         }
 
         $tenantId = $isAppAdmin ? $wareHouse : tenant()->id;
 
         $queryData = Income::query()
-            ->filters(new IncomeFilter())
+            ->filters(new IncomeFilter)
             ->with('user:id,name')
             ->orderByDesc('id');
 
         $withdrawals = (clone $queryData)->get();
         $totalWithdrawal = (clone $queryData)->sum('amount');
 
-
         $tenantSettings = resolve(SettingService::class)->getFormattedSettings('tenant', $tenantId);
-
 
         $pdf = Pdf::loadView('pdf.withdrawal-report', [
             'withdrawals' => $withdrawals,
@@ -78,32 +76,5 @@ class WithdrawalReportController extends Controller
         ])->setPaper('a4', 'portrait');
 
         return $pdf->stream('withdrawal-report.pdf');
-    }
-
-    /**
-     * Get transaction title based on model type
-     */
-    private function getTransactionTitle($transaction): string
-    {
-        if (!$transaction->model) {
-            return $transaction->note ?? 'Withdrawal';
-        }
-
-        $modelType = class_basename($transaction->model_type);
-
-        switch ($modelType) {
-            case 'Sale':
-                return 'Credit Sales';
-            case 'SaleReturn':
-                return 'Credit Sales Return';
-            case 'Purchase':
-                return 'Credit Purchase';
-            case 'PurchaseReturn':
-                return 'Credit Purchase Return';
-            case 'Expense':
-                return 'Paid By Cash';
-            default:
-                return $transaction->note ?? 'Withdrawal';
-        }
     }
 }

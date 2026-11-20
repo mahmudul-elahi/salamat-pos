@@ -13,14 +13,11 @@ use Illuminate\Support\Str;
 
 class ExpenseReportController extends Controller
 {
-    public function __construct(protected ExpenseFilter $filter)
-    {
-    }
+    public function __construct(protected ExpenseFilter $filter) {}
 
     public function index()
     {
         $perPage = request('per_page', 10);
-
 
         $queryData = Expense::query()
             ->filters($this->filter)
@@ -29,9 +26,9 @@ class ExpenseReportController extends Controller
 
         $paginated = (clone $queryData)
             ->paginate($perPage)
-            ->through(fn($expense) => [
+            ->through(fn ($expense) => [
                 ...$expense->toArray(),
-                'full_invoice_number' => 'EXP-' . $expense->id,
+                'full_invoice_number' => 'EXP-'.$expense->id,
             ]);
 
         $totalSum = (clone $queryData)
@@ -75,7 +72,7 @@ class ExpenseReportController extends Controller
     {
         $status = Cache::get(GenerateExpenseReportPdfJob::cacheKey($token));
 
-        if (!$status) {
+        if (! $status) {
             return response()->json(['status' => 'not_found'], 404);
         }
 
@@ -97,11 +94,4 @@ class ExpenseReportController extends Controller
 
         return response()->json(['deleted' => true]);
     }
-
-    private function getTodayDataQuery($date, $warehouse)
-    {
-
-    }
-
-
 }

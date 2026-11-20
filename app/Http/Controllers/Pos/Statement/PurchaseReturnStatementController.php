@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers\Pos\Statement;
 
+use App\Filters\Pos\Report\PurchaseReportFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
-use App\Filters\Pos\Report\PurchaseReportFilter;
-use Illuminate\Http\Request;
+use App\Services\Setting\SettingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\Setting\SettingService;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class PurchaseReturnStatementController extends Controller
 {
@@ -18,7 +17,7 @@ class PurchaseReturnStatementController extends Controller
     {
         $perPage = $request->input('per_page', 10);
         $baseQuery = PurchaseReturn::query()
-            ->filters(new PurchaseReportFilter())
+            ->filters(new PurchaseReportFilter)
             ->whereDate('purchase_returns.date', Carbon::today())
             ->with([
                 'contact:id,name,profile_picture',
@@ -81,13 +80,12 @@ class PurchaseReturnStatementController extends Controller
                 'total_items' => $totalItems,
                 'grand_total' => $grandTotal,
                 'paid_amount' => $paidAmount,
-                'due_amount' => ($grandTotal - $paidAmount)
+                'due_amount' => ($grandTotal - $paidAmount),
             ],
         ]);
     }
 
-
-    private const PDF_TOGGLEABLE_COLUMNS = ['transaction_mode', 'narration', 'total_item', 'total_amount', 'due_amount', 'received_amount'];
+    private const array PDF_TOGGLEABLE_COLUMNS = ['transaction_mode', 'narration', 'total_item', 'total_amount', 'due_amount', 'received_amount'];
 
     public function purchaseReturnStatementPdf(Request $request)
     {
@@ -98,14 +96,14 @@ class PurchaseReturnStatementController extends Controller
             ? array_intersect(explode(',', $request->input('columns')), self::PDF_TOGGLEABLE_COLUMNS)
             : self::PDF_TOGGLEABLE_COLUMNS;
 
-        $filter = new PurchaseReportFilter();
+        $filter = new PurchaseReportFilter;
 
         $returnsQuery = PurchaseReturn::query()
             ->with(['contact:id,name', 'payments.paymentMethod', 'items'])
             ->filters($filter)
             ->whereDate('date', Carbon::today());
 
-        if (!$isAppAdmin && tenant()) {
+        if (! $isAppAdmin && tenant()) {
             $returnsQuery->where('tenant_id', tenant()->id);
         }
 
@@ -114,36 +112,36 @@ class PurchaseReturnStatementController extends Controller
         $combined = $returns->map(function ($return) {
             $received = $return->payments->sum('amount');
             $due = $return->grand_total - $received;
+
             return [
                 'date_obj' => Carbon::parse($return->date),
                 'id' => $return->id,
                 'date' => Carbon::parse($return->date)->format('d.m.y'),
                 'supplier_name' => $return->contact->name ?? '-',
                 'transaction_mode' => 'Purchase Return',
-                'narration' => $return->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'narration' => $return->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
                 'invoice' => $return->full_invoice_number,
                 'total_item' => $return->items->sum('quantity'),
-                'total_amount' => (float)$return->grand_total,
-                'due_amount' => (float)$due,
-                'received_amount' => (float)$received,
+                'total_amount' => (float) $return->grand_total,
+                'due_amount' => (float) $due,
+                'received_amount' => (float) $received,
             ];
-        })->sortByDesc(function ($item) {
-            return $item['date_obj']->format('Y-m-d') . $item['id'];
-        })->values();
+        })->sortByDesc(fn ($item) => $item['date_obj']->format('Y-m-d').$item['id'])->values();
 
         // Add SL after sorting
         $combined = $combined->map(function ($item, $index) {
             $item['sl'] = $index + 1;
+
             return $item;
         });
 
         $totalReturns = $returns->sum('grand_total');
-        $totalItems = $returns->sum(fn($s) => $s->items->sum('quantity'));
-        $totalReceived = $returns->sum(fn($s) => $s->payments->sum('amount'));
+        $totalItems = $returns->sum(fn ($s) => $s->items->sum('quantity'));
+        $totalReceived = $returns->sum(fn ($s) => $s->payments->sum('amount'));
         $totalDue = $totalReturns - $totalReceived;
 
         $wareHouse = $request->input('warehouse');
-        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (strpos($wareHouse, ',') !== false ? explode(',', $wareHouse)[0] : $wareHouse);
+        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (str_contains($wareHouse, ',') ? explode(',', $wareHouse)[0] : $wareHouse);
         $tenantId = $isAppAdmin ? $firstWarehouseId : (tenant() ? tenant()->id : null);
 
         $appSettings = resolve(SettingService::class)->getFormattedSettings('app');

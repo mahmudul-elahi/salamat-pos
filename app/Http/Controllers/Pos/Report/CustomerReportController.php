@@ -25,7 +25,7 @@ class CustomerReportController extends Controller
      */
     private function contactIdsByBalanceSide(?int $tenantId, string $side)
     {
-        $forTenant = fn($query) => $query->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId));
+        $forTenant = fn ($query) => $query->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId));
 
         $sales = $forTenant(Sale::query())
             ->select('contact_id', 'grand_total as debit', DB::raw('0 as credit'));
@@ -40,7 +40,7 @@ class CustomerReportController extends Controller
             ->select('contact_id', 'grand_total as debit', DB::raw('0 as credit'));
 
         $exchangePurchases = $forTenant(Purchase::query())
-            ->whereHas('items', fn($q) => $q->where('purchase_type', 'exchange'))
+            ->whereHas('items', fn ($q) => $q->where('purchase_type', 'exchange'))
             ->select('contact_id', DB::raw('grand_total as debit'), DB::raw('0 as credit'));
 
         $ledgers = $forTenant(Ledger::query())
@@ -75,10 +75,10 @@ class CustomerReportController extends Controller
         $balanceType = request('balance_type');
 
         $contacts = Contact::query()
-            //->when($isAppAdmin && $tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            // ->when($isAppAdmin && $tenantId, fn($q) => $q->where('tenant_id', $tenantId))
             ->when(
                 $search,
-                fn($q) => $q->where('name', 'LIKE', "%{$search}%")
+                fn ($q) => $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('business_name', 'LIKE', "%{$search}%")
                     ->orWhere('phone', 'LIKE', "%{$search}%")
             )
@@ -87,7 +87,7 @@ class CustomerReportController extends Controller
             // balance leans the right way before paginating.
             ->when(
                 in_array($balanceType, ['debit', 'credit'], true),
-                fn($q) => $q->whereIn('contacts.id', $this->contactIdsByBalanceSide($tenantId, $balanceType))
+                fn ($q) => $q->whereIn('contacts.id', $this->contactIdsByBalanceSide($tenantId, $balanceType))
             )
             ->orderByDesc('id')
             ->paginate(request('per_page', 10));
@@ -98,33 +98,33 @@ class CustomerReportController extends Controller
 
         if ($contactIds->isNotEmpty()) {
             $sales = Sale::query()
-                ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                 ->whereIn('contact_id', $contactIds)
                 ->select('contact_id', 'grand_total as debit', DB::raw('0 as credit'));
 
             $saleReturns = SaleReturn::query()
-                ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                 ->whereIn('contact_id', $contactIds)
                 ->select('contact_id', DB::raw('0 as debit'), 'grand_total as credit');
 
             $purchases = Purchase::query()
-                ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                 ->whereIn('contact_id', $contactIds)
                 ->select('contact_id', DB::raw('0 as debit'), 'grand_total as credit');
 
             $purchaseReturns = PurchaseReturn::query()
-                ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                 ->whereIn('contact_id', $contactIds)
                 ->select('contact_id', 'grand_total as debit', DB::raw('0 as credit'));
 
             $exchangePurchases = Purchase::query()
-                ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
-                ->whereHas('items', fn($q) => $q->where('purchase_type', 'exchange'))
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+                ->whereHas('items', fn ($q) => $q->where('purchase_type', 'exchange'))
                 ->whereIn('contact_id', $contactIds)
                 ->select('contact_id', DB::raw('grand_total as debit'), DB::raw('0 as credit'));
 
             $ledgers = Ledger::query()
-                ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                 ->whereIn('contact_id', $contactIds)
                 ->select('contact_id', 'debit', 'credit');
 
@@ -150,8 +150,8 @@ class CustomerReportController extends Controller
 
             return [
                 ...$contact->toArray(),
-                'debit'   => $debit,
-                'credit'  => $credit,
+                'debit' => $debit,
+                'credit' => $credit,
                 'balance' => $debit - $credit,
             ];
         });
@@ -159,8 +159,6 @@ class CustomerReportController extends Controller
         return response()->json($contacts->toArray());
     }
 
-    /**
-     */
     public function ledgerReport($contactId)
     {
 
@@ -177,7 +175,6 @@ class CustomerReportController extends Controller
             $tenantId = tenant()->id;
         }
 
-
         // Sale/Purchase/Return invoices can be settled across several
         // payments in different methods, so there's no single method to show
         // per row - only the Ledger rows below (a single payment received/
@@ -185,28 +182,28 @@ class CustomerReportController extends Controller
         // a null placeholder purely to keep the UNION's column count/order
         // aligned with the Ledger branch's real payment_method column.
         $sales = Sale::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select('id', 'date', 'created_at', 'full_invoice_number', DB::raw("'Sale' as type"), 'grand_total as debit', DB::raw('0 as credit'), DB::raw('NULL as payment_method'), DB::raw('NULL as payment_method_logo'))
             ->where('contact_id', $contactId);
 
         $saleReturns = SaleReturn::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select('id', 'date', 'created_at', 'full_invoice_number', DB::raw("'Sale Return' as type"), DB::raw('0 as debit'), 'grand_total as credit', DB::raw('NULL as payment_method'), DB::raw('NULL as payment_method_logo'))
             ->where('contact_id', $contactId);
 
         $purchases = Purchase::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select('id', 'date', 'created_at', 'full_invoice_number', DB::raw("'Purchase' as type"), DB::raw('0 as debit'), 'grand_total as credit', DB::raw('NULL as payment_method'), DB::raw('NULL as payment_method_logo'))
             ->where('contact_id', $contactId);
 
         $purchaseReturns = PurchaseReturn::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select('id', 'date', 'created_at', 'full_invoice_number', DB::raw("'Purchase Return' as type"), 'grand_total as debit', DB::raw('0 as credit'), DB::raw('NULL as payment_method'), DB::raw('NULL as payment_method_logo'))
             ->where('contact_id', $contactId);
 
         $exchangePurchases = Purchase::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
-            ->whereHas('items', fn($q) => $q->where('purchase_type', 'exchange'))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->whereHas('items', fn ($q) => $q->where('purchase_type', 'exchange'))
             ->select(
                 'id',
                 'date',
@@ -224,7 +221,7 @@ class CustomerReportController extends Controller
             // Qualified as ledgers.tenant_id - payment_methods (joined below)
             // has its own tenant_id column too, so the unqualified form was
             // ambiguous to MySQL once that join was added.
-            ->when($tenantId, fn($q) => $q->where('ledgers.tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('ledgers.tenant_id', $tenantId))
             ->leftJoin('payment_methods', 'payment_methods.id', '=', 'ledgers.payment_method_id')
             ->select(
                 'ledgers.id',
@@ -259,7 +256,7 @@ class CustomerReportController extends Controller
 
         $data = DB::query()
             ->fromSub($ledgerUnion, 'combined')
-            ->when($search, fn($q) => $q->where('full_invoice_number', 'like', "%{$search}%"))
+            ->when($search, fn ($q) => $q->where('full_invoice_number', 'like', "%{$search}%"))
             ->select('*')
             // ->selectRaw('SUM(debit - credit) OVER (ORDER BY date ASC, created_at ASC) as balance')
             ->orderBy('date', 'asc')
@@ -267,9 +264,10 @@ class CustomerReportController extends Controller
             ->paginate($perPage)
             ->through(function ($item, $key) use (&$balance) {
                 $balance += ($item->debit - $item->credit);
+
                 return [
                     ...(array) $item,
-                    'sl'      => $key + 1,
+                    'sl' => $key + 1,
                     'balance' => $balance,
                 ];
             });

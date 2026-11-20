@@ -22,11 +22,11 @@ class PreOwnedProductSeoController extends Controller
         $seo = $product?->preOwnedSeo;
 
         return [
-            'title'            => $product->product_name,
-            'slug'             => $product->slug,
-            'meta_title'       => $seo?->title,
+            'title' => $product->product_name,
+            'slug' => $product->slug,
+            'meta_title' => $seo?->title,
             'meta_description' => $seo?->description,
-            'tags'             => $seo?->tags,
+            'tags' => $seo?->tags,
             'description' => $seo?->long_description,
         ];
     }
@@ -41,7 +41,7 @@ class PreOwnedProductSeoController extends Controller
         ]);
 
         $product->preOwnedSeo()->updateOrCreate([
-            'product_id' => $product->id
+            'product_id' => $product->id,
         ], [
             'title' => $request->meta_title,
             'description' => $request->meta_description,

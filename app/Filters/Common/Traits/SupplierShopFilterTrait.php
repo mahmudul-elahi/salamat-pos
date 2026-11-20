@@ -9,7 +9,7 @@ trait SupplierShopFilterTrait
         $shopId = explode(',', $shopId);
 
         $this->builder->when($shopId, function ($query, $shopId) {
-            $query->whereHas('tenants', fn($query) => $query->whereIn('tenant_id', $shopId));
+            $query->whereHas('tenants', fn ($query) => $query->whereIn('tenant_id', $shopId));
         });
     }
 }

@@ -18,14 +18,14 @@ class PurchaseSupplierToContactSeeder extends Seeder
             ->get();
 
         $purchases->each(function (Purchase $purchase) {
-            if ($purchase->supplier && $purchase->supplier->phone){
+            if ($purchase->supplier && $purchase->supplier->phone) {
                 $contact = Contact::query()
                     ->where('phone', $purchase->supplier->phone)
                     ->first();
 
-                if ($contact){
+                if ($contact) {
                     $purchase->update([
-                        'contact_id' => $contact->id
+                        'contact_id' => $contact->id,
                     ]);
                 }
             }

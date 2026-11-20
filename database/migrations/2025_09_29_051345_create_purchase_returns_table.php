@@ -1,10 +1,13 @@
 <?php
 
+use App\Models\Pos\Supplier\Supplier;
+use App\Models\Tenant\Tenant;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -13,18 +16,16 @@ return new class extends Migration {
         Schema::create('purchase_returns', function (Blueprint $table) {
             $table->bigIncrements('id');
 
-
-            $table->foreignIdFor(\App\Models\Pos\Supplier\Supplier::class)
+            $table->foreignIdFor(Supplier::class)
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
-            $table->foreignIdFor(\App\Models\Tenant\Tenant::class)
+            $table->foreignIdFor(Tenant::class)
                 ->nullable()
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-
 
             $table->date('date')->index();
             $table->unsignedBigInteger('invoice_number');
@@ -40,7 +41,6 @@ return new class extends Migration {
 
             $table->timestamps();
             $table->softDeletes();
-
 
             $table->unique(['tenant_id', 'invoice_number']);
             $table->index(['tenant_id', 'date']);

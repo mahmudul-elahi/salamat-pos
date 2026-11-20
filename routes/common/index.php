@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Common\Notification\NotificationController;
 use App\Http\Controllers\Landlord\Template\TemplateController;
 use Illuminate\Routing\Router;
@@ -12,10 +14,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum']], function (
     $router->patch('templates/{template}', [TemplateController::class, 'update'])
         ->name('templates.update');
 
-
-
 });
-
 
 Route::group(['prefix' => 'app', 'middleware' => 'auth:sanctum'], function (Router $router) {
 
@@ -24,5 +23,3 @@ Route::group(['prefix' => 'app', 'middleware' => 'auth:sanctum'], function (Rout
     $router->patch('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
 });
-
-

@@ -7,6 +7,7 @@ use App\Filters\Landlord\Common\NameFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Income\IncomeCategory;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -35,13 +36,12 @@ class IncomeCategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'director_id' => ['required', 'exists:users,id'],
-            'tenant_id'   => ['required', 'exists:tenants,id'],
+            'tenant_id' => ['required', 'exists:tenants,id'],
         ]);
-
 
         $user = User::query()->findOrFail($request->director_id);
         $request->merge(['name' => $user->name]);
@@ -59,17 +59,18 @@ class IncomeCategoryController extends Controller
             DB::beginTransaction();
             IncomeCategory::query()->create($request->all());
 
-            if (!$user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
+            if (! $user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
                 $user->tenants()->attach($request->tenant_id);
             }
             DB::commit();
+
             return successResponse('Income Category created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Income Category created failed', 500);
+                throw new GeneralException('Income Category created failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -84,11 +85,11 @@ class IncomeCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, IncomeCategory $income_category): \Illuminate\Http\JsonResponse
+    public function update(Request $request, IncomeCategory $income_category): JsonResponse
     {
         $request->validate([
             'director_id' => ['required', 'exists:users,id'],
-            'tenant_id'   => ['required', 'exists:tenants,id'],
+            'tenant_id' => ['required', 'exists:tenants,id'],
         ]);
 
         $user = User::query()->findOrFail($request->director_id);
@@ -108,24 +109,25 @@ class IncomeCategoryController extends Controller
             DB::beginTransaction();
             $income_category->update($request->only(['director_id', 'tenant_id', 'name']));
 
-            if (!$user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
+            if (! $user->tenants()->where('tenant_id', $request->tenant_id)->exists()) {
                 $user->tenants()->attach($request->tenant_id);
             }
             DB::commit();
+
             return successResponse('Income Category updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Income Category updated failed', 500);
+                throw new GeneralException('Income Category updated failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(IncomeCategory $income_category): \Illuminate\Http\JsonResponse
+    public function destroy(IncomeCategory $income_category): JsonResponse
     {
         $income_category->delete();
 

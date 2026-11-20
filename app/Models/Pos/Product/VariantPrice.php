@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Pos\Product;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class VariantPrice extends Model
 {
     use SoftDeletes;
-    
+
     protected $fillable = [
         'product_variant_id',
         'dealer_price',

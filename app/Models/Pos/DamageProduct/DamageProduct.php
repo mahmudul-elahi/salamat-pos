@@ -50,6 +50,7 @@ class DamageProduct extends BaseModel
     public static function generateReferenceNo(): string
     {
         $last = static::withTrashed()->latest('id')->value('id') ?? 0;
-        return 'DMG-' . str_pad($last + 1, 6, '0', STR_PAD_LEFT);
+
+        return 'DMG-'.str_pad($last + 1, 6, '0', STR_PAD_LEFT);
     }
 }

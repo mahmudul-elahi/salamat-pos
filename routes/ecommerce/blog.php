@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Blog\BlogCategoryController;
 use App\Http\Controllers\Pos\Blog\BlogPostController;
 use App\Http\Controllers\Pos\Blog\BlogTagController;

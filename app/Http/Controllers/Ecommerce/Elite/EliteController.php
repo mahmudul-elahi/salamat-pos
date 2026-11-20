@@ -20,6 +20,7 @@ class EliteController extends Controller
     {
         $validated = $this->validated($request);
         Elite::query()->create($validated);
+
         return successResponse('Elite created successfully');
     }
 
@@ -31,12 +32,14 @@ class EliteController extends Controller
     public function update(Request $request, Elite $elite): JsonResponse
     {
         $elite->update($this->validated($request));
+
         return successResponse('Elite updated successfully');
     }
 
     public function destroy(Elite $elite): JsonResponse
     {
         $elite->delete();
+
         return successResponse('Elite deleted successfully');
     }
 
@@ -44,12 +47,12 @@ class EliteController extends Controller
     {
         return $request->validate([
             'status_name' => ['required', 'string', 'max:255'],
-            'tagline'     => ['nullable', 'string', 'max:255'],
-            'logo'        => ['nullable', 'string'],
-            'banner'      => ['nullable', 'string'],
-            'point'       => ['nullable', 'integer'],
-            'benefits'    => ['nullable', 'array'],
-            'benefits.*'  => ['string'],
+            'tagline' => ['nullable', 'string', 'max:255'],
+            'logo' => ['nullable', 'string'],
+            'banner' => ['nullable', 'string'],
+            'point' => ['nullable', 'integer'],
+            'benefits' => ['nullable', 'array'],
+            'benefits.*' => ['string'],
         ]);
     }
 }

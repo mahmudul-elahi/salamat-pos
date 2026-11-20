@@ -6,6 +6,7 @@ use App\Exceptions\GeneralException;
 use App\Http\Controllers\Controller;
 use App\Mail\Hrm\Employee\WelcomeEmployeeMail;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -22,10 +23,10 @@ class EmployeeController extends Controller
             ->where('is_employee', true)
             ->when(
                 request('search'),
-                fn($q, $s) => $q
+                fn ($q, $s) => $q
                     ->where('name', 'LIKE', "%{$s}%")
                     ->orWhere('email', 'LIKE', "%{$s}%")
-                    ->orWhereHas('employeeProfile', fn($ep) => $ep->where('employee_id', 'LIKE', "%{$s}%"))
+                    ->orWhereHas('employeeProfile', fn ($ep) => $ep->where('employee_id', 'LIKE', "%{$s}%"))
             )
             ->with([
                 'employeeProfile',
@@ -41,7 +42,7 @@ class EmployeeController extends Controller
             ->orderByRaw("status = 'active' DESC")
             ->latest()
             ->paginate(request('per_page', 10))
-            ->through(fn(User $employee) => [
+            ->through(fn (User $employee) => [
                 'id' => $employee->id,
                 'name' => $employee->name,
                 'email' => $employee->email,
@@ -68,51 +69,50 @@ class EmployeeController extends Controller
             DB::beginTransaction();
 
             $employee = User::query()->create([
-                'name'        => $validated['name'],
-                'email'       => $validated['email'],
-                'phone'       => $validated['phone'] ?? null,
-                'password'    => Hash::make($plainPassword),
-                'status'      => 'active',
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'password' => Hash::make($plainPassword),
+                'status' => 'active',
                 'is_employee' => true,
             ]);
 
             $employee->employeeProfile()->create([
-                'gender'       => $validated['gender'],
+                'gender' => $validated['gender'],
                 'joining_date' => $validated['joining_date'],
-                'employee_id'  => 'EMP-' . $employee->id,
+                'employee_id' => 'EMP-'.$employee->id,
                 'phone_number' => $validated['phone'] ?? null,
             ]);
 
             $employee->employeeDesignations()->create([
                 'designation_id' => $validated['designation_id'],
-                'start_date'     => $validated['joining_date'],
+                'start_date' => $validated['joining_date'],
             ]);
 
             $employee->employeeDepartments()->create([
                 'department_id' => $validated['department_id'],
-                'start_date'    => $validated['joining_date'],
+                'start_date' => $validated['joining_date'],
             ]);
 
             $employee->employeeStatuses()->create([
                 'employee_status_id' => $validated['employee_status_id'],
-                'start_date'         => $validated['joining_date'],
-            ]);
-
-            $employee->employeeSalaries()->create([
-                'amount'     => $validated['salary'],
                 'start_date' => $validated['joining_date'],
             ]);
 
-            if (!empty($validated['tenant_ids'])) {
+            $employee->employeeSalaries()->create([
+                'amount' => $validated['salary'],
+                'start_date' => $validated['joining_date'],
+            ]);
+
+            if (! empty($validated['tenant_ids'])) {
                 $employee->tenants()->sync($validated['tenant_ids']);
             }
 
-            if (!empty($validated['role_id'])) {
+            if (! empty($validated['role_id'])) {
                 $employee->roles()->sync([$validated['role_id']]);
             }
 
             DB::commit();
-
 
             Mail::to($employee->email)->queue(
                 (new WelcomeEmployeeMail($employee, $plainPassword))
@@ -123,25 +123,25 @@ class EmployeeController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to create employee', 500);
+                throw new GeneralException('Failed to create employee', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
-    public function makeEmployee(Request $request, User $user): \Illuminate\Http\JsonResponse
+    public function makeEmployee(Request $request, User $user): JsonResponse
     {
         if ($user->is_employee) {
             throw new GeneralException('This user is already an employee.');
         }
 
         $validated = $request->validate([
-            'gender'             => ['required', Rule::in(['male', 'female', 'others'])],
-            'designation_id'     => ['required', 'exists:designations,id'],
-            'department_id'      => ['required', 'exists:departments,id'],
+            'gender' => ['required', Rule::in(['male', 'female', 'others'])],
+            'designation_id' => ['required', 'exists:designations,id'],
+            'department_id' => ['required', 'exists:departments,id'],
             'employee_status_id' => ['required', 'exists:employee_statuses,id'],
-            'joining_date'       => ['required', 'date'],
-            'salary'             => ['required', 'numeric', 'min:0'],
+            'joining_date' => ['required', 'date'],
+            'salary' => ['required', 'numeric', 'min:0'],
         ]);
 
         try {
@@ -150,29 +150,29 @@ class EmployeeController extends Controller
             $user->update(['is_employee' => true]);
 
             $user->employeeProfile()->updateOrCreate([], [
-                'gender'       => $validated['gender'],
+                'gender' => $validated['gender'],
                 'joining_date' => $validated['joining_date'],
-                'employee_id'  => 'EMP-' . $user->id,
+                'employee_id' => 'EMP-'.$user->id,
                 'phone_number' => $user->phone,
             ]);
 
             $user->employeeDesignations()->create([
                 'designation_id' => $validated['designation_id'],
-                'start_date'     => $validated['joining_date'],
+                'start_date' => $validated['joining_date'],
             ]);
 
             $user->employeeDepartments()->create([
                 'department_id' => $validated['department_id'],
-                'start_date'    => $validated['joining_date'],
+                'start_date' => $validated['joining_date'],
             ]);
 
             $user->employeeStatuses()->create([
                 'employee_status_id' => $validated['employee_status_id'],
-                'start_date'         => $validated['joining_date'],
+                'start_date' => $validated['joining_date'],
             ]);
 
             $user->employeeSalaries()->create([
-                'amount'     => $validated['salary'],
+                'amount' => $validated['salary'],
                 'start_date' => $validated['joining_date'],
             ]);
 
@@ -182,9 +182,9 @@ class EmployeeController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to make employee', 500);
+                throw new GeneralException('Failed to make employee', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -201,18 +201,18 @@ class EmployeeController extends Controller
         ]);
 
         return [
-            'id'                 => $employee->id,
-            'name'               => $employee->name,
-            'email'              => $employee->email,
-            'phone'              => $employee->phone,
-            'gender'             => $employee->employeeProfile?->gender,
-            'designation_id'     => $employee->currentDesignation?->designation_id,
-            'department_id'      => $employee->currentDepartment?->department_id,
+            'id' => $employee->id,
+            'name' => $employee->name,
+            'email' => $employee->email,
+            'phone' => $employee->phone,
+            'gender' => $employee->employeeProfile?->gender,
+            'designation_id' => $employee->currentDesignation?->designation_id,
+            'department_id' => $employee->currentDepartment?->department_id,
             'employee_status_id' => $employee->currentEmployeeStatus?->employee_status_id,
-            'joining_date'       => $employee->employeeProfile?->joining_date?->format('Y-m-d'),
-            'salary'             => $employee->currentSalary?->amount,
-            'tenant_ids'         => $employee->tenants->pluck('id')->toArray(),
-            'role_id'            => $employee->roles->first()?->id,
+            'joining_date' => $employee->employeeProfile?->joining_date?->format('Y-m-d'),
+            'salary' => $employee->currentSalary?->amount,
+            'tenant_ids' => $employee->tenants->pluck('id')->toArray(),
+            'role_id' => $employee->roles->first()?->id,
         ];
     }
 
@@ -258,13 +258,13 @@ class EmployeeController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to update employee', 500);
+                throw new GeneralException('Failed to update employee', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
-    public function toggleStatus(User $employee): \Illuminate\Http\JsonResponse
+    public function toggleStatus(User $employee): JsonResponse
     {
         $newStatus = $employee->status === 'active' ? 'inactive' : 'active';
 
@@ -281,9 +281,9 @@ class EmployeeController extends Controller
         return successResponse('Employee status updated successfully');
     }
 
-    public function resendEmail(User $employee): \Illuminate\Http\JsonResponse
+    public function resendEmail(User $employee): JsonResponse
     {
-        if (!$employee->is_employee) {
+        if (! $employee->is_employee) {
             throw new GeneralException('User is not an employee.');
         }
 
@@ -294,10 +294,11 @@ class EmployeeController extends Controller
             (new WelcomeEmployeeMail($employee, $plainPassword))
                 ->onQueue('hrm-employee-invitation')
         );
-        return successResponse('Email sent successfully to ' . $employee->email);
+
+        return successResponse('Email sent successfully to '.$employee->email);
     }
 
-    public function destroy(User $employee): \Illuminate\Http\JsonResponse
+    public function destroy(User $employee): JsonResponse
     {
         if ($employee->is_admin) {
             throw new GeneralException('Action not allowed');
@@ -329,18 +330,18 @@ class EmployeeController extends Controller
     private function validateRequest(Request $request, ?User $employee = null): array
     {
         return $request->validate([
-            'name'               => ['required', 'string', 'max:255'],
-            'email'              => ['required', 'email', Rule::unique('users', 'email')->ignore($employee?->id)],
-            'phone'              => ['nullable', 'string', 'max:20'],
-            'gender'             => ['required', Rule::in(['male', 'female', 'others'])],
-            'designation_id'     => ['required', 'exists:designations,id'],
-            'department_id'      => ['required', 'exists:departments,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($employee?->id)],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'gender' => ['required', Rule::in(['male', 'female', 'others'])],
+            'designation_id' => ['required', 'exists:designations,id'],
+            'department_id' => ['required', 'exists:departments,id'],
             'employee_status_id' => ['required', 'exists:employee_statuses,id'],
-            'joining_date'       => ['required', 'date'],
-            'salary'             => ['required', 'numeric', 'min:0'],
-            'tenant_ids'         => ['required', 'array', 'min:1'],
-            'tenant_ids.*'       => ['exists:tenants,id'],
-            'role_id'            => ['required', 'exists:roles,id'],
+            'joining_date' => ['required', 'date'],
+            'salary' => ['required', 'numeric', 'min:0'],
+            'tenant_ids' => ['required', 'array', 'min:1'],
+            'tenant_ids.*' => ['exists:tenants,id'],
+            'role_id' => ['required', 'exists:roles,id'],
         ]);
     }
 }

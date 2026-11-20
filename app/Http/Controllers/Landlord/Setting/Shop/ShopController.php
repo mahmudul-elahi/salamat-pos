@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\Shop\ShopRequest;
 use App\Models\Setting\Setting;
 use App\Models\Tenant\Tenant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ShopController extends Controller
@@ -18,23 +19,23 @@ class ShopController extends Controller
             ->paginate(request('per_page', 10));
     }
 
-    public function store(ShopRequest $request): \Illuminate\Http\JsonResponse
+    public function store(ShopRequest $request): JsonResponse
     {
         $tenant = Tenant::query()->create($request->only('name'));
 
         $settingValues = [
-            'company_logo'  => $request->logo  ?? null,
-            'company_name'  => $tenant->name,
+            'company_logo' => $request->logo ?? null,
+            'company_name' => $tenant->name,
             'company_phone' => $request->phone ?? null,
             'company_email' => $request->email ?? null,
         ];
 
-        $settings = collect($settingValues)->map(fn($value, $name) => [
-            'name'             => $name,
-            'value'            => $value,
-            'settingable_type' => get_class($tenant),
-            'settingable_id'   => $tenant->id,
-            'context'          => 'tenant',
+        $settings = collect($settingValues)->map(fn ($value, $name) => [
+            'name' => $name,
+            'value' => $value,
+            'settingable_type' => $tenant::class,
+            'settingable_id' => $tenant->id,
+            'context' => 'tenant',
         ])->values()->toArray();
 
         Setting::query()->insert($settings);
@@ -49,9 +50,9 @@ class ShopController extends Controller
             ->pluck('value', 'name');
 
         return response()->json([
-            'id'    => $shop->id,
-            'name'  => $shop->name,
-            'logo'  => $settings['company_logo']  ?? null,
+            'id' => $shop->id,
+            'name' => $shop->name,
+            'logo' => $settings['company_logo'] ?? null,
             'phone' => $settings['company_phone'] ?? null,
             'email' => $settings['company_email'] ?? null,
         ]);
@@ -62,10 +63,10 @@ class ShopController extends Controller
         $shop->update($request->only('name'));
 
         $settingsToUpdate = [
-            'company_name'  => $shop->name,
+            'company_name' => $shop->name,
             'company_phone' => $request->phone,
             'company_email' => $request->email,
-            'company_logo'  => $request->logo,
+            'company_logo' => $request->logo,
         ];
 
         foreach ($settingsToUpdate as $name => $value) {
@@ -88,7 +89,7 @@ class ShopController extends Controller
     public function updateStatus(Request $request, Tenant $shop)
     {
         $request->validate([
-            'status' => ['required', 'string', 'in:active,inactive']
+            'status' => ['required', 'string', 'in:active,inactive'],
         ]);
 
         $shop->update(['status' => $request->status]);

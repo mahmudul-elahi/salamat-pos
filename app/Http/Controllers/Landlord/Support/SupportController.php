@@ -1,11 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Landlord\Support;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Pos\Product\Product;
 
-class SupportController extends Controller
-{
-}
+class SupportController extends Controller {}

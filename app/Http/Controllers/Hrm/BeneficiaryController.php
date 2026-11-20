@@ -12,7 +12,7 @@ class BeneficiaryController extends Controller
     public function index()
     {
         return Beneficiary::query()
-            ->when(request('type'), fn($query, $type) => $query->where('type', $type))
+            ->when(request('type'), fn ($query, $type) => $query->where('type', $type))
             ->orderByDesc('id')
             ->paginate(request('per_page', 10));
     }
@@ -34,7 +34,7 @@ class BeneficiaryController extends Controller
     public function update(Request $request, Beneficiary $beneficiary)
     {
         // Quick status-only update from the list actions.
-        if ($request->has('is_active') && !$request->has('name')) {
+        if ($request->has('is_active') && ! $request->has('name')) {
             $request->validate(['is_active' => ['required', 'boolean']]);
 
             $beneficiary->update(['is_active' => $request->boolean('is_active')]);

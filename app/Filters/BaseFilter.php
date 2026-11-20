@@ -60,7 +60,8 @@ abstract class BaseFilter
     public function __get(string $name): string
     {
         $name = Str::snake($name);
-        return (!empty($this->attributes[$name]) && in_array($this->attributes[$name], $this->operators))
+
+        return (! empty($this->attributes[$name]) && in_array($this->attributes[$name], $this->operators))
             ? $this->attributes[$name]
             : '=';
     }
@@ -88,6 +89,6 @@ abstract class BaseFilter
     {
         $selected = explode(',', $selected);
 
-        $this->builder->when($selected, fn($query) => $query->whereIn('id', $selected));
+        $this->builder->when($selected, fn ($query) => $query->whereIn('id', $selected));
     }
 }

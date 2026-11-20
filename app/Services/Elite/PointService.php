@@ -30,29 +30,29 @@ class PointService
                 return;
             }
 
-            $newBalance    = $contact->total_points + $points;
-            $oldEliteId    = $contact->elite_id;
-            $newEliteId    = $this->resolveEliteId($newBalance);
+            $newBalance = $contact->total_points + $points;
+            $oldEliteId = $contact->elite_id;
+            $newEliteId = $this->resolveEliteId($newBalance);
 
             $contact->total_points = $newBalance;
-            $contact->elite_id     = $newEliteId;
+            $contact->elite_id = $newEliteId;
             $contact->save();
 
             if ($newEliteId && $newEliteId !== $oldEliteId) {
                 ContactEliteHistory::create([
-                    'contact_id'  => $contact->id,
-                    'elite_id'    => $newEliteId,
+                    'contact_id' => $contact->id,
+                    'elite_id' => $newEliteId,
                     'achieved_at' => now(),
                 ]);
             }
 
             PointTransaction::create([
-                'contact_id'   => $contact->id,
-                'order_id'     => $order->id,
-                'type'         => 'earn',
-                'points'       => $points,
+                'contact_id' => $contact->id,
+                'order_id' => $order->id,
+                'type' => 'earn',
+                'points' => $points,
                 'balance_after' => $newBalance,
-                'note'         => "Order #{$order->invoice_number} delivered",
+                'note' => "Order #{$order->invoice_number} delivered",
             ]);
         });
     }

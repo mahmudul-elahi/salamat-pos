@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Hrm;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hrm\Event;
-use App\Notifications\Hrm\EventNotification;
 use App\Models\User;
+use App\Notifications\Hrm\EventNotification;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Notification;
 
@@ -24,25 +23,25 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'event_type'     => ['required', 'in:bulk,individual'],
-            'title'          => ['required', 'string', 'max:255'],
+            'event_type' => ['required', 'in:bulk,individual'],
+            'title' => ['required', 'string', 'max:255'],
             'start_datetime' => ['required', 'date'],
-            'end_datetime'   => ['required', 'date', 'after_or_equal:start_datetime'],
-            'location'       => ['nullable', 'string', 'max:255'],
-            'description'    => ['nullable', 'string'],
-            'departments'    => ['nullable', 'array'],
-            'departments.*'  => ['exists:departments,id'],
-            'employees'      => ['nullable', 'array'],
-            'employees.*'    => ['exists:users,id'],
+            'end_datetime' => ['required', 'date', 'after_or_equal:start_datetime'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'departments' => ['nullable', 'array'],
+            'departments.*' => ['exists:departments,id'],
+            'employees' => ['nullable', 'array'],
+            'employees.*' => ['exists:users,id'],
         ]);
 
         $event = Event::query()->create([
-            'event_type'     => $validated['event_type'],
-            'title'          => $validated['title'],
+            'event_type' => $validated['event_type'],
+            'title' => $validated['title'],
             'start_datetime' => $validated['start_datetime'],
-            'end_datetime'   => $validated['end_datetime'],
-            'location'       => $validated['location'] ?? null,
-            'description'    => $validated['description'] ?? null,
+            'end_datetime' => $validated['end_datetime'],
+            'location' => $validated['location'] ?? null,
+            'description' => $validated['description'] ?? null,
         ]);
 
         if ($validated['event_type'] === 'individual') {
@@ -63,25 +62,25 @@ class EventController extends Controller
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
-            'event_type'     => ['sometimes', 'in:bulk,individual'],
-            'title'          => ['sometimes', 'string', 'max:255'],
+            'event_type' => ['sometimes', 'in:bulk,individual'],
+            'title' => ['sometimes', 'string', 'max:255'],
             'start_datetime' => ['sometimes', 'date'],
-            'end_datetime'   => ['sometimes', 'date', 'after_or_equal:start_datetime'],
-            'location'       => ['nullable', 'string', 'max:255'],
-            'description'    => ['nullable', 'string'],
-            'departments'    => ['nullable', 'array'],
-            'departments.*'  => ['exists:departments,id'],
-            'employees'      => ['nullable', 'array'],
-            'employees.*'    => ['exists:users,id'],
+            'end_datetime' => ['sometimes', 'date', 'after_or_equal:start_datetime'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'departments' => ['nullable', 'array'],
+            'departments.*' => ['exists:departments,id'],
+            'employees' => ['nullable', 'array'],
+            'employees.*' => ['exists:users,id'],
         ]);
 
         $event->update([
-            'event_type'     => $validated['event_type'] ?? $event->event_type,
-            'title'          => $validated['title'] ?? $event->title,
+            'event_type' => $validated['event_type'] ?? $event->event_type,
+            'title' => $validated['title'] ?? $event->title,
             'start_datetime' => $validated['start_datetime'] ?? $event->start_datetime,
-            'end_datetime'   => $validated['end_datetime'] ?? $event->end_datetime,
-            'location'       => $validated['location'] ?? $event->location,
-            'description'    => $validated['description'] ?? $event->description,
+            'end_datetime' => $validated['end_datetime'] ?? $event->end_datetime,
+            'location' => $validated['location'] ?? $event->location,
+            'description' => $validated['description'] ?? $event->description,
         ]);
 
         $type = $validated['event_type'] ?? $event->event_type;
@@ -103,6 +102,7 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         $event->delete();
+
         return successResponse('Event deleted successfully');
     }
 
@@ -112,14 +112,16 @@ class EventController extends Controller
 
     private function sendNotifications(Event $event, array $validated): void
     {
-        $recipients = $this->resolveRecipients($event, $validated);
+        $recipients = $this->resolveRecipients($validated);
 
-        if ($recipients->isEmpty()) return;
+        if ($recipients->isEmpty()) {
+            return;
+        }
 
         Notification::send($recipients, new EventNotification($event));
     }
 
-    private function resolveRecipients(Event $event, array $validated): Collection
+    private function resolveRecipients(array $validated): Collection
     {
         // Bulk → all employees
         if ($validated['event_type'] === 'bulk') {
@@ -133,15 +135,17 @@ class EventController extends Controller
 
         // Employees from selected departments (current department, no end_date)
         $departmentIds = $validated['departments'] ?? [];
-        if (!empty($departmentIds)) {
+        if (! empty($departmentIds)) {
             $deptUserIds = User::query()
-                ->whereHas('currentDepartment', fn($q) => $q->whereIn('department_id', $departmentIds))
+                ->whereHas('currentDepartment', fn ($q) => $q->whereIn('department_id', $departmentIds))
                 ->pluck('id');
 
             $userIds = $userIds->merge($deptUserIds)->unique();
         }
 
-        if ($userIds->isEmpty()) return collect();
+        if ($userIds->isEmpty()) {
+            return collect();
+        }
 
         return User::query()->whereIn('id', $userIds)->get();
     }

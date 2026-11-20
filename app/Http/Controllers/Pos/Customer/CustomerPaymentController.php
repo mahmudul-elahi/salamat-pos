@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pos\Customer;
 
 use App\Exceptions\GeneralException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Landlord\Customer\CustomerPaymentRequest;
 use App\Models\Customer\Customer;
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Income\Income;
@@ -22,7 +23,6 @@ use App\Models\Tenant\PaymentMethod\PaymentMethod;
 use App\Scopes\TenantScope;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Requests\Landlord\Customer\CustomerPaymentRequest;
 use Throwable;
 
 class CustomerPaymentController extends Controller
@@ -43,7 +43,7 @@ class CustomerPaymentController extends Controller
 
         return response()->json([
             'due_amount' => $totalSales - $totalPaid,
-            'breakdown' => ['total_sales' => $totalSales, 'total_paid' => $totalPaid]
+            'breakdown' => ['total_sales' => $totalSales, 'total_paid' => $totalPaid],
         ]);
     }
 
@@ -70,23 +70,21 @@ class CustomerPaymentController extends Controller
                 ->where('director_id', $paymentMethod->director_id)
                 ->first();
 
-
-
             // --- Create Income ---
             if ($incomeCategory) {
                 $contact = Contact::findOrFail($data['contact_id']);
 
                 Income::create([
-                    'tenant_id'          => $tenantId,
-                    'user_id'            => $paymentMethod->director_id,
-                    'title'              => 'Payment from ' . $contact->name . ' via ' . $paymentMethod->name,
-                    'date'               => $data['date'],
+                    'tenant_id' => $tenantId,
+                    'user_id' => $paymentMethod->director_id,
+                    'title' => 'Payment from '.$contact->name.' via '.$paymentMethod->name,
+                    'date' => $data['date'],
                     'income_category_id' => $incomeCategory->id,
-                    'amount'             => $data['amount'],
-                    'note'               => $data['note'] ?? null,
-                    'contact_id'         => $data['contact_id'],
-                    'ledger_id'          => $ledger->id,
-                    'created_by'         => auth()->id(),
+                    'amount' => $data['amount'],
+                    'note' => $data['note'] ?? null,
+                    'contact_id' => $data['contact_id'],
+                    'ledger_id' => $ledger->id,
+                    'created_by' => auth()->id(),
                 ]);
             }
 
@@ -96,12 +94,11 @@ class CustomerPaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Payment has been failed', 500);
+                throw new GeneralException('Payment has been failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
-
 
     // =========================================================
     // APPLY CUSTOMER PAYMENT
@@ -109,7 +106,7 @@ class CustomerPaymentController extends Controller
     // =========================================================
     public function applyCustomerPayment(array $data)
     {
-        $tenantId   = $data['tenant_id'] ?? tenant()->id;
+        $tenantId = $data['tenant_id'] ?? tenant()->id;
         $newPayment = (float) $data['amount'];
 
         // =====================================================
@@ -121,9 +118,9 @@ class CustomerPaymentController extends Controller
             ->where('tenant_id', $tenantId)
             ->sum('amount');
 
-        $advanceBalance       = max(0, $advanceBalance);
-        $payAmount            = $advanceBalance + $newPayment;
-        $remainingAdvance     = $advanceBalance;
+        $advanceBalance = max(0, $advanceBalance);
+        $payAmount = $advanceBalance + $newPayment;
+        $remainingAdvance = $advanceBalance;
         $totalUsedFromAdvance = 0;
 
         // =====================================================
@@ -140,7 +137,7 @@ class CustomerPaymentController extends Controller
             ->where('tenant_id', $tenantId)
             ->where('contact_id', $data['contact_id'])
             ->whereIn('status', ['due', 'partially_paid'])
-            ->withSum(['payments' => fn($q) => $q->where('model_type', Sale::class)], 'amount')
+            ->withSum(['payments' => fn ($q) => $q->where('model_type', Sale::class)], 'amount')
             ->orderBy('date')
             ->orderBy('id')
             ->get();
@@ -151,20 +148,20 @@ class CustomerPaymentController extends Controller
         // Start with 'payment_received'; update to 'advance_received' if needed
         // =====================================================
         $ledgerLastInvoice = Ledger::query()->max('invoice_number') ?? 0;
-        $invoiceNumber     = $ledgerLastInvoice + 1;
+        $invoiceNumber = $ledgerLastInvoice + 1;
 
         // Temporary type — will update below if needed
         $ledger = Ledger::query()->create([
-            'date'                => $data['date'],
-            'invoice_number'      => $invoiceNumber,
-            'full_invoice_number' => 'PMT-' . $invoiceNumber,
-            'contact_id'          => $data['contact_id'],
-            'tenant_id'           => $tenantId,
-            'payment_method_id'   => $data['payment_method_id'],
-            'debit'               => 0,
-            'credit'              => $newPayment,
-            'type'                => 'payment_received',
-            'note'                => $data['note'] ?? null,
+            'date' => $data['date'],
+            'invoice_number' => $invoiceNumber,
+            'full_invoice_number' => 'PMT-'.$invoiceNumber,
+            'contact_id' => $data['contact_id'],
+            'tenant_id' => $tenantId,
+            'payment_method_id' => $data['payment_method_id'],
+            'debit' => 0,
+            'credit' => $newPayment,
+            'type' => 'payment_received',
+            'note' => $data['note'] ?? null,
         ]);
 
         // =====================================================
@@ -178,15 +175,19 @@ class CustomerPaymentController extends Controller
         // 5. Due sales pay করো
         // =====================================================
         foreach ($sales as $sale) {
-            if ($payAmount <= 0.01) break;
+            if ($payAmount <= 0.01) {
+                break;
+            }
 
             $due = $sale->grand_total - ($sale->payments_sum_amount ?? 0);
-            if ($due <= 0.01) continue;
+            if ($due <= 0.01) {
+                continue;
+            }
 
             $amount = min($payAmount, $due);
 
-            $fromAdvance          = min($remainingAdvance, $amount);
-            $remainingAdvance    -= $fromAdvance;
+            $fromAdvance = min($remainingAdvance, $amount);
+            $remainingAdvance -= $fromAdvance;
             $totalUsedFromAdvance += $fromAdvance;
 
             $this->createTransaction(
@@ -212,12 +213,12 @@ class CustomerPaymentController extends Controller
         // =====================================================
         if ($totalUsedFromAdvance > 0.01) {
             AdvanceCredit::query()->create([
-                'tenant_id'  => $tenantId,
+                'tenant_id' => $tenantId,
                 'contact_id' => $data['contact_id'],
-                'date'       => $data['date'],
-                'type'       => 'used',
-                'amount'     => -$totalUsedFromAdvance,
-                'note'       => 'Advance auto-applied with payment',
+                'date' => $data['date'],
+                'type' => 'used',
+                'amount' => -$totalUsedFromAdvance,
+                'note' => 'Advance auto-applied with payment',
             ]);
         }
 
@@ -228,12 +229,12 @@ class CustomerPaymentController extends Controller
 
         if ($surplusFromNewPayment > 0.01) {
             AdvanceCredit::query()->create([
-                'tenant_id'  => $tenantId,
+                'tenant_id' => $tenantId,
                 'contact_id' => $data['contact_id'],
-                'date'       => $data['date'],
-                'type'       => 'receivable',
-                'amount'     => $surplusFromNewPayment,
-                'note'       => 'Advance received',
+                'date' => $data['date'],
+                'type' => 'receivable',
+                'amount' => $surplusFromNewPayment,
+                'note' => 'Advance received',
             ]);
         }
 
@@ -242,19 +243,17 @@ class CustomerPaymentController extends Controller
         // =====================================================
         if ($sales->isEmpty() || $surplusFromNewPayment >= $newPayment) {
             $ledger->update([
-                'type'                => 'advance_received',
-                'full_invoice_number' => 'ADV-' . $invoiceNumber,
+                'type' => 'advance_received',
+                'full_invoice_number' => 'ADV-'.$invoiceNumber,
             ]);
         }
 
         return $ledger;
     }
 
-
     public function supplierPaymentSend(Request $request)
     {
         $isAdmin = auth()->user()->isAppAdmin();
-
 
         $data = $request->validate([
             'tenant_id' => [$isAdmin ? 'required' : 'nullable', 'exists:tenants,id'],
@@ -283,7 +282,7 @@ class CustomerPaymentController extends Controller
                 ->first();
 
             if ($investmentCategory) {
-                $title = 'Payment from ' . $investmentCategory?->director?->name . ' on ' . $data['date'];
+                $title = 'Payment from '.$investmentCategory?->director?->name.' on '.$data['date'];
 
                 Investment::query()->create([
                     'tenant_id' => $tenantId,
@@ -295,11 +294,12 @@ class CustomerPaymentController extends Controller
                     'note' => $data['note'] ?? null,
                     'contact_id' => $data['contact_id'],
                     'ledger_id' => $ledger?->id,
-                    'created_by' => auth()->id()
+                    'created_by' => auth()->id(),
                 ]);
             }
 
             DB::commit();
+
             return successResponse('Payment sent successfully');
         } catch (GeneralException $e) {
             DB::rollBack();
@@ -307,9 +307,9 @@ class CustomerPaymentController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Payment has been failed', 500);
+                throw new GeneralException('Payment has been failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -319,7 +319,7 @@ class CustomerPaymentController extends Controller
     // =========================================================
     public function applySupplierPayment(array $data)
     {
-        $tenantId   = $data['tenant_id'] ?? tenant()->id;
+        $tenantId = $data['tenant_id'] ?? tenant()->id;
         $newPayment = (float) $data['amount'];
 
         // =====================================================
@@ -331,9 +331,9 @@ class CustomerPaymentController extends Controller
             ->where('tenant_id', $tenantId)
             ->sum('amount');
 
-        $advanceBalance       = max(0, $advanceBalance);
-        $payAmount            = $advanceBalance + $newPayment;
-        $remainingAdvance     = $advanceBalance;
+        $advanceBalance = max(0, $advanceBalance);
+        $payAmount = $advanceBalance + $newPayment;
+        $remainingAdvance = $advanceBalance;
         $totalUsedFromAdvance = 0;
 
         // =====================================================
@@ -351,7 +351,7 @@ class CustomerPaymentController extends Controller
             ->where('tenant_id', $tenantId)
             ->where('contact_id', $data['contact_id'])
             ->whereIn('status', ['due', 'partially_paid'])
-            ->withSum(['payments' => fn($q) => $q->where('model_type', Purchase::class)], 'amount')
+            ->withSum(['payments' => fn ($q) => $q->where('model_type', Purchase::class)], 'amount')
             ->orderBy('date')
             ->orderBy('id')
             ->get();
@@ -361,19 +361,19 @@ class CustomerPaymentController extends Controller
         // Fix: start with 'payment_sent'; update to 'advance_sent' if needed
         // =====================================================
         $ledgerLastInvoice = Ledger::query()->max('invoice_number') ?? 0;
-        $invoiceNumber     = $ledgerLastInvoice + 1;
+        $invoiceNumber = $ledgerLastInvoice + 1;
 
         $ledger = Ledger::query()->create([
-            'date'                => $data['date'],
-            'invoice_number'      => $invoiceNumber,
-            'full_invoice_number' => 'PP-' . $invoiceNumber,
-            'contact_id'          => $data['contact_id'],
-            'tenant_id'           => $tenantId,
-            'payment_method_id'   => $data['payment_method_id'],
-            'debit'               => $newPayment,
-            'credit'              => 0,
-            'type'                => 'payment_sent',
-            'note'                => $data['note'] ?? null,
+            'date' => $data['date'],
+            'invoice_number' => $invoiceNumber,
+            'full_invoice_number' => 'PP-'.$invoiceNumber,
+            'contact_id' => $data['contact_id'],
+            'tenant_id' => $tenantId,
+            'payment_method_id' => $data['payment_method_id'],
+            'debit' => $newPayment,
+            'credit' => 0,
+            'type' => 'payment_sent',
+            'note' => $data['note'] ?? null,
         ]);
 
         // =====================================================
@@ -387,15 +387,19 @@ class CustomerPaymentController extends Controller
         // 5. Due purchases pay করো
         // =====================================================
         foreach ($purchases as $purchase) {
-            if ($payAmount <= 0.01) break;
+            if ($payAmount <= 0.01) {
+                break;
+            }
 
             $due = $purchase->grand_total - ($purchase->payments_sum_amount ?? 0);
-            if ($due <= 0.01) continue;
+            if ($due <= 0.01) {
+                continue;
+            }
 
             $amount = min($payAmount, $due);
 
-            $fromAdvance          = min($remainingAdvance, $amount);
-            $remainingAdvance    -= $fromAdvance;
+            $fromAdvance = min($remainingAdvance, $amount);
+            $remainingAdvance -= $fromAdvance;
             $totalUsedFromAdvance += $fromAdvance;
 
             $this->createTransaction(
@@ -421,12 +425,12 @@ class CustomerPaymentController extends Controller
         // =====================================================
         if ($totalUsedFromAdvance > 0.01) {
             AdvanceCredit::query()->create([
-                'tenant_id'  => $tenantId,
+                'tenant_id' => $tenantId,
                 'contact_id' => $data['contact_id'],
-                'date'       => $data['date'],
-                'type'       => 'supplier_used',
-                'amount'     => -$totalUsedFromAdvance,
-                'note'       => 'Supplier advance auto-applied with payment',
+                'date' => $data['date'],
+                'type' => 'supplier_used',
+                'amount' => -$totalUsedFromAdvance,
+                'note' => 'Supplier advance auto-applied with payment',
             ]);
         }
 
@@ -437,12 +441,12 @@ class CustomerPaymentController extends Controller
 
         if ($surplusFromNewPayment > 0.01) {
             AdvanceCredit::query()->create([
-                'tenant_id'  => $tenantId,
+                'tenant_id' => $tenantId,
                 'contact_id' => $data['contact_id'],
-                'date'       => $data['date'],
-                'type'       => 'payable',
-                'amount'     => $surplusFromNewPayment,
-                'note'       => 'Supplier advance paid',
+                'date' => $data['date'],
+                'type' => 'payable',
+                'amount' => $surplusFromNewPayment,
+                'note' => 'Supplier advance paid',
             ]);
         }
 
@@ -451,8 +455,8 @@ class CustomerPaymentController extends Controller
         // =====================================================
         if ($purchases->isEmpty() || $surplusFromNewPayment >= $newPayment) {
             $ledger->update([
-                'type'                => 'advance_sent',
-                'full_invoice_number' => 'SADV-' . $invoiceNumber,
+                'type' => 'advance_sent',
+                'full_invoice_number' => 'SADV-'.$invoiceNumber,
             ]);
         }
 
@@ -464,17 +468,16 @@ class CustomerPaymentController extends Controller
         // ✅ Fix: was always 'SLT-' even for customer payments
         $prefix = $model === Sale::class ? 'CLT-' : 'SLT-';
 
-
         $transaction = Transaction::query()->create([
             'date' => $data['date'],
             'invoice_number' => $invNum,
-            'full_invoice_number' => $prefix . $invNum,
+            'full_invoice_number' => $prefix.$invNum,
             'payment_method_id' => $data['payment_method_id'],
             'amount' => $amount,
             'tenant_id' => $tenantId,
             'note' => $data['note'],
             'model_type' => $model,
-            'model_id' => $modelId
+            'model_id' => $modelId,
         ]);
 
         if ($ledger) {
@@ -496,7 +499,7 @@ class CustomerPaymentController extends Controller
                 $query->whereHas('sales')
                     ->orWhereHas('purchases');
             })
-            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%")
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%")
                 ->orWhere('phone', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%")
                 ->orWhere('business_name', 'like', "%{$search}%"))
@@ -532,7 +535,7 @@ class CustomerPaymentController extends Controller
     {
         // Sale => debit
         $saleTotals = Sale::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->whereIn('contact_id', $contactIds)
             ->selectRaw('contact_id, SUM(grand_total) as total')
             ->groupBy('contact_id')
@@ -540,7 +543,7 @@ class CustomerPaymentController extends Controller
 
         // Sale Return => credit
         $saleReturnTotals = SaleReturn::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->whereIn('contact_id', $contactIds)
             ->selectRaw('contact_id, SUM(grand_total) as total')
             ->groupBy('contact_id')
@@ -548,7 +551,7 @@ class CustomerPaymentController extends Controller
 
         // Purchase => credit
         $purchaseTotals = Purchase::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->whereIn('contact_id', $contactIds)
             ->selectRaw('contact_id, SUM(grand_total) as total')
             ->groupBy('contact_id')
@@ -556,7 +559,7 @@ class CustomerPaymentController extends Controller
 
         // Purchase Return => debit
         $purchaseReturnTotals = PurchaseReturn::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->whereIn('contact_id', $contactIds)
             ->selectRaw('contact_id, SUM(grand_total) as total')
             ->groupBy('contact_id')
@@ -564,23 +567,23 @@ class CustomerPaymentController extends Controller
 
         // Exchange purchases (Purchase with items->purchase_type = exchange) => debit
         $exchangeTotals = Purchase::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->whereIn('contact_id', $contactIds)
-            ->whereHas('items', fn($q) => $q->where('purchase_type', 'exchange'))
+            ->whereHas('items', fn ($q) => $q->where('purchase_type', 'exchange'))
             ->selectRaw('contact_id, SUM(grand_total) as total')
             ->groupBy('contact_id')
             ->pluck('total', 'contact_id');
 
         // Ledger => debit & credit (payment_received, payment_sent, return_payment_sent, etc.)
         $ledgerDebitTotals = Ledger::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->whereIn('contact_id', $contactIds)
             ->selectRaw('contact_id, SUM(debit) as total')
             ->groupBy('contact_id')
             ->pluck('total', 'contact_id');
 
         $ledgerCreditTotals = Ledger::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->whereIn('contact_id', $contactIds)
             ->selectRaw('contact_id, SUM(credit) as total')
             ->groupBy('contact_id')

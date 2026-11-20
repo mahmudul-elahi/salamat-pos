@@ -2,7 +2,6 @@
 
 namespace App\Helpers\General;
 
-use App\Repositories\Settings\SettingRepository;
 use Carbon\Carbon;
 
 class SettingHelper
@@ -13,10 +12,10 @@ class SettingHelper
         $formattedNumber = $this->numberFormatter($number);
 
         return match ($this->getCurrencyPosition($type)) {
-            'prefix_with_space' => $symbol . ' ' . $formattedNumber,
-            'prefix_only' => $symbol . $formattedNumber,
-            'suffix_with_space' => $formattedNumber . ' ' . $symbol,
-            default => $formattedNumber . $symbol,
+            'prefix_with_space' => $symbol.' '.$formattedNumber,
+            'prefix_only' => $symbol.$formattedNumber,
+            'suffix_with_space' => $formattedNumber.' '.$symbol,
+            default => $formattedNumber.$symbol,
         };
     }
 
@@ -27,7 +26,7 @@ class SettingHelper
         $decimalSep = $this->getDecimalSeparator();
 
         // Format the number using PHP's number_format first (with default separators)
-        $number = number_format((float)$number, $decimals, '.', '');
+        $number = number_format((float) $number, $decimals, '.', '');
 
         // Split into whole and decimal parts
         [$whole, $fraction] = explode('.', $number);
@@ -35,9 +34,8 @@ class SettingHelper
         // Add thousand separator manually
         $wholeWithSep = preg_replace('/\B(?=(\d{3})+(?!\d))/', $thousandSep === 'space' ? ' ' : $thousandSep, $whole);
 
-        return $wholeWithSep . $decimalSep . $fraction;
+        return $wholeWithSep.$decimalSep.$fraction;
     }
-
 
     public function appDateFormat($date): string
     {
@@ -46,7 +44,4 @@ class SettingHelper
 
         return Carbon::parse($date)->format($format);
     }
-
-
-    
 }

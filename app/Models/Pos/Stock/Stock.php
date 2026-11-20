@@ -2,10 +2,11 @@
 
 namespace App\Models\Pos\Stock;
 
-use App\Models\Landlord\Brand\Brand;
 use App\Models\Pos\Product\Product;
 use App\Models\Pos\Product\ProductVariant;
+use App\Models\Pos\Sale\SaleItem;
 use App\Models\TenantBaseModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Stock extends TenantBaseModel
 {
@@ -16,12 +17,12 @@ class Stock extends TenantBaseModel
         'quantity',
     ];
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public function productVariant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
@@ -29,7 +30,7 @@ class Stock extends TenantBaseModel
     public function saleItems()
     {
         return $this->hasMany(
-            \App\Models\Pos\Sale\SaleItem::class,
+            SaleItem::class,
             'product_variant_id',
             'product_variant_id'
         );

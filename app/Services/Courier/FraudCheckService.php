@@ -10,12 +10,12 @@ class FraudCheckService
     /**
      * Statuses that count as a genuinely completed delivery.
      */
-    private const SUCCESS_STATUSES = ['delivered', 'partially delivered'];
+    private const array SUCCESS_STATUSES = ['delivered', 'partially delivered'];
 
     /**
      * Statuses that count against the customer (refused/failed/returned parcel).
      */
-    private const CANCEL_STATUSES = ['cancelled', 'return', 'pickup failed', 'pickup cancel'];
+    private const array CANCEL_STATUSES = ['cancelled', 'return', 'pickup failed', 'pickup cancel'];
 
     /**
      * Check a customer's own delivery/return history across every courier
@@ -75,8 +75,8 @@ class FraudCheckService
     private function summarize($orders): array
     {
         $total = $orders->count();
-        $success = $orders->filter(fn($o) => in_array(strtolower($o->status ?? ''), self::SUCCESS_STATUSES))->count();
-        $cancel = $orders->filter(fn($o) => in_array(strtolower($o->status ?? ''), self::CANCEL_STATUSES))->count();
+        $success = $orders->filter(fn ($o) => in_array(strtolower($o->status ?? ''), self::SUCCESS_STATUSES))->count();
+        $cancel = $orders->filter(fn ($o) => in_array(strtolower($o->status ?? ''), self::CANCEL_STATUSES))->count();
 
         return [
             'total_parcel' => $total,

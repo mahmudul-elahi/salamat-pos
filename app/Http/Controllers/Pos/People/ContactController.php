@@ -5,12 +5,11 @@ namespace App\Http\Controllers\Pos\People;
 use App\Exceptions\GeneralException;
 use App\Filters\Pos\Customer\CustomerFilter;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Landlord\Supplier\SupplierRequest;
 use App\Http\Requests\Pos\Contact\ContactRequest;
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Supplier\Supplier;
 use App\Services\Pos\Contact\ContactService;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -31,14 +30,13 @@ class ContactController extends Controller
             ->paginate($perPage);
     }
 
-
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException
      * @throws \Throwable
      */
-
-    public function store(ContactRequest $request): \Illuminate\Http\JsonResponse
+    public function store(ContactRequest $request): JsonResponse
     {
 
         try {
@@ -67,35 +65,34 @@ class ContactController extends Controller
             //                $supplier->addMediaFromRequest('image')->toMediaCollection('company_logo');
             //            }
             DB::commit();
+
             return successResponse('People created successfully');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('People created has been failed', 500);
+                throw new GeneralException('People created has been failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
-
 
     /**
      * Display the specified resource.
      */
-
     public function show(Contact $contact)
     {
         return [
             ...$contact->toArray(),
-            //'image' => $contact->getImageAttribute(),
+            // 'image' => $contact->getImageAttribute(),
         ];
     }
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException|\Throwable
      */
-
-    public function update(ContactRequest $request, Contact $contact): \Illuminate\Http\JsonResponse
+    public function update(ContactRequest $request, Contact $contact): JsonResponse
     {
         //        $request->validate([
         //            'type' => ['required', 'in:customer,supplier'],
@@ -125,23 +122,24 @@ class ContactController extends Controller
             //                $supplier->addMediaFromRequest('image')->toMediaCollection('company_logo');
             //            }
             DB::commit();
+
             return successResponse('People updated successfully');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('People updated has been failed', 500);
+                throw new GeneralException('People updated has been failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(Supplier $supplier): \Illuminate\Http\JsonResponse
+    public function destroy(Supplier $supplier): JsonResponse
     {
         $supplier->delete();
+
         return successResponse('Supplier deleted successfully');
     }
 }

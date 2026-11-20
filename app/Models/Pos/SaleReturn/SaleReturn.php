@@ -2,16 +2,17 @@
 
 namespace App\Models\Pos\SaleReturn;
 
+use App\Models\Customer\Customer;
 use App\Models\Pos\Contact\Contact;
+use App\Models\Pos\Transaction\Transaction;
+use App\Models\Tenant\Tenant;
+use App\Models\TenantBaseModel;
 use App\Models\User;
 use App\Scopes\TenantScope;
-use App\Models\TenantBaseModel;
-use App\Models\Customer\Customer;
-use App\Models\Tenant\Tenant;
-use Spatie\MediaLibrary\HasMedia;
-use App\Models\Pos\Transaction\Transaction;
-use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 class SaleReturn extends TenantBaseModel implements HasMedia
 {
@@ -40,33 +41,33 @@ class SaleReturn extends TenantBaseModel implements HasMedia
     public static function boot(): void
     {
         parent::boot();
-        if (!app()->runningInConsole()) {
-            $maxInvoiceNumber = self::withTrashed()->withoutGlobalScope(new TenantScope())->max('invoice_number') + 1;
+        if (! app()->runningInConsole()) {
+            $maxInvoiceNumber = self::withTrashed()->withoutGlobalScope(new TenantScope)->max('invoice_number') + 1;
             $formattedInvoiceNumber = str_pad($maxInvoiceNumber, 6, '0', STR_PAD_LEFT);
             static::creating(function ($model) use ($maxInvoiceNumber, $formattedInvoiceNumber) {
                 $model->created_by = auth()->id();
                 $model->invoice_number = $maxInvoiceNumber;
-                $model->full_invoice_number = "SR-" . $formattedInvoiceNumber;
+                $model->full_invoice_number = 'SR-'.$formattedInvoiceNumber;
             });
         }
     }
 
-    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function contact(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class, 'contact_id', 'id');
     }
 
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
@@ -79,6 +80,7 @@ class SaleReturn extends TenantBaseModel implements HasMedia
     public function getSaleReturnBillAttachmentAttribute(): ?string
     {
         $saleReturnBillAttachment = $this->getFirstMedia('sale_return_bill_attachment');
+
         return $saleReturnBillAttachment?->getFullUrl();
     }
 

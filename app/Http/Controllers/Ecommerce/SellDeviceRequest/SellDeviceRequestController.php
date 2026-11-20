@@ -15,7 +15,7 @@ class SellDeviceRequestController extends Controller
             ->with(['contact:id,name,phone', 'category:id,name', 'brand:id,name', 'newDistrict:id,name', 'images'])
             ->orderByDesc('id')
             ->when($request->search, function ($query) use ($request) {
-                $query->where('ad_title', 'like', '%' . $request->search . '%');
+                $query->where('ad_title', 'like', '%'.$request->search.'%');
             })
             ->paginate($request->per_page ?? 10)
             ->through(fn ($r) => [
@@ -73,7 +73,7 @@ class SellDeviceRequestController extends Controller
 
     private function resolveImageUrl(?string $path): ?string
     {
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 

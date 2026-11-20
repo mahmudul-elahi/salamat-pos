@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail\Hrm\Employee;
 
 use App\Models\User;
@@ -15,14 +17,14 @@ class WelcomeEmployeeMail extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public function __construct(
-        public User   $employee,
+        public User $employee,
         public string $plainPassword,
     ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to ' . config('app.name') . ' — Your Account is Ready',
+            subject: 'Welcome to '.config('app.name').' — Your Account is Ready',
         );
     }
 
@@ -31,10 +33,10 @@ class WelcomeEmployeeMail extends Mailable implements ShouldQueue
         return new Content(
             view: 'mail.hrm.employee.welcome',
             with: [
-                'employee'      => $this->employee,
+                'employee' => $this->employee,
                 'plainPassword' => $this->plainPassword,
-                'loginUrl'      => config('app.url') . '/login',
-                'appName'       => config('app.name'),
+                'loginUrl' => config('app.url').'/login',
+                'appName' => config('app.name'),
             ],
         );
     }

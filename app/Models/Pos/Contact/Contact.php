@@ -10,7 +10,10 @@ use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\Sale\Sale;
 use App\Models\Pos\Transaction\Transaction;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Contact extends BaseModel
 {
@@ -54,7 +57,7 @@ class Contact extends BaseModel
     ];
 
     public $hidden = [
-        'password'
+        'password',
     ];
 
     protected $appends = ['price_document_url'];
@@ -67,26 +70,26 @@ class Contact extends BaseModel
      */
     public function getPriceDocumentUrlAttribute(): ?string
     {
-        if (!$this->price_document) {
+        if (! $this->price_document) {
             return null;
         }
 
         return str_starts_with($this->price_document, 'http')
             ? $this->price_document
-            : \Illuminate\Support\Facades\Storage::url($this->price_document);
+            : Storage::url($this->price_document);
     }
 
-    public function sales(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function sales(): HasMany
     {
         return $this->hasMany(Sale::class, 'contact_id', 'id');
     }
 
-    public function purchases(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function purchases(): HasMany
     {
         return $this->hasMany(Purchase::class, 'contact_id', 'id');
     }
 
-    public function purchaseReturns(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function purchaseReturns(): HasMany
     {
         return $this->hasMany(PurchaseReturn::class, 'contact_id', 'id');
     }
@@ -94,15 +97,15 @@ class Contact extends BaseModel
     public function getPaidAmountAttribute()
     {
         return Transaction::query()
-            ->filters(new ShopFilter())
-            ->whereHasMorph('model', [Purchase::class], fn($query) => $query->where('contact_id', $this->id))
+            ->filters(new ShopFilter)
+            ->whereHasMorph('model', [Purchase::class], fn ($query) => $query->where('contact_id', $this->id))
             ->sum('amount');
     }
 
     public function getPurchaseReturnDueAmountAttribute()
     {
         $totalPurchaseReturnAmount = $this->purchaseReturns()
-            ->filters(new ShopFilter())
+            ->filters(new ShopFilter)
             ->sum('grand_total');
 
         $totalPaid = $this->getPurchaseReturnPaidAmountAttribute();
@@ -113,24 +116,23 @@ class Contact extends BaseModel
     public function getPurchaseReturnPaidAmountAttribute()
     {
         return Transaction::query()
-            ->filters(new ShopFilter())
+            ->filters(new ShopFilter)
             ->whereHasMorph(
                 'model',
                 [PurchaseReturn::class],
-                fn($query) => $query->where('contact_id', $this->id)
+                fn ($query) => $query->where('contact_id', $this->id)
             )->sum('amount');
     }
-
 
     public function getReceivableAmountAttribute()
     {
         $totalSales = $this->sales()
-            ->filters(new ShopFilter())
+            ->filters(new ShopFilter)
             ->sum('grand_total');
 
         $totalPaidForSales = Transaction::query()
-            ->filters(new ShopFilter())
-            ->whereHasMorph('model', [Sale::class], fn($q) => $q->where('contact_id', $this->id))
+            ->filters(new ShopFilter)
+            ->whereHasMorph('model', [Sale::class], fn ($q) => $q->where('contact_id', $this->id))
             ->sum('amount');
 
         return $totalSales - $totalPaidForSales;
@@ -139,36 +141,35 @@ class Contact extends BaseModel
     public function getDueAmountAttribute()
     {
         $totalPurchase = $this->purchases()
-            ->filters(new ShopFilter())
+            ->filters(new ShopFilter)
             ->sum('grand_total');
 
-
         $totalPaidForPurchases = Transaction::query()
-            ->filters(new ShopFilter())
-            ->whereHasMorph('model', [Purchase::class], fn($query) => $query->where('contact_id', $this->id))
+            ->filters(new ShopFilter)
+            ->whereHasMorph('model', [Purchase::class], fn ($query) => $query->where('contact_id', $this->id))
             ->sum('amount');
 
         $totalPaidForReturns = Transaction::query()
-            ->filters(new ShopFilter())
-            ->whereHasMorph('model', [PurchaseReturn::class], fn($query) => $query->where('contact_id', $this->id))
+            ->filters(new ShopFilter)
+            ->whereHasMorph('model', [PurchaseReturn::class], fn ($query) => $query->where('contact_id', $this->id))
             ->sum('amount');
 
         return ($totalPurchase - $totalPaidForPurchases) - $totalPaidForReturns;
     }
 
-
     public function getImageAttribute(): ?string
     {
-        $image = $this->getFirstMedia("company_logo");
+        $image = $this->getFirstMedia('company_logo');
+
         return $image?->getFullUrl();
     }
 
-    public function district(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id', 'id');
     }
 
-    public function area(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'area_id', 'id');
     }

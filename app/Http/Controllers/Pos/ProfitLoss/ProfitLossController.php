@@ -3,26 +3,23 @@
 namespace App\Http\Controllers\Pos\ProfitLoss;
 
 use App\Filters\Pos\Report\ProfitLossFilter;
-use App\Filters\Pos\Sale\SaleFilter;
 use App\Http\Controllers\Controller;
 use App\Jobs\Report\GenerateProfitLossPdfJob;
 use App\Models\Pos\ProfitLoss\ProfitLossSummary;
 use App\Services\Pos\Report\ProfitLoss\ProfitLossService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProfitLossController extends Controller
 {
-    public function __construct(protected ProfitLossService $service, protected ProfitLossFilter $filter)
-    {
-    }
-
+    public function __construct(protected ProfitLossService $service, protected ProfitLossFilter $filter) {}
 
     public function todayIndex(Request $request)
     {
-        $today = \Illuminate\Support\Carbon::now('Asia/Dhaka')->toDateString();
+        $today = Carbon::now('Asia/Dhaka')->toDateString();
         $request->merge(['date' => json_encode([$today, $today])]);
 
         return $this->index($request);
@@ -31,7 +28,6 @@ class ProfitLossController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 15);
-
 
         // ── Base query ────────────────────────────────────────────────────────
         $baseQuery = ProfitLossSummary::query()
@@ -71,39 +67,37 @@ class ProfitLossController extends Controller
 
         $offset = ($paginated->currentPage() - 1) * $paginated->perPage();
 
-        $data = collect($paginated->items())->values()->map(function ($row, $index) use ($offset) {
-            return [
-                'sl' => $offset + $index + 1,
-                'invoice_number' => $row->full_invoice_number,
-                'date' => $row->sale_date,
-                'product' => $row->product ? [
-                    'name' => $row->product->product_name,
-                    'image' => $row->product->product_image,
-                    'variant' => $row->productVariant?->attributeValues
-                        ->pluck('value')
-                        ->filter()
-                        ->values(),
-                ] : null,
-                'seller' => $row->sale?->seller ? [
-                    'name' => $row->sale->seller->name,
-                    'image' => $row->sale->seller->profile_picture,
-                ] : null,
-                'created_by' => $row->sale?->createdBy ? [
-                    'name' => $row->sale->createdBy->name,
-                    'image' => $row->sale->createdBy->profile_picture,
-                ] : null,
-                'status' => $row->sale?->status,
-                'payment_method' => $row->sale?->payments
-                    ->map(fn ($payment) => $payment->paymentMethod)
+        $data = collect($paginated->items())->values()->map(fn ($row, $index) => [
+            'sl' => $offset + $index + 1,
+            'invoice_number' => $row->full_invoice_number,
+            'date' => $row->sale_date,
+            'product' => $row->product ? [
+                'name' => $row->product->product_name,
+                'image' => $row->product->product_image,
+                'variant' => $row->productVariant?->attributeValues
+                    ->pluck('value')
                     ->filter()
-                    ->unique('id')
-                    ->values()
-                    ->map(fn ($pm) => ['name' => $pm->name, 'logo' => $pm->logo]),
-                'total_sale_price' => round((float)$row->total_sale_price, 2),
-                'total_purchase_price' => round((float)$row->total_purchase_price, 2),
-                'profit_loss' => round((float)$row->profit_loss, 2),
-            ];
-        });
+                    ->values(),
+            ] : null,
+            'seller' => $row->sale?->seller ? [
+                'name' => $row->sale->seller->name,
+                'image' => $row->sale->seller->profile_picture,
+            ] : null,
+            'created_by' => $row->sale?->createdBy ? [
+                'name' => $row->sale->createdBy->name,
+                'image' => $row->sale->createdBy->profile_picture,
+            ] : null,
+            'status' => $row->sale?->status,
+            'payment_method' => $row->sale?->payments
+                ->map(fn ($payment) => $payment->paymentMethod)
+                ->filter()
+                ->unique('id')
+                ->values()
+                ->map(fn ($pm) => ['name' => $pm->name, 'logo' => $pm->logo]),
+            'total_sale_price' => round((float) $row->total_sale_price, 2),
+            'total_purchase_price' => round((float) $row->total_purchase_price, 2),
+            'profit_loss' => round((float) $row->profit_loss, 2),
+        ]);
 
         return response()->json([
             'data' => $data,
@@ -112,9 +106,9 @@ class ProfitLossController extends Controller
             'total' => $paginated->total(),
             'last_page' => $paginated->lastPage(),
             'grand_total' => [
-                'total_sale_price' => round((float)$totals->grand_sale, 2),
-                'total_purchase_price' => round((float)$totals->grand_purchase, 2),
-                'profit_loss' => round((float)$totals->grand_profit, 2),
+                'total_sale_price' => round((float) $totals->grand_sale, 2),
+                'total_purchase_price' => round((float) $totals->grand_purchase, 2),
+                'profit_loss' => round((float) $totals->grand_profit, 2),
             ],
         ]);
     }
@@ -150,7 +144,7 @@ class ProfitLossController extends Controller
      */
     public function generateTodayPdf(Request $request)
     {
-        $today = \Illuminate\Support\Carbon::now('Asia/Dhaka')->toDateString();
+        $today = Carbon::now('Asia/Dhaka')->toDateString();
         $request->merge(['date' => json_encode([$today, $today])]);
 
         return $this->generatePdf($request);
@@ -160,7 +154,7 @@ class ProfitLossController extends Controller
     {
         $status = Cache::get(GenerateProfitLossPdfJob::cacheKey($token));
 
-        if (!$status) {
+        if (! $status) {
             return response()->json(['status' => 'not_found'], 404);
         }
 
@@ -226,5 +220,4 @@ class ProfitLossController extends Controller
 
         ];
     }
-
 }

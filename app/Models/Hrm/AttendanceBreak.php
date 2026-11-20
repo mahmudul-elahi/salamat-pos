@@ -16,7 +16,7 @@ class AttendanceBreak extends Model
 
     protected $casts = [
         'started_at' => 'datetime',
-        'ended_at'   => 'datetime',
+        'ended_at' => 'datetime',
     ];
 
     public function attendance(): BelongsTo
@@ -32,6 +32,7 @@ class AttendanceBreak extends Model
     public function durationSeconds(): int
     {
         $end = $this->ended_at ?? now();
+
         return (int) abs($this->started_at->diffInSeconds($end));
     }
 

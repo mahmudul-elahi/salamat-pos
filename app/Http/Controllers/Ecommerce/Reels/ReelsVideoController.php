@@ -43,12 +43,14 @@ class ReelsVideoController extends Controller
         ]);
 
         $reelsVideo->update($validated);
+
         return successResponse('Reels video updated successfully');
     }
 
     public function destroy(ReelsVideo $reelsVideo)
     {
         $reelsVideo->delete();
+
         return successResponse('Reels video deleted successfully');
     }
 }

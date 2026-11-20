@@ -2,20 +2,16 @@
 
 namespace App\Http\Controllers\Pos\Statement;
 
-use Illuminate\Http\Request;
-
 use App\Http\Controllers\Controller;
-
 use App\Jobs\Report\GenerateStockReportPdfJob;
 use App\Jobs\Report\GenerateStockStatementPdfJob;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-
 class StatementPDFController extends Controller
 {
-
     /**
      * A stock statement PDF can span thousands of product/variant rows, so
      * — mirroring stockReportPdf() below — this only queues
@@ -27,9 +23,9 @@ class StatementPDFController extends Controller
      */
     public function stockStatementPdf(Request $request)
     {
-        $wareHouse  = $request->input('warehouse');
+        $wareHouse = $request->input('warehouse');
         $isAppAdmin = auth()->user()->isAppAdmin();
-        $tenantId   = $isAppAdmin ? $wareHouse : tenant()->id;
+        $tenantId = $isAppAdmin ? $wareHouse : tenant()->id;
 
         $token = (string) Str::uuid();
 
@@ -38,12 +34,12 @@ class StatementPDFController extends Controller
         $columns = $request->input('columns');
 
         GenerateStockStatementPdfJob::dispatch($token, $tenantId, [
-            'brand'    => $request->input('brand'),
+            'brand' => $request->input('brand'),
             'category' => $request->input('category'),
-            'product'  => $request->input('product'),
+            'product' => $request->input('product'),
             'supplier' => $request->input('supplier'),
-            'date'     => $request->input('date'),
-            'columns'  => $columns ? explode(',', $columns) : [],
+            'date' => $request->input('date'),
+            'columns' => $columns ? explode(',', $columns) : [],
         ])->onQueue('report-generate');
 
         return response()->json(['token' => $token]);
@@ -53,7 +49,7 @@ class StatementPDFController extends Controller
     {
         $status = Cache::get(GenerateStockStatementPdfJob::cacheKey($token));
 
-        if (!$status) {
+        if (! $status) {
             return response()->json(['status' => 'not_found'], 404);
         }
 
@@ -78,9 +74,9 @@ class StatementPDFController extends Controller
 
     public function stockReportPdf(Request $request)
     {
-        $wareHouse  = $request->input('warehouse');
+        $wareHouse = $request->input('warehouse');
         $isAppAdmin = auth()->user()->isAppAdmin();
-        $tenantId   = $isAppAdmin ? $wareHouse : tenant()->id;
+        $tenantId = $isAppAdmin ? $wareHouse : tenant()->id;
 
         $token = (string) Str::uuid();
 
@@ -89,12 +85,12 @@ class StatementPDFController extends Controller
         $columns = $request->input('columns');
 
         GenerateStockReportPdfJob::dispatch($token, $tenantId, [
-            'brand'    => $request->input('brand'),
+            'brand' => $request->input('brand'),
             'category' => $request->input('category'),
-            'product'  => $request->input('product'),
+            'product' => $request->input('product'),
             'supplier' => $request->input('supplier'),
-            'date'     => $request->input('date'),
-            'columns'  => $columns ? explode(',', $columns) : [],
+            'date' => $request->input('date'),
+            'columns' => $columns ? explode(',', $columns) : [],
         ])->onQueue('report-generate');
 
         return response()->json(['token' => $token]);
@@ -104,7 +100,7 @@ class StatementPDFController extends Controller
     {
         $status = Cache::get(GenerateStockReportPdfJob::cacheKey($token));
 
-        if (!$status) {
+        if (! $status) {
             return response()->json(['status' => 'not_found'], 404);
         }
 
@@ -126,7 +122,6 @@ class StatementPDFController extends Controller
 
         return response()->json(['deleted' => true]);
     }
-
 
     public function transactionStatementPdf(Request $request)
     {

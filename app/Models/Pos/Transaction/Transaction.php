@@ -9,6 +9,8 @@ use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\Sale\Sale;
 use App\Models\Pos\SaleReturn\SaleReturn;
 use App\Models\TenantBaseModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Transaction extends TenantBaseModel
 {
@@ -21,10 +23,10 @@ class Transaction extends TenantBaseModel
         'amount',
         'payment_method_id',
         'tenant_id',
-        'note'
+        'note',
     ];
 
-    public function model(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    public function model(): MorphTo
     {
         return $this->morphTo();
     }
@@ -54,12 +56,10 @@ class Transaction extends TenantBaseModel
         return $query->where('model_type', SaleReturn::class);
     }
 
-
-    public function paymentMethod(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function paymentMethod(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
     }
-
 
     public function getNextInvoiceNumberAttribute()
     {

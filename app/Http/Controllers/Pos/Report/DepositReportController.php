@@ -6,10 +6,9 @@ use App\Exceptions\GeneralException;
 use App\Filters\Pos\Report\DepositReportFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Investment\Investment;
-use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use App\Services\Setting\SettingService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class DepositReportController extends Controller
 {
@@ -18,7 +17,7 @@ class DepositReportController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $transactionsQuery = Investment::query()
-            ->filters(new DepositReportFilter())
+            ->filters(new DepositReportFilter)
             ->with([
                 'user:id,name,profile_photo',
                 'createdBy:id,name',
@@ -28,12 +27,11 @@ class DepositReportController extends Controller
             ])
             ->orderByDesc('id');
 
-
         $paginated = (clone $transactionsQuery)
             ->paginate($perPage)
-            ->through(fn($investment) => [
+            ->through(fn ($investment) => [
                 ...$investment->toArray(),
-                'full_invoice_number' => 'INV-' . $investment->id,
+                'full_invoice_number' => 'INV-'.$investment->id,
             ]);
 
         $totalDeposit = (clone $transactionsQuery)->sum('amount');
@@ -54,7 +52,7 @@ class DepositReportController extends Controller
         $isAdmin = auth()->user()->isAppAdmin();
         $warehouse = $request->get('warehouse');
 
-        if ($isAdmin && !$warehouse) {
+        if ($isAdmin && ! $warehouse) {
             throw new GeneralException('Select warehouse first');
         }
         $tenantId = $isAdmin ? $warehouse : tenant()->id;
@@ -62,15 +60,14 @@ class DepositReportController extends Controller
         $tenantSettings = resolve(SettingService::class)->getFormattedSettings('tenant', $tenantId);
 
         $deposits = Investment::query()
-            ->filters(new DepositReportFilter())
+            ->filters(new DepositReportFilter)
             ->with('user:id,name')
             ->orderByDesc('id')
             ->get();
 
         $totalDeposit = Investment::query()
-            ->filters(new DepositReportFilter())
+            ->filters(new DepositReportFilter)
             ->sum('amount');
-
 
         $pdf = Pdf::loadView('pdf.deposit-report', [
             'deposits' => $deposits,
@@ -80,5 +77,4 @@ class DepositReportController extends Controller
 
         return $pdf->stream('deposit-report.pdf');
     }
-
 }

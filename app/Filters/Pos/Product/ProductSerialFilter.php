@@ -10,10 +10,10 @@ class ProductSerialFilter extends BaseFilter
     public function search($search = null): void
     {
         $this->builder->when($search, function ($query) use ($search) {
-            $query->where('serial_number', 'LIKE', '%' . $search . '%')
+            $query->where('serial_number', 'LIKE', '%'.$search.'%')
                 ->orWhereRaw('RIGHT(serial_number, 4) = ?', [$search])
                 ->orWhereHas('product', function ($query) use ($search) {
-                    $query->where('product_name', 'LIKE', '%' . $search . '%');
+                    $query->where('product_name', 'LIKE', '%'.$search.'%');
                 });
         });
     }
@@ -47,7 +47,6 @@ class ProductSerialFilter extends BaseFilter
                 ->withoutGlobalScope(TenantScope::class);
         });
     }
-
 
     public function supplier($supplierId = null): void
     {

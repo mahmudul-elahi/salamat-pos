@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Template;
 
+use App\Models\Template\Template;
 use App\Models\Template\TemplateType;
 use Illuminate\Database\Seeder;
 
@@ -29,11 +30,11 @@ class TemplateSeeder extends Seeder
                                     <p style="color: #4F5867; font-size: 15px; font-weight: 400; margin: 0 auto; width: 70%;">We can’t wait for you to see how simple invoicing can be!</p>
                                     <p style="color: #4F5867; font-size: 15px; font-weight: 400; padding-top: 30px; margin: 0 auto; width: 70%;">Best,</p>
                                     <p style="color: #4F5867; font-size: 15px; font-weight: 400; padding-top: 10px; margin: 0 auto; width: 70%;">The {app_name} Team</p>',
-                                    'custom_content' => null,
-                                    'type' => 'mail',
-                                    'template_type_id' => $this->templateType('user_invitation'),
-                                    'created_at' => now(),
-                                    'updated_at' => now()
+                'custom_content' => null,
+                'type' => 'mail',
+                'template_type_id' => $this->templateType('user_invitation'),
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
 
             [
@@ -63,7 +64,7 @@ class TemplateSeeder extends Seeder
                 'type' => 'mail',
                 'template_type_id' => $this->templateType('forget_password'),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
 
             [
@@ -93,7 +94,7 @@ class TemplateSeeder extends Seeder
                 'type' => 'mail',
                 'template_type_id' => $this->templateType('password_change_confirmation'),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'subject' => 'Welcome to {app_name} – Let’s Get Started!',
@@ -122,13 +123,13 @@ class TemplateSeeder extends Seeder
                 'type' => 'mail',
                 'template_type_id' => $this->templateType('user_joined'),
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
 
         ];
 
         foreach ($templates as $template) {
-            \App\Models\Template\Template::query()->create($template);
+            Template::query()->create($template);
         }
     }
 

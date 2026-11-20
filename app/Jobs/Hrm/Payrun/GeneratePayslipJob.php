@@ -8,13 +8,13 @@ use App\Models\Hrm\Payrun;
 use App\Models\Hrm\PayrunType;
 use App\Models\User;
 use App\Services\Hrm\Payrun\PayrunCalculationService;
-use Illuminate\Support\Collection;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -33,8 +33,7 @@ class GeneratePayslipJob implements ShouldQueue
         public ?int $payrunTypeId = null,
         public ?array $payrunConfig = null,
         public ?array $beneficiaryValuesData = null,
-    ) {
-    }
+    ) {}
 
     public function handle(PayrunCalculationService $service): void
     {
@@ -92,14 +91,15 @@ class GeneratePayslipJob implements ShouldQueue
         $beneficiaryMap = Beneficiary::query()->whereIn('id', $ids)->get()->keyBy('id');
 
         return collect($data)
-            ->filter(fn($row) => isset($row['beneficiary_id']) && $beneficiaryMap->has($row['beneficiary_id']))
+            ->filter(fn ($row) => isset($row['beneficiary_id']) && $beneficiaryMap->has($row['beneficiary_id']))
             ->map(function ($row) use ($beneficiaryMap) {
                 $bv = new BeneficiaryValue([
                     'beneficiary_id' => $row['beneficiary_id'],
-                    'amount'         => $row['amount'],
-                    'is_percentage'  => $row['is_percentage'] ?? false,
+                    'amount' => $row['amount'],
+                    'is_percentage' => $row['is_percentage'] ?? false,
                 ]);
                 $bv->setRelation('beneficiary', $beneficiaryMap->get($row['beneficiary_id']));
+
                 return $bv;
             })
             ->values();

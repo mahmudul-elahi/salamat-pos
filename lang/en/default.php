@@ -1,4 +1,5 @@
 <?php
+
 return [
     'invoice_pdf.invoice' => 'Invoice',
     'invoice_pdf.invoice_no' => 'Invoice no',
@@ -18,7 +19,7 @@ return [
     'invoice_pdf.notes' => 'Notes',
     'invoice_pdf.date' => 'Date',
     'invoice_pdf.tax' => 'Tax',
-    'email_address' =>  'Email',
+    'email_address' => 'Email',
     'invoice_pdf.estimate_to' => 'Estimate to',
     'invoice_pdf.estimate' => 'Estimate',
     'address' => 'Address',
@@ -28,5 +29,5 @@ return [
     'job_entries' => 'Job Entries',
     'apply_list' => 'Apply List',
     'payable_amount' => 'Payable Amount',
-    'receivable_amount' => 'Receivable Amount'
+    'receivable_amount' => 'Receivable Amount',
 ];

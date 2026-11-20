@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Administrator\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -11,7 +12,7 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function index(): LengthAwarePaginator
     {
         return User::query()
             ->with('roles')

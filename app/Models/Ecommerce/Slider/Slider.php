@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Ecommerce\Slider;
 
 use App\Helpers\Traits\RevalidatesFrontendTrait;
@@ -9,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Slider extends BaseModel
 {
-    use SoftDeletes, RevalidatesFrontendTrait;
+    use RevalidatesFrontendTrait, SoftDeletes;
 
     protected string $revalidationType = 'slider';
 

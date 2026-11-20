@@ -3,7 +3,6 @@
 namespace App\Helpers\Notification;
 
 use App\Helpers\Traits\InstanceCreatorTrait;
-use App\Models\Landlord\Subscriber\Subscriber;
 use App\Models\Template\TemplateType;
 use App\Models\User;
 use Illuminate\Support\Facades\Notification;
@@ -14,26 +13,20 @@ class NotificationHelper
 
     public string $event;
 
-    protected mixed $templates;
-
     public $template;
 
     public array $notificationAudiences = [];
 
     protected array $data = [];
 
-    public function __construct($templates = [])
-    {
-        $this->templates = $templates;
-    }
-
+    public function __construct(protected mixed $templates = []) {}
 
     public function on($event): static
     {
         $this->event = $event;
+
         return $this;
     }
-
 
     public function sms()
     {
@@ -50,12 +43,9 @@ class NotificationHelper
         return $this->finder('database');
     }
 
-
     protected function finder($template = 'mail')
     {
-        return $this->template = collect($this->getTemplates())->first(function ($t) use ($template) {
-            return $t->type == $template;
-        });
+        return $this->template = collect($this->getTemplates())->first(fn ($t) => $t->type == $template);
     }
 
     public function audiences()
@@ -81,21 +71,21 @@ class NotificationHelper
     {
         $newAudience = is_array($audiences) ? $audiences : func_get_args();
         $this->notificationAudiences = $newAudience;
+
         return $this;
     }
-
 
     public function with($body): static
     {
         $this->data = is_array($body) ? $body : func_get_args();
+
         return $this;
     }
-
 
     public function send($notification): void
     {
         $audiences = array_unique(array_merge($this->audiences(), $this->notificationAudiences));
-        $users = User::query()->whereHas('roles', fn($query) => $query->whereIn('id', $audiences))->get();
+        $users = User::query()->whereHas('roles', fn ($query) => $query->whereIn('id', $audiences))->get();
         Notification::send($users, new $notification($this->getTemplates(), ...$this->data));
     }
 
@@ -104,6 +94,7 @@ class NotificationHelper
         if (count($this->templates)) {
             return $this->templates;
         }
+
         return $this->fetchNotificationTemplates();
     }
 
@@ -115,5 +106,4 @@ class NotificationHelper
 
         return $eventQuery?->templates;
     }
-
 }

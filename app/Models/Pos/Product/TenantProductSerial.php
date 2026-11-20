@@ -2,18 +2,18 @@
 
 namespace App\Models\Pos\Product;
 
-use App\Models\Pos\Product\ProductSerial;
 use App\Models\TenantBaseModel;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TenantProductSerial extends TenantBaseModel
 {
     protected $fillable = [
         'tenant_id',
         'product_serial_id',
-        'status'
+        'status',
     ];
 
-    public function productSerial(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function productSerial(): BelongsTo
     {
         return $this->belongsTo(ProductSerial::class, 'product_serial_id', 'id');
     }

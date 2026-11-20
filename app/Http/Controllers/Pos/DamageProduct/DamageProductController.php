@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Pos\DamageProduct;
 
 use App\Exceptions\GeneralException;
 use App\Http\Controllers\Controller;
-use App\Models\Pos\Product\TenantProductSerial;
-use App\Models\Pos\Stock\Stock;
 use App\Models\Pos\DamageProduct\DamageProduct;
 use App\Models\Pos\DamageProduct\DamageProductItem;
+use App\Models\Pos\Product\TenantProductSerial;
+use App\Models\Pos\Stock\Stock;
 use App\Scopes\TenantScope;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -20,33 +20,30 @@ class DamageProductController extends Controller
         return DamageProduct::query()
             ->with(['tenant:id,name'])
             ->withCount('items')
-            ->when(request('status'), fn($q, $s) => $q->where('status', $s))
+            ->when(request('status'), fn ($q, $s) => $q->where('status', $s))
             ->when(
                 request('search'),
-                fn($q, $search) =>
-                $q->where('reference_no', 'LIKE', "%{$search}%")
+                fn ($q, $search) => $q->where('reference_no', 'LIKE', "%{$search}%")
             )
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(function ($item) {
-                return [
-                    ...$item->toArray(),
-                    'created_at' => Carbon::parse($item->created_at)
-                        ->timezone('Asia/Dhaka')
-                        ->format('d-M-Y h:i A'),
-                ];
-            });
+            ->through(fn ($item) => [
+                ...$item->toArray(),
+                'created_at' => Carbon::parse($item->created_at)
+                    ->timezone('Asia/Dhaka')
+                    ->format('d-M-Y h:i A'),
+            ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'tenant_id'   => 'required|integer|exists:tenants,id',
+            'tenant_id' => 'required|integer|exists:tenants,id',
             'damage_date' => 'required|date',
-            'note'        => 'nullable|string|max:1000',
-            'items'       => 'required|array|min:1',
-            'items.*.product_serial_id'  => 'required|integer|exists:product_serials,id',
-            'items.*.product_id'         => 'required|integer|exists:products,id',
+            'note' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.product_serial_id' => 'required|integer|exists:product_serials,id',
+            'items.*.product_id' => 'required|integer|exists:products,id',
             'items.*.product_variant_id' => 'required|integer|exists:product_variants,id',
         ]);
 
@@ -58,9 +55,9 @@ class DamageProductController extends Controller
                 ->whereIn('status', ['purchase', 'sale_return'])
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 throw new GeneralException(
-                    "Serial #" . ($index + 1) . " is not available in this shop.",
+                    'Serial #'.($index + 1).' is not available in this shop.',
                     400
                 );
             }
@@ -70,21 +67,21 @@ class DamageProductController extends Controller
             DB::beginTransaction();
 
             $damageProduct = DamageProduct::create([
-                'tenant_id'    => $request->tenant_id,
+                'tenant_id' => $request->tenant_id,
                 'reference_no' => DamageProduct::generateReferenceNo(),
-                'damage_date'  => $request->damage_date,
-                'status'       => 'draft',
-                'note'         => $request->note,
-                'created_by'   => auth()->id(),
+                'damage_date' => $request->damage_date,
+                'status' => 'draft',
+                'note' => $request->note,
+                'created_by' => auth()->id(),
             ]);
 
             foreach ($request->items as $item) {
                 DamageProductItem::create([
                     'damage_product_id' => $damageProduct->id,
-                    'product_id'         => $item['product_id'],
+                    'product_id' => $item['product_id'],
                     'product_variant_id' => $item['product_variant_id'],
-                    'product_serial_id'  => $item['product_serial_id'],
-                    'quantity'           => 1,
+                    'product_serial_id' => $item['product_serial_id'],
+                    'quantity' => 1,
                 ]);
             }
 
@@ -93,7 +90,7 @@ class DamageProductController extends Controller
             return successResponse('Damage product recorded successfully', ['id' => $damageProduct->id]);
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -130,29 +127,29 @@ class DamageProductController extends Controller
                 }
 
                 return [
-                    'id'                 => $item->id,
-                    'product_id'         => $item->product_id,
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
                     'product_variant_id' => $item->product_variant_id,
-                    'product_serial_id'  => $item->product_serial_id,
-                    'serial_number'      => $item->productSerial?->serial_number,
-                    'product_name'       => $item->product?->product_name,
-                    'sku'                => $item->productVariant?->sku,
-                    'attributes'         => $attributes,
-                    'is_available'       => $isAvailable,
+                    'product_serial_id' => $item->product_serial_id,
+                    'serial_number' => $item->productSerial?->serial_number,
+                    'product_name' => $item->product?->product_name,
+                    'sku' => $item->productVariant?->sku,
+                    'attributes' => $attributes,
+                    'is_available' => $isAvailable,
                 ];
             });
 
         return [
-            'id'           => $damageProduct->id,
+            'id' => $damageProduct->id,
             'reference_no' => $damageProduct->reference_no,
-            'tenant'       => $damageProduct->tenant,
-            'damage_date'  => $damageProduct->damage_date,
-            'status'       => $damageProduct->status,
-            'note'         => $damageProduct->note,
-            'created_by'   => $damageProduct->createdBy?->name,
-            'approved_by'  => $damageProduct->approvedBy?->name,
+            'tenant' => $damageProduct->tenant,
+            'damage_date' => $damageProduct->damage_date,
+            'status' => $damageProduct->status,
+            'note' => $damageProduct->note,
+            'created_by' => $damageProduct->createdBy?->name,
+            'approved_by' => $damageProduct->approvedBy?->name,
             'cancelled_by' => $damageProduct->cancelledBy?->name,
-            'items'        => $items,
+            'items' => $items,
         ];
     }
 
@@ -174,7 +171,7 @@ class DamageProductController extends Controller
                     ->whereIn('status', ['purchase', 'sale_return'])
                     ->first();
 
-                if (!$serial) {
+                if (! $serial) {
                     throw new GeneralException(
                         "Serial {$item->productSerial?->serial_number} is no longer available in this shop.",
                         400
@@ -194,7 +191,7 @@ class DamageProductController extends Controller
             }
 
             $damageProduct->update([
-                'status'      => 'approved',
+                'status' => 'approved',
                 'approved_by' => auth()->id(),
             ]);
 
@@ -203,7 +200,7 @@ class DamageProductController extends Controller
             return successResponse('Damage product approved. Stock updated.');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 400);
+            throw new GeneralException($e->getMessage(), 400, $e);
         }
     }
 

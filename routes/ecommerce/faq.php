@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Ecommerce\Faq\FaqCategoryController;
 use App\Http\Controllers\Ecommerce\Faq\FaqController;
 use Illuminate\Routing\Router;
@@ -12,4 +14,3 @@ Route::group(['prefix' => 'ecommerce', 'middleware' => 'auth.permission'], funct
     $router->apiResource('faq-categories', FaqCategoryController::class);
     $router->apiResource('faqs', FaqController::class);
 });
-

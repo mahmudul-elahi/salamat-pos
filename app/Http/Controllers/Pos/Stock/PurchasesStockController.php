@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 
 class PurchasesStockController extends Controller
 {
-
     // public function purchaseStock()
     // {
     //     // ── 1. সব tenant এর current stock serials ─────────────────────────────
@@ -115,7 +114,7 @@ class PurchasesStockController extends Controller
             ->withoutGlobalScope(TenantScope::class)
             ->whereIn('status', ['purchase', 'sale_return'])
             ->whereHas('productSerial', function ($query) {
-                $query->filters(new ProductSerialFilter())
+                $query->filters(new ProductSerialFilter)
                     ->whereHas('variant', function ($q) {
                         $q->withTrashed();
                     });
@@ -202,27 +201,27 @@ class PurchasesStockController extends Controller
         $data = $grouped
             ->groupBy('tenant_id')
             ->map(function ($tenantSerials) use ($deposits, $withdrawals, $expenses, $sales, $profitLossSummary, $totalAmounts) {
-                $tenant   = $tenantSerials->first()->tenant;
+                $tenant = $tenantSerials->first()->tenant;
                 $tenantId = $tenant?->id;
 
-                $uniqueSerials   = $tenantSerials->unique('product_serial_id');
-                $totalDeposit    = (float) ($deposits[$tenantId] ?? 0);
+                $uniqueSerials = $tenantSerials->unique('product_serial_id');
+                $totalDeposit = (float) ($deposits[$tenantId] ?? 0);
                 $totalWithdrawal = (float) ($withdrawals[$tenantId] ?? 0);
-                $totalExpense    = (float) ($expenses[$tenantId] ?? 0);
-                $totalSale       = (float) ($sales[$tenantId] ?? 0);
+                $totalExpense = (float) ($expenses[$tenantId] ?? 0);
+                $totalSale = (float) ($sales[$tenantId] ?? 0);
 
                 $profitLoss = (float) ($profitLossSummary[$tenantId] ?? 0) - $totalExpense;
 
                 return [
-                    'tenant'           => $tenant,
-                    'total_qty'        => $uniqueSerials->count(),
+                    'tenant' => $tenant,
+                    'total_qty' => $uniqueSerials->count(),
                     'total_unit_price' => $totalAmounts[$tenantId] ?? 0,
-                    'total_sale'       => $totalSale,
-                    'total_deposit'    => $totalDeposit,
+                    'total_sale' => $totalSale,
+                    'total_deposit' => $totalDeposit,
                     'total_withdrawal' => $totalWithdrawal,
-                    'total_expense'    => $totalExpense,
-                    'profit_loss'      => $profitLoss,
-                    'total_balance'    => $totalDeposit - $totalWithdrawal,
+                    'total_expense' => $totalExpense,
+                    'profit_loss' => $profitLoss,
+                    'total_balance' => $totalDeposit - $totalWithdrawal,
                 ];
             })
             ->values();
@@ -230,30 +229,29 @@ class PurchasesStockController extends Controller
         // ── 7. Grand total (all tenants মিলিয়ে) ─────────────────────────────
         $grandTotal = [
             'total_unit_price' => (float) $data->sum('total_unit_price'),
-            'total_sale'       => (float) $data->sum('total_sale'),
-            'total_balance'    => (float) $data->sum('total_balance'),
-            'total_expense'    => (float) $data->sum('total_expense'),
-            'profit_loss'      => (float) $data->sum('profit_loss'),
+            'total_sale' => (float) $data->sum('total_sale'),
+            'total_balance' => (float) $data->sum('total_balance'),
+            'total_expense' => (float) $data->sum('total_expense'),
+            'profit_loss' => (float) $data->sum('profit_loss'),
         ];
 
         return response()->json([
-            'data'        => $data,
+            'data' => $data,
             'grand_total' => $grandTotal,
         ]);
     }
 
-
     public function stockCalculation()
     {
         $wareHouse = request('warehouse');
-        $product   = request('product');
-        $perPage   = request('per_page', 15);
+        $product = request('product');
+        $perPage = request('per_page', 15);
 
         // product filter condition — আছে তো যোগ হবে, না থাকলে খালি
-        $productWhere = $product ? "AND purchase_items.product_id = ?" : "";
-        $productWhere2 = $product ? "AND purchase_return_items.product_id = ?" : "";
-        $productWhere3 = $product ? "AND sale_items.product_id = ?" : "";
-        $productWhere4 = $product ? "AND sale_return_items.product_id = ?" : "";
+        $productWhere = $product ? 'AND purchase_items.product_id = ?' : '';
+        $productWhere2 = $product ? 'AND purchase_return_items.product_id = ?' : '';
+        $productWhere3 = $product ? 'AND sale_items.product_id = ?' : '';
+        $productWhere4 = $product ? 'AND sale_return_items.product_id = ?' : '';
 
         $sql = "
         SELECT product_id, product_variant_id, 'purchase' AS type, quantity AS qty
@@ -318,7 +316,7 @@ class PurchasesStockController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $items      = collect($stocks->items());
+        $items = collect($stocks->items());
         $productIds = $items->pluck('product_id')->unique()->filter()->values();
         $variantIds = $items->pluck('product_variant_id')->unique()->filter()->values();
 
@@ -334,7 +332,7 @@ class PurchasesStockController extends Controller
 
         $data = $items->map(function ($row) use ($products, $variants) {
 
-            $variant          = $variants[$row->product_variant_id] ?? null;
+            $variant = $variants[$row->product_variant_id] ?? null;
             $attributeDisplay = null;
 
             if ($variant && $variant->attributeValues->isNotEmpty()) {
@@ -344,18 +342,18 @@ class PurchasesStockController extends Controller
             }
 
             return [
-                'product_id'            => $row->product_id,
-                'product_name'          => $products[$row->product_id] ?? null,
-                'variant_id'            => $row->product_variant_id,
-                'variant_sku'           => $variant?->sku,
-                'variant_attributes'    => $attributeDisplay,
-                'total_purchase'        => (float) $row->total_purchase,
+                'product_id' => $row->product_id,
+                'product_name' => $products[$row->product_id] ?? null,
+                'variant_id' => $row->product_variant_id,
+                'variant_sku' => $variant?->sku,
+                'variant_attributes' => $attributeDisplay,
+                'total_purchase' => (float) $row->total_purchase,
                 'total_purchase_return' => (float) $row->total_purchase_return,
-                'total_sale'            => (float) $row->total_sale,
-                'total_sale_return'     => (float) $row->total_sale_return,
-                'total_in'              => (float) $row->total_in,
-                'total_out'             => (float) $row->total_out,
-                'net_stock'             => (float) $row->net_stock,
+                'total_sale' => (float) $row->total_sale,
+                'total_sale_return' => (float) $row->total_sale_return,
+                'total_in' => (float) $row->total_in,
+                'total_out' => (float) $row->total_out,
+                'net_stock' => (float) $row->net_stock,
             ];
         });
 

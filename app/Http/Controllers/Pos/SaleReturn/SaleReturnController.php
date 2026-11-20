@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers\Pos\SaleReturn;
 
-use Throwable;
-use Illuminate\Http\Request;
-use App\Models\Pos\Sale\Sale;
-use Illuminate\Support\Facades\DB;
 use App\Exceptions\GeneralException;
 use App\Filters\Pos\Sale\SaleFilter;
 use App\Http\Controllers\Controller;
-use App\Models\Pos\Purchase\PurchaseItem;
-use App\Services\Pos\SaleReturn\SaleReturnService;
 use App\Http\Requests\Pos\SaleReturn\SaleReturnRequest;
+use App\Models\Pos\Purchase\PurchaseItem;
 use App\Models\Pos\SaleReturn\SaleReturn;
 use App\Models\Pos\SaleReturn\SaleReturnItem;
+use App\Services\Pos\SaleReturn\SaleReturnService;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class SaleReturnController extends Controller
 {
@@ -55,9 +53,9 @@ class SaleReturnController extends Controller
         ];
     }
 
-
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function store(SaleReturnRequest $request)
@@ -79,12 +77,12 @@ class SaleReturnController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if ($exception->getCode() == 400) {
-                throw new GeneralException($exception->getMessage(), 500);
+                throw new GeneralException($exception->getMessage(), 500, $exception);
             }
             if (app()->environment('production')) {
-                throw new GeneralException('Sale return creation failed', 500);
+                throw new GeneralException('Sale return creation failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
@@ -99,6 +97,7 @@ class SaleReturnController extends Controller
             'items' => $saleReturn->items()->with(['product:id,product_name', 'product.serial:product_id,serial_number,status', 'productVariant:id,sku'])->get()->map(function ($item) {
                 $matchedSerial = $item->product?->serial
                     ->firstWhere('serial_number', $item->serial_number);
+
                 return [
                     'id' => $item->id,
                     'product_id' => $item->product_id,
@@ -122,6 +121,7 @@ class SaleReturnController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws Throwable
      */
     public function update(SaleReturnRequest $request, SaleReturn $sale_return)
@@ -142,17 +142,18 @@ class SaleReturnController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if ($exception->getCode() == 400) {
-                throw new GeneralException($exception->getMessage(), 500);
+                throw new GeneralException($exception->getMessage(), 500, $exception);
             }
             if (app()->environment('production')) {
-                throw new GeneralException('Sale Return update failed', 500);
+                throw new GeneralException('Sale Return update failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
     /**
      * Remove the specified resource from storage.
+     *
      * @throws Throwable
      */
     public function destroy(SaleReturn $sale_return)
@@ -175,9 +176,9 @@ class SaleReturnController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Sale return deletion failed', 500);
+                throw new GeneralException('Sale return deletion failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
@@ -188,9 +189,10 @@ class SaleReturnController extends Controller
             ->where('product_variant_id', $serial?->product_variant_id)
             ->where('serial_number', $serial->serial_number)
             ->first();
-        if (!$purchases) {
+        if (! $purchases) {
             return 0;
         }
+
         return $purchases->unit_price;
     }
 }

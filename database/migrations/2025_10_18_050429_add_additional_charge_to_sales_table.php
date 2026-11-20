@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('sales', function (Blueprint $table) {
             $table->string('additional_charge_name')->nullable()->after('shipping_cost');
-             $table->decimal('additional_charge', 10, 2)->default(0)->after('additional_charge_name');
+            $table->decimal('additional_charge', 10, 2)->default(0)->after('additional_charge_name');
         });
     }
 
@@ -22,7 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('sales', function (Blueprint $table) {
-        });
+        Schema::table('sales', function (Blueprint $table) {});
     }
 };

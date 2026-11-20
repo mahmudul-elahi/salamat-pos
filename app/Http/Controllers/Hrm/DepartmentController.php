@@ -19,7 +19,7 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'               => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'department_head_id' => ['nullable', 'exists:users,id'],
         ]);
 
@@ -36,7 +36,7 @@ class DepartmentController extends Controller
     public function update(Request $request, Department $department)
     {
         $validated = $request->validate([
-            'name'               => ['sometimes', 'string', 'max:255'],
+            'name' => ['sometimes', 'string', 'max:255'],
             'department_head_id' => ['nullable', 'exists:users,id'],
         ]);
 

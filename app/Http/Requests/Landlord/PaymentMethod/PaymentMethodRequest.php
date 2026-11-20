@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Landlord\PaymentMethod;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class PaymentMethodRequest extends FormRequest
 {
@@ -24,10 +25,9 @@ class PaymentMethodRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => ['required', 'string'],
-            'logo'        => ['nullable', 'string'],
+            'name' => ['required', 'string'],
+            'logo' => ['nullable', 'string'],
             'director_id' => ['nullable', 'exists:users,id'],
         ];
     }
-
 }

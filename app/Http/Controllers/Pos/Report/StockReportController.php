@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Pos\Report;
 
+use App\Filters\Pos\Product\ProductFilter;
+use App\Http\Controllers\Controller;
 use App\Models\Landlord\Category\Category;
 use App\Models\Pos\Sale\SaleItem;
+use App\Services\Pos\Report\Stock\StockReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
-use App\Filters\Pos\Product\ProductFilter;
-use App\Services\Pos\Report\Stock\StockReportService;
 
 class StockReportController extends Controller
 {
@@ -25,16 +25,16 @@ class StockReportController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage    = $request->input('per_page', 10);
-        $wareHouse  = $request->input('warehouse');
-        $brand      = $request->input('brand');
-        $category   = $request->input('category');
-        $product    = $request->input('product');
-        $supplier   = $request->input('supplier');
-        $search     = $request->input('search');
-        $dateRange  = $request->input('date');
+        $perPage = $request->input('per_page', 10);
+        $wareHouse = $request->input('warehouse');
+        $brand = $request->input('brand');
+        $category = $request->input('category');
+        $product = $request->input('product');
+        $supplier = $request->input('supplier');
+        $search = $request->input('search');
+        $dateRange = $request->input('date');
         $isAppAdmin = auth()->user()->isAppAdmin();
-        $tenantId   = $isAppAdmin ? $wareHouse : tenant()->id;
+        $tenantId = $isAppAdmin ? $wareHouse : tenant()->id;
 
         // Filtering by a parent category should also pull in its children's
         // and grandchildren's stock, not just products directly on that exact
@@ -42,7 +42,7 @@ class StockReportController extends Controller
         $categoryIds = $category ? Category::query()
             ->whereIn('id', explode(',', $category))
             ->get()
-            ->flatMap(fn(Category $cat) => $cat->getAllDescendantIds())
+            ->flatMap(fn (Category $cat) => $cat->getAllDescendantIds())
             ->unique()
             ->values()
             ->all() : null;
@@ -61,7 +61,7 @@ class StockReportController extends Controller
             ->groupBy('product_id', 'product_variant_id', 'serial_number');
 
         $filteredQuery = DB::table('purchase_items as pi')
-            ->joinSub($latestPurchaseItems, 'lpi', fn($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
+            ->joinSub($latestPurchaseItems, 'lpi', fn ($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
             ->join('purchases as pur', 'pur.id', '=', 'pi.purchase_id')
             ->join('products as p', 'p.id', '=', 'pi.product_id')
             ->leftJoin('product_variants as pv', 'pv.id', '=', 'pi.product_variant_id')
@@ -76,7 +76,7 @@ class StockReportController extends Controller
             })
             ->leftJoin('tenant_product_serials as tps', function ($join) use ($tenantId) {
                 $join->on('tps.product_serial_id', '=', 'ps.id')
-                    ->when($tenantId, fn($j) => $j->where('tps.tenant_id', $tenantId));
+                    ->when($tenantId, fn ($j) => $j->where('tps.tenant_id', $tenantId));
             })
             ->when($tenantId, function ($q) use ($tenantId) {
                 // A serial can be transferred to a different warehouse after
@@ -94,10 +94,10 @@ class StockReportController extends Controller
             ->whereNull('pur.deleted_at')
             ->whereNull('pi.deleted_at')
             ->whereNotNull('pi.serial_number')
-            ->when($brand, fn($q) => $q->whereIn('p.brand_id', explode(',', $brand)))
-            ->when($categoryIds, fn($q) => $q->whereIn('p.category_id', $categoryIds))
-            ->when($product, fn($q) => $q->whereIn('p.id', explode(',', $product)))
-            ->when($supplier, fn($q) => $q->whereIn('pur.contact_id', explode(',', $supplier)))
+            ->when($brand, fn ($q) => $q->whereIn('p.brand_id', explode(',', $brand)))
+            ->when($categoryIds, fn ($q) => $q->whereIn('p.category_id', $categoryIds))
+            ->when($product, fn ($q) => $q->whereIn('p.id', explode(',', $product)))
+            ->when($supplier, fn ($q) => $q->whereIn('pur.contact_id', explode(',', $supplier)))
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($query) use ($search) {
                     $query->where('p.product_name', 'like', "%{$search}%")
@@ -172,13 +172,13 @@ class StockReportController extends Controller
         // that made up its purchased_qty (matching how that count itself is
         // computed, with no status filter).
         $serialNumbers = $purchaseIds->isEmpty() ? collect() : DB::table('purchase_items as pi')
-            ->joinSub($latestPurchaseItems, 'lpi', fn($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
+            ->joinSub($latestPurchaseItems, 'lpi', fn ($join) => $join->on('lpi.latest_id', '=', 'pi.id'))
             ->whereIn('pi.purchase_id', $purchaseIds)
             ->whereNull('pi.deleted_at')
             ->whereNotNull('pi.serial_number')
             ->select('pi.purchase_id', 'pi.product_id', 'pi.product_variant_id', 'pi.serial_number')
             ->get()
-            ->groupBy(fn($row) => "{$row->purchase_id}-{$row->product_id}-{$row->product_variant_id}");
+            ->groupBy(fn ($row) => "{$row->purchase_id}-{$row->product_id}-{$row->product_variant_id}");
 
         $startIndex = ($page - 1) * $perPage;
 
@@ -236,13 +236,10 @@ class StockReportController extends Controller
         ]);
     }
 
-
-
-
     public function saleByProduct()
     {
         return SaleItem::query()
-            ->filters(new ProductFilter())
+            ->filters(new ProductFilter)
             ->join('sales', 'sale_items.sale_id', '=', 'sales.id')
             ->join('products', 'sale_items.product_id', '=', 'products.id')
             ->select([
@@ -261,7 +258,7 @@ class StockReportController extends Controller
                     ELSE (sale_items.unit_price * sale_items.quantity)
                 END
             ) AS total_sales
-        ")
+        "),
             ])
             ->groupBy('products.id')
             ->orderByDesc('total_sales')

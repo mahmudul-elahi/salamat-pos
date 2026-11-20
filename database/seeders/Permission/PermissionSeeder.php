@@ -4,7 +4,6 @@ namespace Database\Seeders\Permission;
 
 use App\Models\Permission\Permission;
 use App\Models\Role\Role;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PermissionSeeder extends Seeder
@@ -302,8 +301,6 @@ class PermissionSeeder extends Seeder
                 'group_name' => 'barcodes',
             ],
 
-
-
             // ===== Purchases =====
             [
                 'name' => 'view_purchases',
@@ -359,7 +356,6 @@ class PermissionSeeder extends Seeder
                 'label' => 'Can download purchase return details',
                 'group_name' => 'purchase_returns',
             ],
-
 
             // ===== Sales =====
             [
@@ -1073,8 +1069,6 @@ class PermissionSeeder extends Seeder
                 'label' => 'Can generate director shop-wise profile PDF',
                 'group_name' => 'directors',
             ],
-
-
 
             // ===== Partners =====
             [
@@ -2498,7 +2492,6 @@ class PermissionSeeder extends Seeder
                 'group_name' => 'report_downloads',
             ],
 
-
             // ===== Daily Closing Statement =====
             [
                 'name' => 'view_daily_closings',
@@ -2905,14 +2898,13 @@ class PermissionSeeder extends Seeder
 
         ];
 
-
-        //$role = Role::query()->first();
+        // $role = Role::query()->first();
         foreach ($permissions as $permission) {
             $exist_permissions = Permission::query()
                 ->where('name', '=', $permission['name'])
                 ->first();
-            if (!$exist_permissions) {
-                $this->command->alert('Permissions Added: ' . $permission['name']);
+            if (! $exist_permissions) {
+                $this->command->alert('Permissions Added: '.$permission['name']);
                 $permission = Permission::query()->create($permission);
                 // $permission->roles()->attach([$role->id]);
             }

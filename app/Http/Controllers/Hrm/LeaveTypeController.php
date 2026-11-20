@@ -18,9 +18,9 @@ class LeaveTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'   => ['required', 'string', 'max:255'],
-            'type'   => ['required', 'in:paid,unpaid'],
-            'day'    => ['required', 'numeric', 'min:0'],
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:paid,unpaid'],
+            'day' => ['required', 'numeric', 'min:0'],
             'enable' => ['required', 'boolean'],
         ]);
 
@@ -37,9 +37,9 @@ class LeaveTypeController extends Controller
     public function update(Request $request, LeaveType $leaveType)
     {
         $validated = $request->validate([
-            'name'   => ['required', 'string', 'max:255'],
-            'type'   => ['required', 'in:paid,unpaid'],
-            'day'    => ['required', 'numeric', 'min:0'],
+            'name' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'in:paid,unpaid'],
+            'day' => ['required', 'numeric', 'min:0'],
             'enable' => ['required', 'boolean'],
         ]);
 

@@ -13,7 +13,7 @@ class AreaShippingChargeController extends Controller
     {
         return Area::query()
             ->with('district:id,name')
-            ->filters(new AreaFilter())
+            ->filters(new AreaFilter)
             ->orderBy('name')
             ->paginate(request('per_page', 10));
     }

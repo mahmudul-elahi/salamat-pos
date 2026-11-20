@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-
 use App\Models\Ecommerce\Order\Order;
 use App\Observers\OrderObserver;
 use App\Services\Setting\SettingService;
@@ -39,9 +38,9 @@ class AppServiceProvider extends ServiceProvider
                 if ($key == 'company_name') {
                     config()->set('app.name', $setting);
                 }
-                config()->set('settings.application.' . $key, $setting);
+                config()->set('settings.application.'.$key, $setting);
             }
-        } catch (\Exception $exception) {
+        } catch (\Exception) {
         }
     }
 }

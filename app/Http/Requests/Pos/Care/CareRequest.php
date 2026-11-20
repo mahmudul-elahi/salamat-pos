@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Pos\Care;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -18,7 +20,7 @@ class CareRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'  => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'value' => ['required', 'numeric', 'min:1', 'max:100'],
         ];
     }

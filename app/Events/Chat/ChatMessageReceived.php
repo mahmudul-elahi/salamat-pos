@@ -14,9 +14,7 @@ class ChatMessageReceived implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public function __construct(public ChatMessage $message)
-    {
-    }
+    public function __construct(public ChatMessage $message) {}
 
     /**
      * @return array<int, Channel>
@@ -24,7 +22,7 @@ class ChatMessageReceived implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('chat-conversation.' . $this->message->conversation_id),
+            new PrivateChannel('chat-conversation.'.$this->message->conversation_id),
             new PrivateChannel('chat-inbox'),
         ];
     }

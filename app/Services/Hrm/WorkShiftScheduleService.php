@@ -15,7 +15,7 @@ class WorkShiftScheduleService
 {
     public function scheduledSeconds(?WorkShift $shift, Carbon $date): int
     {
-        if (!$shift) {
+        if (! $shift instanceof WorkShift) {
             return 0;
         }
 
@@ -28,7 +28,7 @@ class WorkShiftScheduleService
             $end = $shift->end_time;
         }
 
-        if (!$start || !$end) {
+        if (! $start || ! $end) {
             return 0;
         }
 

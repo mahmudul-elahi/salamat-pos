@@ -25,10 +25,11 @@ class SaleRequest extends FormRequest
     public function rules(): array
     {
         $isAppAdmin = auth()->user()->isAppAdmin();
+
         return [
             'tenant_id' => [
                 Rule::requiredIf($isAppAdmin),
-                'exists:tenants,id'
+                'exists:tenants,id',
             ],
             'contact_id' => ['required', 'exists:contacts,id'],
             'seller_id' => ['nullable', 'exists:users,id'],
@@ -58,7 +59,7 @@ class SaleRequest extends FormRequest
     {
         return [
             'customer_id' => 'customer',
-            'tenant_id' => 'shop'
+            'tenant_id' => 'shop',
         ];
     }
 

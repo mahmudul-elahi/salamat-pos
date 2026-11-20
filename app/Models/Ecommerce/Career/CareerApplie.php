@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Ecommerce\Career;
 
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +12,7 @@ class CareerApplie extends Model
     use SoftDeletes;
 
     protected $table = 'career_applies';
+
     public function career()
     {
         return $this->belongsTo(Career::class, 'career_id', 'id');

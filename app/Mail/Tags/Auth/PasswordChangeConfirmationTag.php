@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mail\Tags\Auth;
 
 use App\Helpers\Notification\TagHelper;
@@ -7,13 +9,9 @@ use App\Models\Common\User\UserProfile;
 
 class PasswordChangeConfirmationTag extends TagHelper
 {
+    public function __construct(protected $user) {}
 
-    public function __construct(protected $user)
-    {
-
-    }
-
-    function tag(): array
+    public function tag(): array
     {
         return array_merge($this->common(), [
             '{receiver_name}' => $this->getUserName(),

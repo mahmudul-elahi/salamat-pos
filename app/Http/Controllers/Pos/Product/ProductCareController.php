@@ -20,15 +20,15 @@ class ProductCareController extends Controller
     public function store(Request $request, Product $product): JsonResponse
     {
         $request->validate([
-            'care_items'           => ['required', 'array', 'min:1'],
+            'care_items' => ['required', 'array', 'min:1'],
             'care_items.*.care_id' => ['required', 'integer', 'exists:cares,id'],
         ]);
 
         $product->cares()->delete();
 
-        $cares = collect($request->care_items)->map(fn($item) => [
+        $cares = collect($request->care_items)->map(fn ($item) => [
             'product_id' => $product->id,
-            'care_id'    => $item['care_id'],
+            'care_id' => $item['care_id'],
             'created_at' => now(),
             'updated_at' => now(),
         ])->toArray();

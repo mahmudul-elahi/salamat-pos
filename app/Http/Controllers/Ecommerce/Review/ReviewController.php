@@ -15,7 +15,7 @@ class ReviewController extends Controller
     public function index()
     {
         return Review::query()
-            ->filters(new ReviewFilter())
+            ->filters(new ReviewFilter)
             ->with(['product:id,product_name,product_image', 'contact:id,name'])
             ->orderByDesc('id')
             ->paginate(\request('per_page', 10));
@@ -63,11 +63,11 @@ class ReviewController extends Controller
     public function update(Request $request, Review $review)
     {
         $request->validate([
-            'status' => ['required', 'in:1,0']
+            'status' => ['required', 'in:1,0'],
         ]);
 
         $review->update([
-            'status' => $request->status
+            'status' => $request->status,
         ]);
 
         return successResponse('Review status updated successfully');

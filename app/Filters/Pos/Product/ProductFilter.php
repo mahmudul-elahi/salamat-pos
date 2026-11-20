@@ -7,13 +7,12 @@ use App\Models\Landlord\Category\Category;
 
 class ProductFilter extends BaseFilter
 {
-
     public function search($search = null): void
     {
         $this->builder->when($search, function ($query, $search) {
             $words = array_filter(explode(' ', trim($search)));
             foreach ($words as $word) {
-                $query->where('product_name', 'LIKE', '%' . $word . '%');
+                $query->where('product_name', 'LIKE', '%'.$word.'%');
             }
         });
     }
@@ -30,7 +29,7 @@ class ProductFilter extends BaseFilter
             $categoryIds = Category::query()
                 ->whereIn('id', explode(',', $categoryId))
                 ->get()
-                ->flatMap(fn(Category $category) => $category->getAllDescendantIds())
+                ->flatMap(fn (Category $category) => $category->getAllDescendantIds())
                 ->unique()
                 ->values()
                 ->all();
@@ -54,7 +53,7 @@ class ProductFilter extends BaseFilter
             return;
         }
 
-        $status = array_map('intval', explode(',', $status));
+        $status = array_map(intval(...), explode(',', $status));
 
         $this->builder->when($status, function ($query, $status) {
             $query->whereIn('status', $status)

@@ -6,6 +6,7 @@ use App\Filters\Landlord\Common\NameFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\Expense\ExpenseCategoryRequest;
 use App\Models\Pos\Expense\ExpenseCategory;
+use Illuminate\Http\JsonResponse;
 
 class ExpenseCategoryController extends Controller
 {
@@ -14,7 +15,6 @@ class ExpenseCategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-
     public function index()
     {
         return ExpenseCategory::query()
@@ -28,19 +28,18 @@ class ExpenseCategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
-    public function store(ExpenseCategoryRequest $request): \Illuminate\Http\JsonResponse
+    public function store(ExpenseCategoryRequest $request): JsonResponse
     {
         $data = $request->validated();
         $data['tenant_id'] = null;
         ExpenseCategory::create($data);
+
         return successResponse('Expense Category created successfully');
     }
 
     /**
      * Display the specified resource.
      */
-
     public function show(ExpenseCategory $expense_category): ExpenseCategory
     {
         return $expense_category;
@@ -49,7 +48,7 @@ class ExpenseCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ExpenseCategoryRequest $request, ExpenseCategory $expense_category): \Illuminate\Http\JsonResponse
+    public function update(ExpenseCategoryRequest $request, ExpenseCategory $expense_category): JsonResponse
     {
         $expense_category->update($request->validated());
 
@@ -59,10 +58,10 @@ class ExpenseCategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(ExpenseCategory $expense_category): \Illuminate\Http\JsonResponse
+    public function destroy(ExpenseCategory $expense_category): JsonResponse
     {
         $expense_category->delete();
+
         return successResponse('Expense Category deleted successfully');
     }
 }

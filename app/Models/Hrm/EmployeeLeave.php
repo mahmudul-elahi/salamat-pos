@@ -20,7 +20,7 @@ class EmployeeLeave extends Model
     protected $casts = [
         'is_updated' => 'boolean',
         'start_date' => 'date',
-        'end_date'   => 'date',
+        'end_date' => 'date',
     ];
 
     public function employee(): BelongsTo

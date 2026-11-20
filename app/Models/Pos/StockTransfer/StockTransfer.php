@@ -56,6 +56,7 @@ class StockTransfer extends BaseModel
     public static function generateReferenceNo(): string
     {
         $last = static::withTrashed()->latest('id')->value('id') ?? 0;
-        return 'ST-' . str_pad($last + 1, 6, '0', STR_PAD_LEFT);
+
+        return 'ST-'.str_pad($last + 1, 6, '0', STR_PAD_LEFT);
     }
 }

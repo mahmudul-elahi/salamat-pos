@@ -19,9 +19,9 @@ class ReviewFilter extends BaseFilter
     {
         $this->builder->when($search, function ($query) use ($search) {
             $query->where(function ($query) use ($search) {
-                $query->where('customer_name', 'LIKE', '%' . $search . '%')
+                $query->where('customer_name', 'LIKE', '%'.$search.'%')
                     ->orWhereHas('contact', function ($query) use ($search) {
-                        $query->where('name', 'LIKE', '%' . $search . '%');
+                        $query->where('name', 'LIKE', '%'.$search.'%');
                     });
             });
         });

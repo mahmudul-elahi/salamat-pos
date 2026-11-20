@@ -10,13 +10,12 @@ use App\Models\Permission\Permission;
 use App\Models\Role\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 
 class RoleController extends Controller
 {
-    public function __construct(protected RoleFilter $filter)
-    {
-
-    }
+    public function __construct(protected RoleFilter $filter) {}
 
     public function index(): object
     {
@@ -27,47 +26,44 @@ class RoleController extends Controller
             ->paginate(request('per_page', 10));
     }
 
-
-    public function store(RoleRequest $request): \Illuminate\Http\JsonResponse
+    public function store(RoleRequest $request): JsonResponse
     {
         $role = Role::query()->create($request->only('name'));
 
-        if ($request->get('permissions'))
+        if ($request->get('permissions')) {
             $role->permissions()->sync($request->get('permissions'));
+        }
 
         return successResponse('Role created successfully');
     }
-
 
     public function show(Role $role): Role
     {
         return $role->load('permissions', 'users');
     }
 
-
     public function update(RoleRequest $request, Role $role)
     {
         $role->update($request->validated());
 
-
-//        if (!($role->is_admin || $role->is_default)) {
-            $permission = $request->get('permissions');
-            if (empty($permission)) {
-                $role->permissions()->detach();
-            }
-            $role->permissions()->sync($permission);
-//        }
+        //        if (!($role->is_admin || $role->is_default)) {
+        $permission = $request->get('permissions');
+        if (empty($permission)) {
+            $role->permissions()->detach();
+        }
+        $role->permissions()->sync($permission);
+        //        }
 
         return successResponse('Role updated successfully');
     }
 
-
-    public function destroy(Role $role): \Illuminate\Http\JsonResponse
+    public function destroy(Role $role): JsonResponse
     {
         if ($role->is_admin || $role->is_default) {
-            return errorResponse("Action not allowed");
+            return errorResponse('Action not allowed');
         }
         $role->delete();
+
         return successResponse('Role deleted successfully');
     }
 
@@ -76,7 +72,7 @@ class RoleController extends Controller
      * so admins can find a module's permissions by matching what they see
      * in the navigation. Keep this in sync with database/seeders/Permission/PermissionSeeder.php.
      */
-    private const GROUP_ORDER = [
+    private const array GROUP_ORDER = [
         'dashboards',
         'products', 'pre_owneds_products', 'categories', 'brands', 'pages', 'attributes',
         'specification_groups', 'product_specifications', 'products_care',
@@ -108,7 +104,7 @@ class RoleController extends Controller
         'settings', 'payment_methods', 'shops', 'ecommerces',
     ];
 
-    public function permission(): \Illuminate\Support\Collection
+    public function permission(): Collection
     {
         $grouped = Permission::query()
             ->select('id', 'name', 'label', 'group_name')
@@ -116,8 +112,8 @@ class RoleController extends Controller
             ->groupBy('group_name');
 
         $ordered = collect(self::GROUP_ORDER)
-            ->filter(fn($groupName) => $grouped->has($groupName))
-            ->mapWithKeys(fn($groupName) => [$groupName => $grouped->get($groupName)]);
+            ->filter(fn ($groupName) => $grouped->has($groupName))
+            ->mapWithKeys(fn ($groupName) => [$groupName => $grouped->get($groupName)]);
 
         // Any group not yet added to GROUP_ORDER still shows up, appended at the end.
         return $ordered->union($grouped);
@@ -129,9 +125,8 @@ class RoleController extends Controller
             ? explode(',', request()->input('existing'))
             : [];
 
-
         $users = User::query()
-            ->filters(new UserFilter())
+            ->filters(new UserFilter)
             ->where('id', '<>', auth()->id())
             ->when(function (Builder $query) {
                 $query->whereHas('userProfile', function (Builder $q) {

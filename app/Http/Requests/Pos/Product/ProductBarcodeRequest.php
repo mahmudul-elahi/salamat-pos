@@ -29,14 +29,14 @@ class ProductBarcodeRequest extends FormRequest
         return [
             'tenant_id' => [
                 Rule::requiredIf($isAppAdmin),
-                'exists:tenants,id'
+                'exists:tenants,id',
             ],
 
             'items' => ['required', 'array'],
             'items.*.serial_number' => [
                 'required',
                 'max:191',
-                Rule::unique('product_serials', 'serial_number')
+                Rule::unique('product_serials', 'serial_number'),
             ],
             'items.*.max_retail_price' => ['required', new MaxDigitsPrecision(16)],
             'items.*.variant_id' => ['required', Rule::exists('product_variants', 'id')],

@@ -19,12 +19,12 @@ class PurchaseReturnDownloadController extends Controller
             'payments.paymentMethod',
         ]);
 
-        $supplier       = $purchaseReturn->contact;
+        $supplier = $purchaseReturn->contact;
         $receivedAmount = $purchaseReturn->getTransactionAmountAttribute();
-        $dueAmount      = max(0, $purchaseReturn->grand_total - $receivedAmount);
-        $totalQuantity  = $purchaseReturn->items->sum('quantity');
-        $totalUnitPrice = $purchaseReturn->items->sum(fn($i) => $i->unit_price * $i->quantity);
-        $totalDiscount  = $purchaseReturn->items->sum(fn($i) => (float)($i->discount_amount ?? 0));
+        $dueAmount = max(0, $purchaseReturn->grand_total - $receivedAmount);
+        $totalQuantity = $purchaseReturn->items->sum('quantity');
+        $totalUnitPrice = $purchaseReturn->items->sum(fn ($i) => $i->unit_price * $i->quantity);
+        $totalDiscount = $purchaseReturn->items->sum(fn ($i) => (float) ($i->discount_amount ?? 0));
 
         $barcodeBase64 = (new DNS1D)->getBarcodePNG($purchaseReturn->full_invoice_number, 'C128', 1, 40);
 
@@ -32,54 +32,55 @@ class PurchaseReturnDownloadController extends Controller
 
         $itemRows = $groupedItems->map(function ($items) {
             $first = $items->first();
+
             return [
-                'product_name'  => $first->product?->product_name,
+                'product_name' => $first->product?->product_name,
                 'product_image' => to_cdn_url($first->product?->product_image),
-                'attributes'    => $first->productVariant?->attributeValues?->pluck('value') ?? [],
-                'total_qty'     => $items->sum('quantity'),
-                'lines'         => $items->map(fn($item) => [
-                    'serial_number'   => $item->serial_number,
-                    'unit_price'      => $item->unit_price,
-                    'discount_amount' => (float)($item->discount_amount ?? 0),
-                    'line_total'      => ($item->unit_price * $item->quantity) - ($item->discount_amount ?? 0),
+                'attributes' => $first->productVariant?->attributeValues?->pluck('value') ?? [],
+                'total_qty' => $items->sum('quantity'),
+                'lines' => $items->map(fn ($item) => [
+                    'serial_number' => $item->serial_number,
+                    'unit_price' => $item->unit_price,
+                    'discount_amount' => (float) ($item->discount_amount ?? 0),
+                    'line_total' => ($item->unit_price * $item->quantity) - ($item->discount_amount ?? 0),
                 ])->values(),
             ];
         })->values();
 
         $paymentSummary = $purchaseReturn->payments
             ->groupBy('payment_method_id')
-            ->map(fn($txns) => [
+            ->map(fn ($txns) => [
                 'method' => optional($txns->first()->paymentMethod)->name,
                 'amount' => $txns->sum('amount'),
             ])->values();
 
         return response()->json([
             'supplier' => [
-                'name'    => $supplier?->name,
-                'phone'   => $supplier?->phone,
-                'email'   => $supplier?->email,
+                'name' => $supplier?->name,
+                'phone' => $supplier?->phone,
+                'email' => $supplier?->email,
                 'address' => $supplier?->address,
             ],
             'purchase_return' => [
-                'date'                => $purchaseReturn->date,
+                'date' => $purchaseReturn->date,
                 'full_invoice_number' => $purchaseReturn->full_invoice_number,
-                'grand_total'         => $purchaseReturn->grand_total,
-                'status'              => $purchaseReturn->status,
-                'order_tax'           => $purchaseReturn->order_tax,
-                'shipping_cost'       => $purchaseReturn->shipping_cost,
-                'discount_amount'     => $purchaseReturn->discount_amount,
-                'discount_type'       => $purchaseReturn->discount_type,
-                'note'                => $purchaseReturn->note,
+                'grand_total' => $purchaseReturn->grand_total,
+                'status' => $purchaseReturn->status,
+                'order_tax' => $purchaseReturn->order_tax,
+                'shipping_cost' => $purchaseReturn->shipping_cost,
+                'discount_amount' => $purchaseReturn->discount_amount,
+                'discount_type' => $purchaseReturn->discount_type,
+                'note' => $purchaseReturn->note,
             ],
-            'items'            => $itemRows,
-            'items_count'      => $groupedItems->count(),
-            'barcode'          => 'data:image/png;base64,' . $barcodeBase64,
-            'payment_summary'  => $paymentSummary,
-            'total_quantity'   => $totalQuantity,
+            'items' => $itemRows,
+            'items_count' => $groupedItems->count(),
+            'barcode' => 'data:image/png;base64,'.$barcodeBase64,
+            'payment_summary' => $paymentSummary,
+            'total_quantity' => $totalQuantity,
             'total_unit_price' => $totalUnitPrice,
-            'total_discount'   => $totalDiscount,
-            'received_amount'  => $receivedAmount,
-            'due_amount'       => $dueAmount,
+            'total_discount' => $totalDiscount,
+            'received_amount' => $receivedAmount,
+            'due_amount' => $dueAmount,
         ]);
     }
 
@@ -90,10 +91,9 @@ class PurchaseReturnDownloadController extends Controller
         if (request()->has('preview')) {
             return response()->make($pdf->stream(), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $purchaseReturn->full_invoice_number . '.pdf"',
+                'Content-Disposition' => 'inline; filename="'.$purchaseReturn->full_invoice_number.'.pdf"',
             ]);
         }
-
 
         return $pdf->download("{$purchaseReturn->full_invoice_number}.pdf");
     }
@@ -105,7 +105,7 @@ class PurchaseReturnDownloadController extends Controller
             'items.product',
             'items.productVariant.attributeValues.attribute',
             'payments',
-            'tenant'
+            'tenant',
         ]);
         $logo = to_cdn_url(config('settings.application.company_logo'));
         $paidAmount = $purchaseReturn->getDueAmountAttribute();

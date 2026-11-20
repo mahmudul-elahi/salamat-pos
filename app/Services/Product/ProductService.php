@@ -42,9 +42,8 @@ class ProductService extends BaseService
             'category_id' => $request->category_id,
             'brand_id' => $request->brand_id,
             'slug' => str_replace([' ', '/', ',', '.'], '-', strtolower($request->name)) ?? null,
-            'is_ecommerce' => false
+            'is_ecommerce' => false,
         ]);
-
 
         return $this;
     }
@@ -101,7 +100,6 @@ class ProductService extends BaseService
         return $this;
     }
 
-
     public function productThumbnailImage(Request $request): static
     {
         if ($request->hasFile('thumbnail_image')) {
@@ -156,7 +154,7 @@ class ProductService extends BaseService
 
         // Insert variants in bulk
         $variantIds = [];
-        if (!empty($variantsToInsert)) {
+        if ($variantsToInsert !== []) {
             $this->model->variants()->insert($variantsToInsert);
 
             // Fetch inserted IDs (assuming auto-increment order preserved)
@@ -188,7 +186,7 @@ class ProductService extends BaseService
             ];
 
             // Attach attributes
-            if (!empty($variantData['attribute_values'])) {
+            if (! empty($variantData['attribute_values'])) {
                 foreach ($variantData['attribute_values'] as $attrValueId) {
                     $pivotToInsert[] = [
                         'product_variant_id' => $variantId,
@@ -201,11 +199,11 @@ class ProductService extends BaseService
         }
 
         // Bulk insert prices & pivot
-        if (!empty($pricesToInsert)) {
+        if ($pricesToInsert !== []) {
             VariantPrice::query()->insert($pricesToInsert);
         }
 
-        if (!empty($pivotToInsert)) {
+        if ($pivotToInsert !== []) {
             DB::table('variant_attribute_values')->insert($pivotToInsert);
         }
 
@@ -220,7 +218,7 @@ class ProductService extends BaseService
                 ->where('id', $colorImage['color_id'])
                 ->first();
 
-            if (!$attributeValue) {
+            if (! $attributeValue) {
                 continue;
             }
             if (isset($colorImage['featured_image']) && $colorImage['featured_image']) {
@@ -229,13 +227,13 @@ class ProductService extends BaseService
                     'product_id' => $this->model->id,
                     'attribute_value_id' => $attributeValue->id,
                     'image_path' => $colorImage['featured_image'],
-                    'alt_text' => 'Featured image for color ' . $attributeValue->value,
+                    'alt_text' => 'Featured image for color '.$attributeValue->value,
                     'order' => 0,
                     'is_primary' => true,
                 ]);
             }
 
-            //Store slider images
+            // Store slider images
             if (isset($colorImage['slider_images']) && is_array($colorImage['slider_images'])) {
                 foreach ($colorImage['slider_images'] as $key => $sliderFile) {
 
@@ -243,13 +241,14 @@ class ProductService extends BaseService
                         'product_id' => $this->model->id,
                         'attribute_value_id' => $attributeValue->id,
                         'image_path' => $sliderFile,
-                        'alt_text' => 'Gallery image ' . ($key + 1) . ' for color ' . $attributeValue->value,
+                        'alt_text' => 'Gallery image '.($key + 1).' for color '.$attributeValue->value,
                         'order' => $key + 1,
                         'is_primary' => false,
                     ]);
                 }
             }
         }
+
         return $this;
     }
 
@@ -257,27 +256,32 @@ class ProductService extends BaseService
     {
         // Product-level video links (no color/attribute)
         foreach ($request->input('video_links', []) as $order => $videoLink) {
-            if (empty($videoLink)) continue;
+            if (empty($videoLink)) {
+                continue;
+            }
             ProductVideo::query()->create([
-                'product_id'         => $this->model->id,
+                'product_id' => $this->model->id,
                 'attribute_value_id' => null,
-                'video_link'         => $videoLink,
-                'order'              => $order + 1,
+                'video_link' => $videoLink,
+                'order' => $order + 1,
             ]);
         }
 
         // Per-color video links
         foreach ($request->input('color_images', []) as $colorImage) {
             foreach ($colorImage['video_links'] ?? [] as $order => $videoLink) {
-                if (empty($videoLink)) continue;
+                if (empty($videoLink)) {
+                    continue;
+                }
                 ProductVideo::query()->create([
-                    'product_id'         => $this->model->id,
+                    'product_id' => $this->model->id,
                     'attribute_value_id' => $colorImage['color_id'],
-                    'video_link'         => $videoLink,
-                    'order'              => $order + 1,
+                    'video_link' => $videoLink,
+                    'order' => $order + 1,
                 ]);
             }
         }
+
         return $this;
     }
 
@@ -294,7 +298,6 @@ class ProductService extends BaseService
     public function syncSpecifications(Request $request): static
     {
         $specs = $request->input('specifications', []);
-
 
         foreach ($specs as $spec) {
             ProductSpecification::create([
@@ -321,7 +324,7 @@ class ProductService extends BaseService
             'booking_amount' => $request->booking_amount,
             'purchase_point' => $request->purchase_point,
             'warranty_text' => $request->warranty_text,
-            'product_image' => "image",
+            'product_image' => 'image',
             'category_id' => $request->category_id,
             'brand_id' => $request->brand_id,
             'slug' => str_replace([' ', '/', ',', '.'], '-', strtolower($request->name)) ?? null,
@@ -347,13 +350,17 @@ class ProductService extends BaseService
         $existingVariantIds = $this->model->variants()->pluck('id')->toArray();
         $variantsToRemove = array_diff($existingVariantIds, $variantIds);
 
-        if (empty($variantsToRemove)) return;
+        if ($variantsToRemove === []) {
+            return;
+        }
 
         $serialCount = ProductSerial::query()
             ->whereIn('product_variant_id', $variantsToRemove)
             ->count();
 
-        if ($serialCount === 0) return;
+        if ($serialCount === 0) {
+            return;
+        }
 
         $attributeLabels = DB::table('variant_attribute_values')
             ->join('attribute_values', 'variant_attribute_values.attribute_value_id', '=', 'attribute_values.id')
@@ -369,12 +376,14 @@ class ProductService extends BaseService
     public function productVariantDeletable(): static
     {
         $this->model->variants()->delete();
+
         return $this;
     }
 
     public function productDelete(): static
     {
         $this->model->delete();
+
         return $this;
     }
 
@@ -391,19 +400,16 @@ class ProductService extends BaseService
                 $signature = $this->makeSignature($attributeValues);
                 $incomingSignatures[] = $signature;
 
-
                 $variant = $this->findVariant($product->id, $signature);
-
-
 
                 if ($variant) {
 
                     // 🔥 UPDATE EXISTING VARIANT (ONLY META)
-                    $this->updateVariant($variant, $data, $attributeValues);
+                    $this->updateVariant($variant, $data);
                 } else {
 
                     // 🆕 CREATE NEW VARIANT
-                    $variant = $this->createVariant($product->id, $data, $attributeValues, $signature);
+                    $variant = $this->createVariant($product->id, $data, $signature);
                 }
 
                 // 💰 PRICE SYNC
@@ -431,7 +437,7 @@ class ProductService extends BaseService
     /**
      * CREATE VARIANT (IMMUTABLE IDENTITY)
      */
-    private function createVariant($productId, $data, $attributeValues, $signature)
+    private function createVariant($productId, $data, $signature)
     {
         return ProductVariant::create([
             'product_id' => $productId,
@@ -445,7 +451,7 @@ class ProductService extends BaseService
     /**
      * UPDATE ONLY META (NOT IDENTITY)
      */
-    private function updateVariant($variant, $data, $attributeValues)
+    private function updateVariant($variant, $data)
     {
         $variant->update([
             'sku' => $data['sku'],
@@ -459,7 +465,9 @@ class ProductService extends BaseService
      */
     private function syncPrice($variantId, $data)
     {
-        if (!isset($data['max_retail_price'])) return;
+        if (! isset($data['max_retail_price'])) {
+            return;
+        }
 
         // close previous price
         // VariantPrice::where('product_variant_id', $variantId)
@@ -492,7 +500,7 @@ class ProductService extends BaseService
     private function makeSignature(array $values): string
     {
         return collect($values)
-            ->map(fn($v) => (int) $v)
+            ->map(fn ($v) => (int) $v)
             ->sort()
             ->implode('|');
     }
@@ -503,10 +511,10 @@ class ProductService extends BaseService
     private function normalizeAttributeValues($values): array
     {
         if (is_string($values)) {
-            return array_map('intval', explode(',', $values));
+            return array_map(intval(...), explode(',', $values));
         }
 
-        return array_map('intval', (array) $values);
+        return array_map(intval(...), (array) $values);
     }
 
     public function revalidate()
@@ -543,7 +551,7 @@ class ProductService extends BaseService
 
     protected function sendRevalidationRequest(array $payload): void
     {
-        $url = config('app.frontend_url') . '/api/revalidate';
+        $url = config('app.frontend_url').'/api/revalidate';
 
         try {
             $response = Http::timeout(5)
@@ -555,14 +563,14 @@ class ProductService extends BaseService
             if ($response->failed()) {
                 Log::warning('Revalidation failed', [
                     'payload' => $payload,
-                    'status'  => $response->status(),
-                    'body'    => $response->body(),
+                    'status' => $response->status(),
+                    'body' => $response->body(),
                 ]);
             }
         } catch (\Throwable $e) {
             Log::warning('Revalidation request error', [
                 'payload' => $payload,
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
     }

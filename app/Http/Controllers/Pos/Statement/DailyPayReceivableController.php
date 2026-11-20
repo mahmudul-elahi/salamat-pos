@@ -18,7 +18,7 @@ class DailyPayReceivableController extends Controller
     public function receivedAble()
     {
         $search = request('search');
-        $shopFilter = new ShopFilter();
+        $shopFilter = new ShopFilter;
 
         // Subquery for total sale amount
         $totalSaleQuery = Sale::query()
@@ -33,8 +33,7 @@ class DailyPayReceivableController extends Controller
             ->whereHasMorph(
                 'model',
                 [Sale::class],
-                fn($q) =>
-                $q->whereColumn('contact_id', 'contacts.id')
+                fn ($q) => $q->whereColumn('contact_id', 'contacts.id')
             );
 
         // Subquery for total paid for sale returns
@@ -45,12 +44,12 @@ class DailyPayReceivableController extends Controller
 
         return Contact::query()
             ->whereHas('sales')
-            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->selectRaw('
             contacts.*,
-            COALESCE((' . $totalSaleQuery->toSql() . '), 0)
-            - COALESCE((' . $totalPaidSaleQuery->toSql() . '), 0)
-            - COALESCE((' . $totalPaidReturnQuery->toSql() . '), 0)
+            COALESCE(('.$totalSaleQuery->toSql().'), 0)
+            - COALESCE(('.$totalPaidSaleQuery->toSql().'), 0)
+            - COALESCE(('.$totalPaidReturnQuery->toSql().'), 0)
             AS total_receivable
         ')
             ->mergeBindings($totalSaleQuery->getQuery())
@@ -64,7 +63,7 @@ class DailyPayReceivableController extends Controller
     public function payAble()
     {
         $search = request('search');
-        $shopFilter = new ShopFilter();
+        $shopFilter = new ShopFilter;
 
         // Subquery for total purchase amount
         $totalPurchaseQuery = Purchase::query()
@@ -85,18 +84,17 @@ class DailyPayReceivableController extends Controller
             ->whereHasMorph(
                 'model',
                 [PurchaseReturn::class],
-                fn($q) =>
-                $q->whereColumn('contact_id', 'contacts.id')
+                fn ($q) => $q->whereColumn('contact_id', 'contacts.id')
             );
 
         return Contact::query()
             ->whereHas('purchases')
-            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->selectRaw('
             contacts.*,
-            COALESCE((' . $totalPurchaseQuery->toSql() . '), 0)
-            - COALESCE((' . $totalPaidPurchaseQuery->toSql() . '), 0)
-            - COALESCE((' . $totalPaidReturnQuery->toSql() . '), 0)
+            COALESCE(('.$totalPurchaseQuery->toSql().'), 0)
+            - COALESCE(('.$totalPaidPurchaseQuery->toSql().'), 0)
+            - COALESCE(('.$totalPaidReturnQuery->toSql().'), 0)
             AS total_payable
         ')
             ->mergeBindings($totalPurchaseQuery->getQuery())
@@ -111,7 +109,7 @@ class DailyPayReceivableController extends Controller
     {
         $search = request('search');
         $perPage = request('per_page', 10);
-        $shopFilter = new ShopFilter();
+        $shopFilter = new ShopFilter;
 
         // 'receivable' = they owe us (positive balance), 'payable' = we owe
         // them (negative). Anything else means no direction filter.
@@ -123,7 +121,7 @@ class DailyPayReceivableController extends Controller
             ->where(function ($q) {
                 $q->whereHas('sales')->orWhereHas('purchases');
             })
-            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->when($search, fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->select(
                 'contacts.id',
                 'contacts.name',
@@ -152,20 +150,20 @@ class DailyPayReceivableController extends Controller
             )
             ->selectSub(
                 Ledger::query()
-                    ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                    ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                     ->filters($shopFilter)->selectRaw('COALESCE(SUM(debit), 0)')->whereColumn('contact_id', 'contacts.id'),
                 'total_ledger_debit'
             )
             ->selectSub(
                 Ledger::query()
-                    ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+                    ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
                     ->filters($shopFilter)->selectRaw('COALESCE(SUM(credit), 0)')->whereColumn('contact_id', 'contacts.id'),
                 'total_ledger_credit'
             );
 
         $finalQuery = DB::query()
             ->fromSub($baseQuery, 't')
-            ->selectRaw("
+            ->selectRaw('
         t.*,
         (COALESCE(t.total_sale, 0) + COALESCE(t.total_purchase_return, 0) + COALESCE(t.total_ledger_debit, 0)) AS total_debit,
         (COALESCE(t.total_sale_return, 0) + COALESCE(t.total_purchase, 0) + COALESCE(t.total_ledger_credit, 0)) AS total_credit,
@@ -174,21 +172,21 @@ class DailyPayReceivableController extends Controller
             -
             (COALESCE(t.total_sale_return, 0) + COALESCE(t.total_purchase, 0) + COALESCE(t.total_ledger_credit, 0))
         ) AS balance
-    ")
+    ')
             // A zero balance means the account is settled — nothing to chase or
             // pay — so those rows never belong on this sheet.
             ->havingRaw('balance != 0')
-            ->when($balanceType === 'receivable', fn($query) => $query->havingRaw('balance > 0'))
-            ->when($balanceType === 'payable', fn($query) => $query->havingRaw('balance < 0'))
+            ->when($balanceType === 'receivable', fn ($query) => $query->havingRaw('balance > 0'))
+            ->when($balanceType === 'payable', fn ($query) => $query->havingRaw('balance < 0'))
             ->orderByDesc('t.id');
 
         $grandTotal = DB::query()
             ->fromSub($finalQuery, 'summary')
-            ->selectRaw("
+            ->selectRaw('
         COALESCE(SUM(total_debit), 0)  AS total_debit,
         COALESCE(SUM(total_credit), 0) AS total_credit,
         COALESCE(SUM(balance), 0)      AS balance
-    ")
+    ')
             ->first();
 
         $paginated = $finalQuery->paginate($perPage);
@@ -196,9 +194,9 @@ class DailyPayReceivableController extends Controller
         return [
             ...$paginated->toArray(),
             'grand_total' => [
-                'total_debit'  => $grandTotal->total_debit,
+                'total_debit' => $grandTotal->total_debit,
                 'total_credit' => $grandTotal->total_credit,
-                'balance'      => $grandTotal->balance,
+                'balance' => $grandTotal->balance,
             ],
         ];
     }

@@ -10,7 +10,7 @@ class WhatsAppCloudApiService
 {
     private function baseUrl(): string
     {
-        return rtrim(config('services.whatsapp.base_url'), '/') . '/' . config('services.whatsapp.graph_api_version');
+        return rtrim(config('services.whatsapp.base_url'), '/').'/'.config('services.whatsapp.graph_api_version');
     }
 
     private function phoneNumberId(): string
@@ -26,9 +26,9 @@ class WhatsAppCloudApiService
         $response = Http::timeout(20)
             ->acceptJson()
             ->withToken(config('services.whatsapp.access_token'))
-            ->{$method}($this->baseUrl() . $uri, $payload);
+            ->{$method}($this->baseUrl().$uri, $payload);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $message = $response->json('error.message') ?? 'WhatsApp Cloud API request failed';
 
             Log::error('WhatsApp Cloud API error', [
@@ -64,10 +64,10 @@ class WhatsAppCloudApiService
     {
         $components = [];
 
-        if (!empty($bodyParams)) {
+        if ($bodyParams !== []) {
             $components[] = [
                 'type' => 'body',
-                'parameters' => array_map(fn($param) => ['type' => 'text', 'text' => (string) $param], $bodyParams),
+                'parameters' => array_map(fn ($param) => ['type' => 'text', 'text' => (string) $param], $bodyParams),
             ];
         }
 
@@ -79,7 +79,7 @@ class WhatsAppCloudApiService
             'template' => [
                 'name' => $templateName,
                 'language' => ['code' => $languageCode],
-                ...($components ? ['components' => $components] : []),
+                ...($components !== [] ? ['components' => $components] : []),
             ],
         ]);
     }
@@ -133,7 +133,7 @@ class WhatsAppCloudApiService
             ->withToken(config('services.whatsapp.access_token'))
             ->get($mediaUrl);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new GeneralException('Failed to download WhatsApp media', 422);
         }
 

@@ -16,10 +16,11 @@ class PurchaseRequest extends FormRequest
     public function rules(): array
     {
         $isAppAdmin = auth()->user()->isAppAdmin();
+
         return [
             'tenant_id' => [
                 Rule::requiredIf($isAppAdmin),
-                'exists:tenants,id'
+                'exists:tenants,id',
             ],
             'contact_id' => ['nullable', 'exists:contacts,id'],
             'date' => ['required', 'date'],
@@ -37,7 +38,6 @@ class PurchaseRequest extends FormRequest
                 'exists:product_serials,serial_number',
             ],
 
-
             'items.*.product_id' => ['required', 'exists:products,id'],
             'items.*.variant_id' => ['required', 'exists:product_variants,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
@@ -46,12 +46,11 @@ class PurchaseRequest extends FormRequest
         ];
     }
 
-
     public function attributes(): array
     {
         return [
             'supplier_id' => 'supplier',
-            'tenant_id' => 'shop'
+            'tenant_id' => 'shop',
         ];
     }
 

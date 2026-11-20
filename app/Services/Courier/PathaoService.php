@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class PathaoService
 {
-    private const TOKEN_CACHE_KEY = 'pathao_access_token';
+    private const string TOKEN_CACHE_KEY = 'pathao_access_token';
 
     private function baseUrl(): string
     {
@@ -24,13 +24,13 @@ class PathaoService
         return Cache::remember(self::TOKEN_CACHE_KEY, 3600, function () {
             $config = config('services.pathao');
 
-            if (!$config['client_id'] || !$config['client_secret'] || !$config['username'] || !$config['password']) {
+            if (! $config['client_id'] || ! $config['client_secret'] || ! $config['username'] || ! $config['password']) {
                 throw new GeneralException('Pathao credentials are not configured', 422);
             }
 
             $response = Http::timeout(20)
                 ->acceptJson()
-                ->post($this->baseUrl() . '/aladdin/api/v1/issue-token', [
+                ->post($this->baseUrl().'/aladdin/api/v1/issue-token', [
                     'client_id' => $config['client_id'],
                     'client_secret' => $config['client_secret'],
                     'username' => $config['username'],
@@ -38,7 +38,7 @@ class PathaoService
                     'grant_type' => $config['grant_type'],
                 ]);
 
-            if (!$response->successful() || !$response->json('access_token')) {
+            if (! $response->successful() || ! $response->json('access_token')) {
                 throw new GeneralException($response->json('message') ?? 'Failed to authenticate with Pathao', 422);
             }
 
@@ -56,14 +56,15 @@ class PathaoService
         $response = Http::timeout(20)
             ->acceptJson()
             ->withToken($token)
-            ->{$method}($this->baseUrl() . $uri, $payload);
+            ->{$method}($this->baseUrl().$uri, $payload);
 
-        if ($response->status() === 401 && !$retried) {
+        if ($response->status() === 401 && ! $retried) {
             Cache::forget(self::TOKEN_CACHE_KEY);
+
             return $this->request($method, $uri, $payload, true);
         }
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $message = $response->json('message') ?? 'Pathao request failed';
 
             // Pathao's validation errors come back as {"errors": {"field": ["msg"]}}
@@ -144,7 +145,7 @@ class PathaoService
      */
     public function trackingUrl(string $consignmentId): string
     {
-        return 'https://merchant.pathao.com/tracking?consignment_id=' . $consignmentId;
+        return 'https://merchant.pathao.com/tracking?consignment_id='.$consignmentId;
     }
 
     /**
@@ -157,12 +158,12 @@ class PathaoService
         $response = Http::timeout(30)
             ->acceptJson()
             ->withToken($token)
-            ->get($this->baseUrl() . '/aladdin/api/v1/orders/all', [
+            ->get($this->baseUrl().'/aladdin/api/v1/orders/all', [
                 'store_id' => $storeId,
                 'page' => $page,
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $message = $response->json('message') ?? 'Failed to fetch Pathao orders';
             throw new GeneralException($message, 422);
         }

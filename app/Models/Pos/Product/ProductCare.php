@@ -2,6 +2,7 @@
 
 namespace App\Models\Pos\Product;
 
+use App\Models\Pos\Care\Care;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -22,6 +23,6 @@ class ProductCare extends Model
 
     public function care(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Pos\Care\Care::class);
+        return $this->belongsTo(Care::class);
     }
 }

@@ -3,19 +3,16 @@
 namespace App\Filters\Pos\Report;
 
 use App\Filters\BaseFilter;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HigherOrderWhenProxy;
 
 class ReportNameFilter extends BaseFilter
 {
-    protected string $column;
+    public function __construct(protected string $column = 'categories.name') {}
 
-    public function __construct(string $column = 'categories.name')
+    public function search($search = null): Builder|HigherOrderWhenProxy
     {
-        $this->column = $column;
-    }
-
-    public function search($search = null): \Illuminate\Database\Eloquent\Builder|\Illuminate\Support\HigherOrderWhenProxy
-    {
-        return $this->builder->when($search, fn($query) => $query->where($this->column, 'like', '%' . $search . '%')
+        return $this->builder->when($search, fn ($query) => $query->where($this->column, 'like', '%'.$search.'%')
         );
     }
 }

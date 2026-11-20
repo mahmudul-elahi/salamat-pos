@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Pos\Investment;
 
 use App\Http\Requests\CustomRule\MaxDigitsPrecision;

@@ -2,9 +2,8 @@
 
 namespace App\Models\Pos;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Pos\EntryJob;
+use Illuminate\Database\Eloquent\Model;
 
 class JobApplication extends Model
 {
@@ -27,7 +26,10 @@ class JobApplication extends Model
 
     public function getResumeAttribute($value)
     {
-        if (!$value) return null;
+        if (! $value) {
+            return null;
+        }
+
         return asset($value); // Assuming value is relative path in public or storage accessible via asset()
     }
 }

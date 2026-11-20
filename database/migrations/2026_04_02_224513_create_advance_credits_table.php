@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignId('contact_id')->constrained('contacts')->cascadeOnDelete();
             $table->date('date');
-            $table->enum('type',['receivable','payable']);
+            $table->enum('type', ['receivable', 'payable']);
             $table->decimal('amount', 10, 2);
             $table->string('note')->nullable();
             $table->timestamps();

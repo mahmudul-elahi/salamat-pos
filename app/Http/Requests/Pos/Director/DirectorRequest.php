@@ -21,6 +21,7 @@ class DirectorRequest extends FormRequest
         return $this->route('director')?->id
             ?? $this->route('director');
     }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -36,7 +37,7 @@ class DirectorRequest extends FormRequest
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($director)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($director)],
             'password' => ['required', 'string', 'min:8', 'max:30'],
-            'profile_photo' => ['nullable', 'string']
+            'profile_photo' => ['nullable', 'string'],
         ];
     }
 }

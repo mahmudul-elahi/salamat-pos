@@ -12,7 +12,6 @@ use Throwable;
 
 class OfferController extends Controller
 {
-
     public function index()
     {
         return Offer::query()
@@ -44,7 +43,6 @@ class OfferController extends Controller
             'products.*.special_price' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-
         // // Ensure either product_id or product_variant_id is set, not both or neither
         // foreach ($data['products'] as $product) {
         //     if (empty($product['product_id']) && empty($product['product_variant_id'])) {
@@ -54,7 +52,6 @@ class OfferController extends Controller
         //         throw new GeneralException('Cannot set both product_id and product_variant_id for the same offer item.');
         //     }
         // }
-
 
         try {
             DB::beginTransaction();
@@ -69,7 +66,7 @@ class OfferController extends Controller
                 'is_active' => (bool) $data['is_active'],
             ]);
 
-            $offer->products()->createMany(collect($data['products'])->map(fn($product) => [
+            $offer->products()->createMany(collect($data['products'])->map(fn ($product) => [
                 'product_id' => $product['product_id'] ?? null,
                 'product_variant_id' => $product['product_variant_id'] ?? null,
                 'discount_type' => $product['discount_type'],
@@ -77,13 +74,12 @@ class OfferController extends Controller
                 'special_price' => $product['special_price'] ?? null,
             ])->all());
 
-
             DB::commit();
 
             return successResponse('Offer created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException(app()->isProduction() ? 'Failed to create offer' : $e->getMessage(), 500);
+            throw new GeneralException(app()->isProduction() ? 'Failed to create offer' : $e->getMessage(), 500, $e);
         }
     }
 
@@ -127,7 +123,7 @@ class OfferController extends Controller
                     'headline' => $product?->headline,
                     'slug' => $product?->slug,
                     'product_image' => $product?->product_image,
-                ]
+                ],
             ];
         });
 
@@ -169,7 +165,6 @@ class OfferController extends Controller
             'deleted_product_ids.*' => ['integer', Rule::exists('offer_products', 'id')->where('offer_id', $offer->id)],
         ]);
 
-
         try {
             DB::beginTransaction();
 
@@ -178,7 +173,7 @@ class OfferController extends Controller
             // Only the rows the user actually removed in the UI get deleted -
             // everything else is left untouched (no more wipe-and-recreate,
             // which used to drop every line item on every save).
-            if (!empty($data['deleted_product_ids'])) {
+            if (! empty($data['deleted_product_ids'])) {
                 $offer->products()->whereIn('id', $data['deleted_product_ids'])->delete();
             }
 
@@ -191,7 +186,7 @@ class OfferController extends Controller
                     'special_price' => $product['special_price'] ?? null,
                 ];
 
-                if (!empty($product['id'])) {
+                if (! empty($product['id'])) {
                     $offer->products()->where('id', $product['id'])->update($payload);
                 } else {
                     $offer->products()->create($payload);
@@ -203,7 +198,7 @@ class OfferController extends Controller
             return successResponse('Offer updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException(app()->isProduction() ? 'Failed to update offer' : $e->getMessage(), 500);
+            throw new GeneralException(app()->isProduction() ? 'Failed to update offer' : $e->getMessage(), 500, $e);
         }
     }
 
@@ -215,9 +210,10 @@ class OfferController extends Controller
             $offer->products()->delete();
             $offer->delete();
             DB::commit();
+
             return successResponse('Offer deleted successfully');
         } catch (\Exception $e) {
-            throw new GeneralException(app()->isProduction() ? 'Failed to delete offer' : $e->getMessage(), 500);
+            throw new GeneralException(app()->isProduction() ? 'Failed to delete offer' : $e->getMessage(), 500, $e);
         }
     }
 }

@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers\Pos\Statement;
 
+use App\Filters\Pos\Report\PurchaseReportFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Purchase\Purchase;
-use App\Filters\Pos\Report\PurchaseReportFilter;
-use Illuminate\Http\Request;
+use App\Services\Setting\SettingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\Setting\SettingService;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class PurchaseStatementController extends Controller
 {
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $filter = new PurchaseReportFilter();
+        $filter = new PurchaseReportFilter;
 
         $baseQuery = Purchase::query()
             ->filters($filter)
@@ -82,17 +81,17 @@ class PurchaseStatementController extends Controller
         return response()->json([
             ...$paginated->toArray(),
             'grand_total' => [
-                'total_purchase' => (float)$grandTotal,
+                'total_purchase' => (float) $grandTotal,
                 'total_returns' => 0,
-                'total_items' => (float)$totalItems,
-                'paid_amount' => (float)$paidAmount,
-                'due_amount' => (float)$totalDue,
-                'grand_total' => (float)$grandTotal,
+                'total_items' => (float) $totalItems,
+                'paid_amount' => (float) $paidAmount,
+                'due_amount' => (float) $totalDue,
+                'grand_total' => (float) $grandTotal,
             ],
         ]);
     }
 
-    private const PDF_TOGGLEABLE_COLUMNS = ['transaction_mode', 'narration', 'total_item', 'total_amount', 'due_amount', 'received_amount'];
+    private const array PDF_TOGGLEABLE_COLUMNS = ['transaction_mode', 'narration', 'total_item', 'total_amount', 'due_amount', 'received_amount'];
 
     public function purchaseStatementPdf(Request $request)
     {
@@ -103,52 +102,52 @@ class PurchaseStatementController extends Controller
             ? array_intersect(explode(',', $request->input('columns')), self::PDF_TOGGLEABLE_COLUMNS)
             : self::PDF_TOGGLEABLE_COLUMNS;
 
-        $filter = new PurchaseReportFilter();
+        $filter = new PurchaseReportFilter;
 
         $purchasesQuery = Purchase::query()
             ->with(['contact:id,name', 'payments.paymentMethod', 'items'])
             ->filters($filter)
             ->whereDate('date', Carbon::today());
 
-        if (!$isAppAdmin && tenant()) {
+        if (! $isAppAdmin && tenant()) {
             $purchasesQuery->where('tenant_id', tenant()->id);
         }
 
         $purchases = $purchasesQuery->get();
 
-        $combined = $purchases->map(function($purchase) {
+        $combined = $purchases->map(function ($purchase) {
             $received = $purchase->payments->sum('amount');
             $due = $purchase->grand_total - $received;
+
             return [
                 'date_obj' => Carbon::parse($purchase->date),
                 'id' => $purchase->id,
                 'date' => Carbon::parse($purchase->date)->format('d.m.y'),
                 'supplier_name' => $purchase->contact->name ?? '-',
                 'transaction_mode' => 'Purchase',
-                'narration' => $purchase->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'narration' => $purchase->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
                 'invoice' => $purchase->full_invoice_number,
                 'total_item' => $purchase->items->sum('quantity'),
-                'total_amount' => (float)$purchase->grand_total,
-                'due_amount' => (float)$due,
-                'received_amount' => (float)$received,
+                'total_amount' => (float) $purchase->grand_total,
+                'due_amount' => (float) $due,
+                'received_amount' => (float) $received,
             ];
-        })->sortByDesc(function($item) {
-            return $item['date_obj']->format('Y-m-d') . $item['id'];
-        })->values();
+        })->sortByDesc(fn ($item) => $item['date_obj']->format('Y-m-d').$item['id'])->values();
 
         // Add SL after sorting
-        $combined = $combined->map(function($item, $index) {
+        $combined = $combined->map(function ($item, $index) {
             $item['sl'] = $index + 1;
+
             return $item;
         });
 
         $totalPurchases = $purchases->sum('grand_total');
-        $totalItems = $purchases->sum(fn($s) => $s->items->sum('quantity'));
-        $totalReceived = $purchases->sum(fn($s) => $s->payments->sum('amount'));
+        $totalItems = $purchases->sum(fn ($s) => $s->items->sum('quantity'));
+        $totalReceived = $purchases->sum(fn ($s) => $s->payments->sum('amount'));
         $totalDue = $totalPurchases - $totalReceived;
 
         $wareHouse = $request->input('warehouse');
-        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (strpos($wareHouse, ',') !== false ? explode(',', $wareHouse)[0] : $wareHouse);
+        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (str_contains($wareHouse, ',') ? explode(',', $wareHouse)[0] : $wareHouse);
         $tenantId = $isAppAdmin ? $firstWarehouseId : (tenant() ? tenant()->id : null);
 
         $appSettings = resolve(SettingService::class)->getFormattedSettings('app');

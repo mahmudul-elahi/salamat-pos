@@ -59,8 +59,9 @@ class MetaWebhookController extends Controller
         MessengerApiService $messengerClient,
         InstagramApiService $instagramClient,
     ) {
-        if (!$this->hasValidSignature($request)) {
+        if (! $this->hasValidSignature($request)) {
             Log::warning('Meta webhook: invalid signature');
+
             return response()->json(['error' => 'Invalid signature'], 403);
         }
 
@@ -83,7 +84,7 @@ class MetaWebhookController extends Controller
                 foreach ($value['messages'] ?? [] as $messagePayload) {
                     $waPhone = $messagePayload['from'] ?? null;
 
-                    if (!$waPhone) {
+                    if (! $waPhone) {
                         continue;
                     }
 
@@ -112,7 +113,7 @@ class MetaWebhookController extends Controller
                 $senderId = $messagingEvent['sender']['id'] ?? null;
                 $messagePayload = $messagingEvent['message'] ?? null;
 
-                if (!$senderId || !$messagePayload || ($messagePayload['is_echo'] ?? false)) {
+                if (! $senderId || ! $messagePayload || ($messagePayload['is_echo'] ?? false)) {
                     continue;
                 }
 
@@ -163,7 +164,7 @@ class MetaWebhookController extends Controller
                 $senderId = $messagingEvent['sender']['id'] ?? null;
                 $messagePayload = $messagingEvent['message'] ?? null;
 
-                if (!$senderId || !$messagePayload || ($messagePayload['is_echo'] ?? false)) {
+                if (! $senderId || ! $messagePayload || ($messagePayload['is_echo'] ?? false)) {
                     continue;
                 }
 
@@ -181,7 +182,7 @@ class MetaWebhookController extends Controller
             $profile = $client->getUserProfile($senderId);
 
             return [
-                'name' => trim(($profile['first_name'] ?? '') . ' ' . ($profile['last_name'] ?? '')) ?: null,
+                'name' => trim(($profile['first_name'] ?? '').' '.($profile['last_name'] ?? '')) ?: null,
                 'profile_pic' => $profile['profile_pic'] ?? null,
             ];
         } catch (GeneralException) {
@@ -190,7 +191,7 @@ class MetaWebhookController extends Controller
             // permissions") - this fails for every PSID, not just this one,
             // so fall back to a readable placeholder instead of leaving the
             // conversation with a blank name forever.
-            return ['name' => 'Messenger User #' . substr($senderId, -6), 'profile_pic' => null];
+            return ['name' => 'Messenger User #'.substr($senderId, -6), 'profile_pic' => null];
         }
     }
 
@@ -206,7 +207,7 @@ class MetaWebhookController extends Controller
         } catch (GeneralException) {
             // Same Meta profile-API lockdown as Messenger (see
             // fetchMessengerProfile) - fall back to a readable placeholder.
-            return ['name' => 'Instagram User #' . substr($senderId, -6), 'profile_pic' => null];
+            return ['name' => 'Instagram User #'.substr($senderId, -6), 'profile_pic' => null];
         }
     }
 
@@ -214,7 +215,7 @@ class MetaWebhookController extends Controller
     {
         $signatureHeader = $request->header('X-Hub-Signature-256');
 
-        if (!$signatureHeader) {
+        if (! $signatureHeader) {
             return false;
         }
 
@@ -229,7 +230,7 @@ class MetaWebhookController extends Controller
         ]));
 
         foreach ($candidateSecrets as $appSecret) {
-            $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $appSecret);
+            $expected = 'sha256='.hash_hmac('sha256', $request->getContent(), $appSecret);
 
             if (hash_equals($expected, (string) $signatureHeader)) {
                 return true;

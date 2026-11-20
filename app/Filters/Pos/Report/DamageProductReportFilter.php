@@ -12,7 +12,7 @@ class DamageProductReportFilter extends BaseFilter
     public function search($search = null): void
     {
         $this->builder->when($search, function ($query, $search) {
-            $query->where($query->getModel()->getTable() . '.reference_no', 'like', '%' . $search . '%');
+            $query->where($query->getModel()->getTable().'.reference_no', 'like', '%'.$search.'%');
         });
     }
 
@@ -21,7 +21,7 @@ class DamageProductReportFilter extends BaseFilter
         $warehouseIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($warehouseIds) {
-            $query->whereIn($query->getModel()->getTable() . '.tenant_id', $warehouseIds);
+            $query->whereIn($query->getModel()->getTable().'.tenant_id', $warehouseIds);
         });
     }
 
@@ -30,7 +30,7 @@ class DamageProductReportFilter extends BaseFilter
         $statusList = is_array($statuses) ? $statuses : explode(',', (string) $statuses);
 
         $this->builder->when($statuses, function (Builder $query) use ($statusList) {
-            $query->whereIn($query->getModel()->getTable() . '.status', $statusList);
+            $query->whereIn($query->getModel()->getTable().'.status', $statusList);
         });
     }
 
@@ -39,7 +39,7 @@ class DamageProductReportFilter extends BaseFilter
         $createdByIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($createdByIds) {
-            $query->whereIn($query->getModel()->getTable() . '.created_by', $createdByIds);
+            $query->whereIn($query->getModel()->getTable().'.created_by', $createdByIds);
         });
     }
 
@@ -48,7 +48,7 @@ class DamageProductReportFilter extends BaseFilter
         $approvedByIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($approvedByIds) {
-            $query->whereIn($query->getModel()->getTable() . '.approved_by', $approvedByIds);
+            $query->whereIn($query->getModel()->getTable().'.approved_by', $approvedByIds);
         });
     }
 
@@ -65,7 +65,7 @@ class DamageProductReportFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return;
         }
 
@@ -76,8 +76,8 @@ class DamageProductReportFilter extends BaseFilter
             $end = Carbon::parse($endDate)->endOfDay();
             $table = $this->builder->getModel()->getTable();
 
-            return $this->builder->whereBetween($table . '.damage_date', [$start, $end]);
-        } catch (\Exception $e) {
+            return $this->builder->whereBetween($table.'.damage_date', [$start, $end]);
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range');
         }
     }

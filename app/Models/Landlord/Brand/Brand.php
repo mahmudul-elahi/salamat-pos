@@ -7,11 +7,13 @@ use App\Models\Common\BaseModel;
 use App\Models\Pos\Description\LongDescription;
 use App\Models\Pos\Product\Product;
 use App\Models\Pos\Seo\Seo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Brand extends BaseModel
 {
-    use SoftDeletes, RevalidatesFrontendTrait;
+    use RevalidatesFrontendTrait, SoftDeletes;
 
     protected string $revalidationType = 'brand';
 
@@ -32,25 +34,24 @@ class Brand extends BaseModel
         'order',
     ];
 
-    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
 
-
-    public function seos(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function seos(): MorphMany
     {
         return $this->morphMany(Seo::class, 'model');
     }
 
-    public function longDescriptions(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function longDescriptions(): MorphMany
     {
         return $this->morphMany(LongDescription::class, 'model');
     }
 
     public function getLongDescriptionAttribute($tenantId = null)
     {
-        $tenantId = $tenantId ?? request('tenant_id') ?? tenant()->id ?? null;
+        $tenantId ??= request('tenant_id') ?? tenant()->id ?? null;
 
         $longDesc = $this->longDescriptions()
             ->where('tenant_id', $tenantId)
@@ -58,5 +59,4 @@ class Brand extends BaseModel
 
         return $longDesc?->description ?? $this->description;
     }
-
 }

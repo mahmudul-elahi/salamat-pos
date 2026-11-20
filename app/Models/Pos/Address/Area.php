@@ -3,18 +3,17 @@
 namespace App\Models\Pos\Address;
 
 use App\Models\Common\BaseModel;
-use App\Models\Pos\Address\NewDistrict;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Area extends BaseModel
 {
-
     protected $guarded = [];
 
     public $casts = [
-        'new_district_id' => 'integer'
+        'new_district_id' => 'integer',
     ];
 
-    public function district(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id');
     }

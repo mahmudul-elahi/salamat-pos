@@ -6,33 +6,22 @@ use App\Models\Common\BaseModel;
 use App\Models\Landlord\Brand\Brand;
 use App\Models\Landlord\Category\Category;
 use App\Models\Pos\Description\LongDescription;
-use App\Models\Pos\Product\Barcode;
-use App\Models\Pos\Product\ProductAttribute;
-use App\Models\Pos\Product\ProductCare;
-use App\Models\Pos\Product\ProductVariant;
-use App\Models\Pos\Product\VariantInventory;
 use App\Models\Pos\ProductSpecification\ProductSpecification;
 use App\Models\Pos\Purchase\PurchaseItem;
 use App\Models\Pos\Seo\Seo;
 use App\Models\PreOwned\PreOwned;
 use App\Models\PreOwned\PreOwnedProductSeo;
 use App\Models\Product\GiftProduct;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use RalphJSmit\Laravel\SEO\SchemaCollection;
-use RalphJSmit\Laravel\SEO\Support\AlternateTag;
-use RalphJSmit\Laravel\SEO\Support\HasSEO;
-use RalphJSmit\Laravel\SEO\Support\SEOData;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Product extends BaseModel implements HasMedia
 {
     use InteractsWithMedia, SoftDeletes;
-
 
     protected $fillable = [
         'category_id',
@@ -68,20 +57,20 @@ class Product extends BaseModel implements HasMedia
         'is_unofficial',
         'is_refurbished',
         'tag',
-        'description'
+        'description',
     ];
 
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function brand(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
 
-    public function variants(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
     }
@@ -98,11 +87,10 @@ class Product extends BaseModel implements HasMedia
         return $price?->max_retail_price ?? null;
     }
 
-    public function attributes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function attributes(): HasMany
     {
         return $this->hasMany(ProductAttribute::class);
     }
-
 
     public function serial()
     {
@@ -117,6 +105,7 @@ class Product extends BaseModel implements HasMedia
     public function getThumbnailImagesAttribute(): ?string
     {
         $thumbnailImage = $this->getFirstMedia('thumbnail_image');
+
         return $thumbnailImage?->getFullUrl();
     }
 
@@ -139,9 +128,9 @@ class Product extends BaseModel implements HasMedia
     public function getTotalStockAttribute()
     {
         $variantIds = $this->variants()->pluck('id');
+
         return VariantInventory::whereIn('product_variant_id', $variantIds)->sum('stock');
     }
-
 
     public function giftProducts(): HasMany
     {
@@ -152,19 +141,20 @@ class Product extends BaseModel implements HasMedia
     {
         return $this->hasMany(ProductCare::class);
     }
-    public function seos(): \Illuminate\Database\Eloquent\Relations\MorphMany
+
+    public function seos(): MorphMany
     {
         return $this->morphMany(Seo::class, 'model');
     }
 
-    public function longDescriptions(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function longDescriptions(): MorphMany
     {
         return $this->morphMany(LongDescription::class, 'model');
     }
 
     public function getLongDescriptionAttribute($tenantId = null)
     {
-        $tenantId = $tenantId ?? request('tenant_id') ?? tenant()->id ?? null;
+        $tenantId ??= request('tenant_id') ?? tenant()->id ?? null;
 
         $longDesc = $this->longDescriptions()
             ->where('tenant_id', $tenantId)
@@ -183,7 +173,7 @@ class Product extends BaseModel implements HasMedia
         return $this->hasOne(PreOwnedProductSeo::class, 'product_id', 'id');
     }
 
-    public function productImages(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function productImages(): HasMany
     {
         return $this->hasMany(ProductImage::class, 'product_id')
             ->where('is_primary', true);

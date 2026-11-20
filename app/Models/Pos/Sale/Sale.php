@@ -3,18 +3,21 @@
 namespace App\Models\Pos\Sale;
 
 use App\Filters\Pos\Shop\ShopDynamicTableFilter;
+use App\Models\Customer\Customer;
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Courier\CourierOrder;
-use App\Models\User;
 use App\Models\Pos\SaleReturn\SaleReturnItem;
-use App\Models\Tenant\Tenant;
-use App\Scopes\TenantScope;
-use App\Models\TenantBaseModel;
-use App\Models\Customer\Customer;
-use Spatie\MediaLibrary\HasMedia;
 use App\Models\Pos\Transaction\Transaction;
-use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Models\Tenant\Tenant;
+use App\Models\TenantBaseModel;
+use App\Models\User;
+use App\Scopes\TenantScope;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Sale extends TenantBaseModel implements HasMedia
 {
@@ -48,46 +51,47 @@ class Sale extends TenantBaseModel implements HasMedia
     public static function boot(): void
     {
         parent::boot();
-        if (!app()->runningInConsole()) {
+        if (! app()->runningInConsole()) {
             static::creating(function ($model) {
                 $maxInvoiceNumber = self::withTrashed()
-                    ->withoutGlobalScope(new TenantScope())
+                    ->withoutGlobalScope(new TenantScope)
                     ->lockForUpdate()
                     ->max('invoice_number') + 1;
 
                 $formattedInvoiceNumber = str_pad($maxInvoiceNumber, 6, '0', STR_PAD_LEFT);
                 $model->created_by = auth()->id();
-                $model->invoice_number      = $maxInvoiceNumber;
-                $model->full_invoice_number = "PS-" . $formattedInvoiceNumber;
+                $model->invoice_number = $maxInvoiceNumber;
+                $model->full_invoice_number = 'PS-'.$formattedInvoiceNumber;
             });
         }
     }
 
-    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function seller(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
     }
-    public function contact(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+
+    public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class, 'contact_id', 'id');
     }
 
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function courierOrder(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function courierOrder(): HasOne
     {
         return $this->hasOne(CourierOrder::class);
     }
@@ -102,7 +106,7 @@ class Sale extends TenantBaseModel implements HasMedia
         return $this->hasMany(SaleReturnItem::class, 'sale_id', 'id');
     }
 
-    public function payments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function payments(): MorphMany
     {
         return $this->morphMany(Transaction::class, 'model', 'model_type', 'model_id', 'id');
     }
@@ -119,13 +123,14 @@ class Sale extends TenantBaseModel implements HasMedia
         return Transaction::query()
             ->filters(new ShopDynamicTableFilter('transactions'))
             ->where('model_type', self::class)
-            ->when($modelIds, fn($q) => $q->whereIn('model_id', $modelIds))
+            ->when($modelIds, fn ($q) => $q->whereIn('model_id', $modelIds))
             ->sum('amount');
     }
 
     public function getSaleBillAttachmentAttribute(): ?string
     {
         $saleBillAttachment = $this->getFirstMedia('sale_bill_attachment');
+
         return $saleBillAttachment?->getFullUrl();
     }
 
@@ -133,11 +138,9 @@ class Sale extends TenantBaseModel implements HasMedia
     {
         return $this->payments
             ->groupBy('payment_method_id')
-            ->map(function ($transactions) {
-                return [
-                    'method' => optional($transactions->first()->paymentMethod)->name,
-                    'amount' => $transactions->sum('amount'),
-                ];
-            });
+            ->map(fn ($transactions) => [
+                'method' => optional($transactions->first()->paymentMethod)->name,
+                'amount' => $transactions->sum('amount'),
+            ]);
     }
 }

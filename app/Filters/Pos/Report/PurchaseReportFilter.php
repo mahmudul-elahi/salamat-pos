@@ -13,9 +13,9 @@ class PurchaseReportFilter extends BaseFilter
     {
         $this->builder->when($search, function ($query, $search) {
             $table = $query->getModel()->getTable();
-            $query->where($table . '.full_invoice_number', 'like', '%' . $search . '%')
+            $query->where($table.'.full_invoice_number', 'like', '%'.$search.'%')
                 ->orWhereHas('supplier', function ($query) use ($search) {
-                    $query->where('name', 'like', '%' . $search . '%');
+                    $query->where('name', 'like', '%'.$search.'%');
                 });
         });
     }
@@ -28,7 +28,7 @@ class PurchaseReportFilter extends BaseFilter
             $supplierIds = explode(',', $ids);
         }
         $this->builder->when($ids, function (Builder $query) use ($supplierIds) {
-            $query->whereIn($query->getModel()->getTable() . '.contact_id', $supplierIds);
+            $query->whereIn($query->getModel()->getTable().'.contact_id', $supplierIds);
         });
     }
 
@@ -40,7 +40,7 @@ class PurchaseReportFilter extends BaseFilter
             $warehouseIds = explode(',', $ids);
         }
         $this->builder->when($ids, function (Builder $query) use ($warehouseIds) {
-            $query->whereIn($query->getModel()->getTable() . '.tenant_id', $warehouseIds);
+            $query->whereIn($query->getModel()->getTable().'.tenant_id', $warehouseIds);
         });
     }
 
@@ -52,7 +52,7 @@ class PurchaseReportFilter extends BaseFilter
             $createdByIds = explode(',', $ids);
         }
         $this->builder->when($ids, function (Builder $query) use ($createdByIds) {
-            $query->whereIn($query->getModel()->getTable() . '.created_by', $createdByIds);
+            $query->whereIn($query->getModel()->getTable().'.created_by', $createdByIds);
         });
     }
 
@@ -64,7 +64,7 @@ class PurchaseReportFilter extends BaseFilter
             $statusList = explode(',', $statuses);
         }
         $this->builder->when($statuses, function (Builder $query) use ($statusList) {
-            $query->whereIn($query->getModel()->getTable() . '.status', $statusList);
+            $query->whereIn($query->getModel()->getTable().'.status', $statusList);
         });
     }
 
@@ -109,7 +109,7 @@ class PurchaseReportFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return;
         }
 
@@ -119,8 +119,9 @@ class PurchaseReportFilter extends BaseFilter
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
             $table = $this->builder->getModel()->getTable();
-            return $this->builder->whereBetween($table . '.date', [$start, $end]);
-        } catch (\Exception $e) {
+
+            return $this->builder->whereBetween($table.'.date', [$start, $end]);
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range');
         }
     }

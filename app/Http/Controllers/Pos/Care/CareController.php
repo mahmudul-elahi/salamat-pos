@@ -24,12 +24,13 @@ class CareController extends Controller
     {
         try {
             Care::query()->create($request->validated());
+
             return successResponse('Care created successfully');
         } catch (\Exception $e) {
             if (app()->environment('production')) {
-                throw new GeneralException('Care creation failed', 500);
+                throw new GeneralException('Care creation failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -45,12 +46,13 @@ class CareController extends Controller
     {
         try {
             $care->update($request->validated());
+
             return successResponse('Care updated successfully');
         } catch (\Exception $e) {
             if (app()->environment('production')) {
-                throw new GeneralException('Care update failed', 500);
+                throw new GeneralException('Care update failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -61,12 +63,13 @@ class CareController extends Controller
     {
         try {
             $care->delete();
+
             return successResponse('Care deleted successfully');
         } catch (\Exception $e) {
             if (app()->environment('production')) {
-                throw new GeneralException('Care deletion failed', 500);
+                throw new GeneralException('Care deletion failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 }

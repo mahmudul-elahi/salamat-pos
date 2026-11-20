@@ -9,6 +9,7 @@ use App\Models\PreOwned\PreOwned;
 use App\Models\PreOwned\PreOwnedCare;
 use App\Models\Product\GiftProductVariant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderList extends Model
@@ -42,22 +43,22 @@ class OrderList extends Model
         'pre_owned_care_id',
     ];
 
-    public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function variant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
-    public function preOwned(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function preOwned(): BelongsTo
     {
         return $this->belongsTo(PreOwned::class, 'pre_owned_id');
     }

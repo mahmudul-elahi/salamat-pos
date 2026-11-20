@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Pos\SpecificationGroup;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 use App\Filters\Landlord\Common\NameFilter;
-use App\Models\Pos\SpecificationGroup\SpecificationGroup;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Pos\SpecificationGroup\SpecificationGroupRequest;
+use App\Models\Pos\SpecificationGroup\SpecificationGroup;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class SpecificationGroupController extends Controller
 {
@@ -16,7 +16,6 @@ class SpecificationGroupController extends Controller
     /**
      * Display a listing of the resource.
      */
-
     public function index()
     {
         return SpecificationGroup::query()
@@ -30,16 +29,15 @@ class SpecificationGroupController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
-    public function store(SpecificationGroupRequest $request): \Illuminate\Http\JsonResponse
+    public function store(SpecificationGroupRequest $request): JsonResponse
     {
         $data = $request->validated();
         DB::transaction(function () use ($data) {
             // If parent_id is provided, all values are children
-            if (!empty($data['parent_id'])) {
-                if (!empty($data['values']) && is_array($data['values'])) {
+            if (! empty($data['parent_id'])) {
+                if (! empty($data['values']) && is_array($data['values'])) {
                     foreach ($data['values'] as $value) {
-                        if (!empty(trim($value))) {
+                        if (! empty(trim($value))) {
                             SpecificationGroup::create([
                                 'name' => trim($value),
                                 'parent_id' => $data['parent_id'],
@@ -50,9 +48,9 @@ class SpecificationGroupController extends Controller
             }
             // If no parent_id is selected, all become top-level
             else {
-                if (!empty($data['values']) && is_array($data['values'])) {
+                if (! empty($data['values']) && is_array($data['values'])) {
                     foreach ($data['values'] as $value) {
-                        if (!empty(trim($value))) {
+                        if (! empty(trim($value))) {
                             SpecificationGroup::create([
                                 'name' => trim($value),
                                 'parent_id' => null,
@@ -69,7 +67,6 @@ class SpecificationGroupController extends Controller
     /**
      * Display the specified resource.
      */
-
     public function show(SpecificationGroup $specificationGroup): SpecificationGroup
     {
         return $specificationGroup->load('subSpecificationGroups');
@@ -78,13 +75,13 @@ class SpecificationGroupController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(SpecificationGroupRequest $request, SpecificationGroup $specificationGroup): \Illuminate\Http\JsonResponse
+    public function update(SpecificationGroupRequest $request, SpecificationGroup $specificationGroup): JsonResponse
     {
         $data = $request->validated();
 
         DB::transaction(function () use ($specificationGroup, $data) {
             // If updating the parent group itself
-            if (!empty($data['parent_id'])) {
+            if (! empty($data['parent_id'])) {
                 $specificationGroup->update([
                     'parent_id' => $data['parent_id'],
                 ]);
@@ -95,12 +92,12 @@ class SpecificationGroupController extends Controller
             }
 
             // If new sub-values are provided, reset children
-            if (!empty($data['values']) && is_array($data['values'])) {
+            if (! empty($data['values']) && is_array($data['values'])) {
                 // Remove old sub-specifications
                 $specificationGroup->subSpecificationGroups()->delete();
 
                 foreach ($data['values'] as $value) {
-                    if (!empty(trim($value))) {
+                    if (! empty(trim($value))) {
                         SpecificationGroup::create([
                             'name' => trim($value),
                             'parent_id' => $specificationGroup->id,
@@ -116,10 +113,10 @@ class SpecificationGroupController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(SpecificationGroup $specificationGroup): \Illuminate\Http\JsonResponse
+    public function destroy(SpecificationGroup $specificationGroup): JsonResponse
     {
         $specificationGroup->delete();
+
         return successResponse('Specification deleted successfully');
     }
 }

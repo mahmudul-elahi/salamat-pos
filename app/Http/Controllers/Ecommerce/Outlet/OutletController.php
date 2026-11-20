@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Ecommerce\Outlet;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ecommerce\Outlet\OutletRequest;
 use App\Models\Ecommerce\Outlet\Outlet;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,16 +17,16 @@ class OutletController extends Controller
             ->withCount('images')
             ->when($request->search, function ($query) use ($request) {
                 $query->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->search . '%')
-                        ->orWhere('phone', 'like', '%' . $request->search . '%')
-                        ->orWhere('email', 'like', '%' . $request->search . '%');
+                    $q->where('name', 'like', '%'.$request->search.'%')
+                        ->orWhere('phone', 'like', '%'.$request->search.'%')
+                        ->orWhere('email', 'like', '%'.$request->search.'%');
                 });
             })
             ->orderByDesc('id')
             ->paginate($request->input('per_page', 10));
     }
 
-    public function store(OutletRequest $request): \Illuminate\Http\JsonResponse
+    public function store(OutletRequest $request): JsonResponse
     {
         DB::transaction(function () use ($request) {
             $data = $request->validated();
@@ -44,7 +45,7 @@ class OutletController extends Controller
         return $outlet->load('images');
     }
 
-    public function update(OutletRequest $request, Outlet $outlet): \Illuminate\Http\JsonResponse
+    public function update(OutletRequest $request, Outlet $outlet): JsonResponse
     {
         DB::transaction(function () use ($request, $outlet) {
             $data = $request->validated();
@@ -58,7 +59,7 @@ class OutletController extends Controller
         return successResponse('Outlet updated successfully');
     }
 
-    public function destroy(Outlet $outlet): \Illuminate\Http\JsonResponse
+    public function destroy(Outlet $outlet): JsonResponse
     {
         $outlet->delete();
 
@@ -70,8 +71,8 @@ class OutletController extends Controller
         $outlet->images()->delete();
 
         $payload = collect($images)
-            ->filter(fn($image) => !empty($image['image_url']))
-            ->map(fn($image) => [
+            ->filter(fn ($image) => ! empty($image['image_url']))
+            ->map(fn ($image) => [
                 'image_url' => $image['image_url'],
                 'type' => $image['type'] ?? 'gallery',
                 'alt_text' => $image['alt_text'] ?? null,
@@ -80,9 +81,8 @@ class OutletController extends Controller
             ->values()
             ->all();
 
-        if (!empty($payload)) {
+        if (! empty($payload)) {
             $outlet->images()->createMany($payload);
         }
     }
 }
-

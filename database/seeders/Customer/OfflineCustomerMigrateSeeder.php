@@ -5,7 +5,6 @@ namespace Database\Seeders\Customer;
 use App\Enums\CustomerTypeEnum;
 use App\Models\Customer\Customer;
 use App\Models\Pos\Partners\OfflineCustomer;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class OfflineCustomerMigrateSeeder extends Seeder
@@ -21,7 +20,7 @@ class OfflineCustomerMigrateSeeder extends Seeder
                 ->where('email', $offlineCustomer->email)
                 ->orWhere('phone', $offlineCustomer->phone)
                 ->first();
-            if (!$checkCustomer) {
+            if (! $checkCustomer) {
                 Customer::query()->create([
                     'name' => $offlineCustomer->name,
                     'email' => $offlineCustomer->email,

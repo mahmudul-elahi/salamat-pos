@@ -8,11 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvestmentCategory extends TenantBaseModel
 {
-
     protected $fillable = [
         'name',
         'director_id',
-        'tenant_id'
+        'tenant_id',
     ];
 
     public function director(): BelongsTo

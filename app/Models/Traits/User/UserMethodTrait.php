@@ -2,11 +2,8 @@
 
 namespace App\Models\Traits\User;
 
-
-
 trait UserMethodTrait
 {
-
     public function isAppAdmin(): bool
     {
         return $this->admin();

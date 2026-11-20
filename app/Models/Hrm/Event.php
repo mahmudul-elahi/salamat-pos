@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Hrm;
 
 use App\Models\User;
@@ -13,7 +15,7 @@ class Event extends Model
 
     protected $casts = [
         'start_datetime' => 'datetime',
-        'end_datetime'   => 'datetime',
+        'end_datetime' => 'datetime',
     ];
 
     public function departments()

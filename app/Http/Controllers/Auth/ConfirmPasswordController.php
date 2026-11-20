@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ConfirmPasswordRequest;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class ConfirmPasswordController extends Controller
 {
-    public function confirmPassword(ConfirmPasswordRequest $request): \Illuminate\Http\JsonResponse
+    public function confirmPassword(ConfirmPasswordRequest $request): JsonResponse
     {
         // Retrieve the token record from the database
         $resetToken = DB::table('password_reset_tokens')
@@ -19,7 +20,7 @@ class ConfirmPasswordController extends Controller
             ->first();
 
         // Check if the token exists
-        if (!$resetToken) {
+        if (! $resetToken) {
             return errorResponse('Invalid token');
         }
 

@@ -6,12 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\ProfileRequest;
 use App\Http\Resources\Profile\ProfileResource;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
-    public function index(): \Illuminate\Http\JsonResponse
+    public function index(): JsonResponse
     {
 
         $userId = auth()->id();
@@ -21,7 +22,7 @@ class ProfileController extends Controller
         return successResponse('Profile data successfully', new ProfileResource($user));
     }
 
-    public function update(ProfileRequest $request): \Illuminate\Http\JsonResponse
+    public function update(ProfileRequest $request): JsonResponse
     {
 
         try {
@@ -34,17 +35,19 @@ class ProfileController extends Controller
             ]);
 
             DB::commit();
+
             return successResponse('Profile updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
                 return errorResponse('Profile update has been failed', null, 500);
             }
+
             return errorResponse($e->getMessage(), null, 500);
         }
     }
 
-    public function avatar(Request $request): \Illuminate\Http\JsonResponse
+    public function avatar(Request $request): JsonResponse
     {
         $request->validate([
             'profile_picture' => 'required|image|mimes:jpeg,png,jpg,svg|max:2048',
@@ -60,16 +63,16 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function timezones(): \Illuminate\Http\JsonResponse
+    public function timezones(): JsonResponse
     {
         $timezones = collect(\DateTimeZone::listIdentifiers())
-            ->map(fn(string $tz) => ['value' => $tz, 'label' => $tz])
+            ->map(fn (string $tz) => ['value' => $tz, 'label' => $tz])
             ->values();
 
         return successResponse('Timezones fetched successfully', $timezones);
     }
 
-    public function updateTimezone(Request $request): \Illuminate\Http\JsonResponse
+    public function updateTimezone(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'timezone' => ['required', 'string', 'timezone'],
@@ -80,15 +83,14 @@ class ProfileController extends Controller
         return successResponse('Timezone updated successfully');
     }
 
-    public function logout(Request $request): \Illuminate\Http\JsonResponse
+    public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
 
         return successResponse('Logout successfully');
     }
 
-
-    private function getUserProfile(int $userId): null|object
+    private function getUserProfile(int $userId): ?object
     {
         return User::query()
             ->where('id', $userId)

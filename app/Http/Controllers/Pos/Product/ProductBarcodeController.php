@@ -14,13 +14,12 @@ use App\Models\Pos\PurchaseReturn\PurchaseReturnItem;
 use App\Models\Pos\Sale\SaleItem;
 use App\Models\Pos\SaleReturn\SaleReturnItem;
 use App\Scopes\TenantScope;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Milon\Barcode\DNS1D;
 use Milon\Barcode\DNS2D;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProductBarcodeController extends Controller
 {
@@ -39,7 +38,7 @@ class ProductBarcodeController extends Controller
                 ->where('product_id', $item['product_id'])
                 ->first();
 
-            if (!$productVariant) {
+            if (! $productVariant) {
                 throw new Exception('Product variant not found');
             }
 
@@ -50,26 +49,24 @@ class ProductBarcodeController extends Controller
                 'status' => 'generated',
                 'max_retail_price' => $item['max_retail_price'] ?? 0,
                 'tenant_id' => $tenantId,
-                'generated_by' =>  $userId,
+                'generated_by' => $userId,
             ]);
 
-            $qrcodeUrl = 'https://www.salamatinnovation.com' . '/product/verify?serial_number=' . $item['serial_number'];
+            $qrcodeUrl = 'https://www.salamatinnovation.com'.'/product/verify?serial_number='.$item['serial_number'];
 
-            $barcodePNG = (new DNS1D)->getBarcodePNG($item['serial_number'], "C128");
+            $barcodePNG = (new DNS1D)->getBarcodePNG($item['serial_number'], 'C128');
 
-            $qrCodePNG = (new DNS2D())->getBarcodePNG($qrcodeUrl, "QRCODE");
-
+            $qrCodePNG = (new DNS2D)->getBarcodePNG($qrcodeUrl, 'QRCODE');
 
             $data[] = [
-                'barcode' => 'data:image/png;base64,' . $barcodePNG,
-                'qrcode' => 'data:image/png;base64,' . $qrCodePNG,
+                'barcode' => 'data:image/png;base64,'.$barcodePNG,
+                'qrcode' => 'data:image/png;base64,'.$qrCodePNG,
                 'serial_number' => $item['serial_number'],
                 'product_name' => $productVariant->product->product_name ?? '',
                 'attribute_values' => $productVariant?->attributeValues?->pluck('value')->implode('/'),
                 'price' => $item['max_retail_price'] ?? 0,
-                'warranty' => round(($productVariant->product->warranty_day ?? 0) / 30)
+                'warranty' => round(($productVariant->product->warranty_day ?? 0) / 30),
             ];
-
 
             //            $data[] = [
             //                'barcode' => 'data:image/png;base64,' . $barcodePNG,
@@ -89,20 +86,20 @@ class ProductBarcodeController extends Controller
         $wareHouse = request('warehouse');
 
         return ProductSerial::query()
-            ->filters(new ProductSerialFilter())
+            ->filters(new ProductSerialFilter)
             ->whereHas('variant', function ($q) {
                 $q->withTrashed();
             })
             ->whereHas('tenantProductSerials', function ($query) use ($wareHouse) {
                 $query->whereIn('status', ['purchase', 'sale_return'])
-                    ->when($wareHouse, fn($query) => $query->where('tenant_id', $wareHouse))
+                    ->when($wareHouse, fn ($query) => $query->where('tenant_id', $wareHouse))
                     ->withoutGlobalScope(TenantScope::class);
             })
             ->with([
                 'tenantProductSerials' => function ($query) use ($wareHouse) {
                     $query->withoutGlobalScope(TenantScope::class)
                         ->whereIn('status', ['purchase', 'sale_return'])
-                        ->when($wareHouse, fn($query) => $query->where('tenant_id', $wareHouse))
+                        ->when($wareHouse, fn ($query) => $query->where('tenant_id', $wareHouse))
                         ->distinct()
                         ->with('tenant:id,name');
                 },
@@ -113,7 +110,7 @@ class ProductBarcodeController extends Controller
                             'attributeValues',
                             'purchaseItems' => function ($q) {
                                 $q->select('id', 'product_variant_id', 'unit_price', 'serial_number', 'created_at');
-                            }
+                            },
                         ]);
                 },
             ])
@@ -127,20 +124,20 @@ class ProductBarcodeController extends Controller
                     ->values();
 
                 return [
-                    'id'                => $item->id,
-                    'serial_number'     => $serial,
-                    'sku'               => $item->variant->sku ?? '',
-                    'product_name'      => $item->variant->product->product_name ?? 'N/A',
-                    'product_image'     => $item->variant->product->product_image ?? '',
-                    'product_id'        => $item->variant->product->id ?? null,
-                    'price'             => $item->max_retail_price ?? $item->variant->price?->max_retail_price ?? 0,
+                    'id' => $item->id,
+                    'serial_number' => $serial,
+                    'sku' => $item->variant->sku ?? '',
+                    'product_name' => $item->variant->product->product_name ?? 'N/A',
+                    'product_image' => $item->variant->product->product_image ?? '',
+                    'product_id' => $item->variant->product->id ?? null,
+                    'price' => $item->max_retail_price ?? $item->variant->price?->max_retail_price ?? 0,
                     'purchases_history' => $purchasesHistory,
-                    'attribute_value'   => $item->variant->attributeValues->pluck('value')->implode('/'),
-                    'status'            => $item->tenantProductSerials
+                    'attribute_value' => $item->variant->attributeValues->pluck('value')->implode('/'),
+                    'status' => $item->tenantProductSerials
                         ->unique('product_serial_id') // duplicate বাদ দিন
-                        ->map(fn($tSerial) => [
-                            'tenant'     => $tSerial->tenant?->name,
-                            'status'     => $tSerial->status,
+                        ->map(fn ($tSerial) => [
+                            'tenant' => $tSerial->tenant?->name,
+                            'status' => $tSerial->status,
                             'updated_at' => $tSerial->updated_at,
                         ])->values(),
                 ];
@@ -151,17 +148,16 @@ class ProductBarcodeController extends Controller
     {
         $barcodes = $request->input('barcodes', []);
 
-        if (!is_array($barcodes)) {
+        if (! is_array($barcodes)) {
             $barcodes = [$barcodes];
         }
 
-        if (empty($barcodes)) {
+        if ($barcodes === []) {
             return response()->json(['message' => 'No barcodes provided'], 422);
         }
 
-
         return view('pdf.product-barcodes', [
-            'barcodes' => $barcodes
+            'barcodes' => $barcodes,
         ]);
         // $pdf = Pdf::loadView('pdf.product-barcodes', [
         //     'barcodes' => $barcodes
@@ -175,7 +171,7 @@ class ProductBarcodeController extends Controller
     {
         $items = $request->input('items');
 
-        if (!$items || !isset($items[0])) {
+        if (! $items || ! isset($items[0])) {
             return response()->json(['message' => 'No barcode provided'], 422);
         }
 
@@ -186,7 +182,7 @@ class ProductBarcodeController extends Controller
             ->where('product_id', $item['product_id'])
             ->first();
 
-        if (!$productVariant) {
+        if (! $productVariant) {
             return response()->json(['message' => 'Product variant not found'], 404);
         }
         ProductSerial::query()->create([
@@ -197,21 +193,21 @@ class ProductBarcodeController extends Controller
         ]);
 
         // Generate barcode
-        $barcodePNG = (new \Milon\Barcode\DNS1D)->getBarcodePNG($item['serial_number'], "C128");
-        $qrcodeUrl = 'https://www.salamatinnovation.com' . '/product/verify?serial_number=' . $item['serial_number'];
-        $qrCodePNG = (new \Milon\Barcode\DNS2D)->getBarcodePNG($qrcodeUrl, "QRCODE");
+        $barcodePNG = (new DNS1D)->getBarcodePNG($item['serial_number'], 'C128');
+        $qrcodeUrl = 'https://www.salamatinnovation.com'.'/product/verify?serial_number='.$item['serial_number'];
+        $qrCodePNG = (new DNS2D)->getBarcodePNG($qrcodeUrl, 'QRCODE');
 
         $barcodeData = [
-            'barcode' => 'data:image/png;base64,' . $barcodePNG,
-            'qrcode' => 'data:image/png;base64,' . $qrCodePNG,
+            'barcode' => 'data:image/png;base64,'.$barcodePNG,
+            'qrcode' => 'data:image/png;base64,'.$qrCodePNG,
             'serial_number' => $item['serial_number'],
             'product_name' => $productVariant->product->product_name ?? '',
             'price' => $productVariant->price ?? 0,
-            'warranty' => round(($productVariant->product->warranty_day ?? 0) / 30)
+            'warranty' => round(($productVariant->product->warranty_day ?? 0) / 30),
         ];
 
         $pdf = Pdf::loadView('pdf.product-barcodes', [
-            'barcodes' => [$barcodeData]
+            'barcodes' => [$barcodeData],
         ])
             ->setPaper([0, 0, 113, 170], 'landscape');
 
@@ -222,7 +218,7 @@ class ProductBarcodeController extends Controller
     {
         $items = $request->input('items');
 
-        if (!$items || !isset($items[0])) {
+        if (! $items || ! isset($items[0])) {
             return response()->json(['message' => 'No barcode provided'], 422);
         }
 
@@ -233,26 +229,26 @@ class ProductBarcodeController extends Controller
             ->where('product_id', $item['product_id'])
             ->first();
 
-        if (!$productVariant) {
+        if (! $productVariant) {
             return response()->json(['message' => 'Product variant not found'], 404);
         }
 
         // Generate barcode
-        $barcodePNG = (new \Milon\Barcode\DNS1D)->getBarcodePNG($item['serial_number'], "C128");
-        $qrcodeUrl = 'https://www.salamatinnovation.com' . '/product/verify?serial_number=' . $item['serial_number'];
-        $qrCodePNG = (new \Milon\Barcode\DNS2D)->getBarcodePNG($qrcodeUrl, "QRCODE");
+        $barcodePNG = (new DNS1D)->getBarcodePNG($item['serial_number'], 'C128');
+        $qrcodeUrl = 'https://www.salamatinnovation.com'.'/product/verify?serial_number='.$item['serial_number'];
+        $qrCodePNG = (new DNS2D)->getBarcodePNG($qrcodeUrl, 'QRCODE');
 
         $barcodeData = [
-            'barcode' => 'data:image/png;base64,' . $barcodePNG,
-            'qrcode' => 'data:image/png;base64,' . $qrCodePNG,
+            'barcode' => 'data:image/png;base64,'.$barcodePNG,
+            'qrcode' => 'data:image/png;base64,'.$qrCodePNG,
             'serial_number' => $item['serial_number'],
             'product_name' => $productVariant->product->product_name ?? '',
             'price' => $productVariant->price ?? 0,
-            'warranty' => round(($productVariant->product->warranty_day ?? 0) / 30)
+            'warranty' => round(($productVariant->product->warranty_day ?? 0) / 30),
         ];
 
         $pdf = Pdf::loadView('pdf.product-barcodes', [
-            'barcodes' => [$barcodeData]
+            'barcodes' => [$barcodeData],
         ])
             ->setPaper([0, 0, 113, 170], 'landscape');
 
@@ -272,11 +268,11 @@ class ProductBarcodeController extends Controller
     public function productSerialHistory()
     {
         $paginated = ProductSerial::query()
-            ->filters(new ProductSerialFilter())
+            ->filters(new ProductSerialFilter)
             ->whereHas('variant', function ($q) {
                 $q->withTrashed();
             })
-            ->withCount(['tenantProductSerials' => fn($q) => $q->withoutGlobalScope(TenantScope::class)])
+            ->withCount(['tenantProductSerials' => fn ($q) => $q->withoutGlobalScope(TenantScope::class)])
             ->with([
                 'variant' => function ($q) {
                     $q->withTrashed()
@@ -294,9 +290,9 @@ class ProductBarcodeController extends Controller
 
         $serialNumbers = $paginated->pluck('serial_number')->filter()->unique()->toArray();
 
-        $allPurchaseItems       = $this->getRelatedItems(PurchaseItem::class, 'purchase', 'purchase_id', $serialNumbers);
-        $allSaleItems           = $this->getRelatedItems(SaleItem::class, 'sale', 'sale_id', $serialNumbers);
-        $allSaleReturnItems     = $this->getRelatedItems(SaleReturnItem::class, 'saleReturn', 'sale_return_id', $serialNumbers);
+        $allPurchaseItems = $this->getRelatedItems(PurchaseItem::class, 'purchase', 'purchase_id', $serialNumbers);
+        $allSaleItems = $this->getRelatedItems(SaleItem::class, 'sale', 'sale_id', $serialNumbers);
+        $allSaleReturnItems = $this->getRelatedItems(SaleReturnItem::class, 'saleReturn', 'sale_return_id', $serialNumbers);
         $allPurchaseReturnItems = $this->getRelatedItems(PurchaseReturnItem::class, 'purchaseReturn', 'purchase_return_id', $serialNumbers);
 
         return $paginated->through(function ($item) use ($allPurchaseItems, $allSaleItems, $allSaleReturnItems, $allPurchaseReturnItems) {
@@ -319,16 +315,16 @@ class ProductBarcodeController extends Controller
             }
 
             return [
-                'id'                           => $item->id,
+                'id' => $item->id,
                 'tenant_product_serials_count' => $item->tenant_product_serials_count,
-                'serial_number'                => $item->serial_number,
-                'product_id'                   => $item->product_id,
-                'variant_id'                   => $item->product_variant_id,
-                'product_name'                 => $item->variant?->product?->product_name,
-                'product_image'                => $item->variant?->product?->product_image,
-                'warranty_day'                 => $item->variant?->product?->warranty_day,
-                'attribute_value'              => $item->variant?->attributeValues?->pluck('value')->implode('/'),
-                'price'                        => $item->variant?->price ?? 0,
+                'serial_number' => $item->serial_number,
+                'product_id' => $item->product_id,
+                'variant_id' => $item->product_variant_id,
+                'product_name' => $item->variant?->product?->product_name,
+                'product_image' => $item->variant?->product?->product_image,
+                'warranty_day' => $item->variant?->product?->warranty_day,
+                'attribute_value' => $item->variant?->attributeValues?->pluck('value')->implode('/'),
+                'price' => $item->variant?->price ?? 0,
 
                 'stock_history' => $events->sortBy('updated_at')->values(),
             ];
@@ -338,15 +334,15 @@ class ProductBarcodeController extends Controller
     private function historyEvent($type, $parent, ?string $supplier, ?string $customer, float $purchasePrice, float $salePrice): array
     {
         return [
-            'type'           => $type,
-            'status'         => $type,
-            'tenant'         => $parent?->tenant?->name,
-            'tenant_id'      => $parent?->tenant_id,
-            'supplier'       => $supplier,
-            'customer'       => $customer,
+            'type' => $type,
+            'status' => $type,
+            'tenant' => $parent?->tenant?->name,
+            'tenant_id' => $parent?->tenant_id,
+            'supplier' => $supplier,
+            'customer' => $customer,
             'purchase_price' => $purchasePrice,
-            'sale_price'     => $salePrice,
-            'updated_at'     => $parent?->created_at,
+            'sale_price' => $salePrice,
+            'updated_at' => $parent?->created_at,
         ];
     }
 
@@ -364,7 +360,7 @@ class ProductBarcodeController extends Controller
         ];
 
         // Discount fields only exist on sale-side items.
-        if (in_array($modelClass, [\App\Models\Pos\Sale\SaleItem::class, \App\Models\Pos\SaleReturn\SaleReturnItem::class], true)) {
+        if (in_array($modelClass, [SaleItem::class, SaleReturnItem::class], true)) {
             $columns[] = 'discount_type';
             $columns[] = 'discount_amount';
         }
@@ -373,10 +369,10 @@ class ProductBarcodeController extends Controller
             ->whereIn('serial_number', $serialNumbers)
             ->with([
                 $relation => function ($q) {
-                    $q->withoutGlobalScope(\App\Scopes\TenantScope::class)
+                    $q->withoutGlobalScope(TenantScope::class)
                         ->select('id', 'tenant_id', 'contact_id', 'created_at')
                         ->with(['contact:id,name', 'tenant:id,name']);
-                }
+                },
             ])
             ->get($columns)
             ->groupBy('serial_number');
@@ -407,7 +403,6 @@ class ProductBarcodeController extends Controller
         return $unitPrice;
     }
 
-
     // private function getRelatedItems($modelClass, $relation, $serialNumbers)
     // {
     //     return $modelClass::query()
@@ -421,15 +416,13 @@ class ProductBarcodeController extends Controller
     //         ->groupBy('serial_number');
     // }
 
-
-
     /**
      * @throws Exception
      */
     public function printBarcode(Request $request)
     {
         $request->validate([
-            'items' => ['required', 'array', 'min:1']
+            'items' => ['required', 'array', 'min:1'],
         ]);
 
         try {
@@ -443,9 +436,9 @@ class ProductBarcodeController extends Controller
                     ->with(['product:id,product_name,warranty_day', 'attributeValues'])
                     ->first();
 
-                if (!$productVariant) {
+                if (! $productVariant) {
                     throw ValidationException::withMessages([
-                        'items' => ['Product variant not found']
+                        'items' => ['Product variant not found'],
                     ]);
                 }
 
@@ -457,33 +450,31 @@ class ProductBarcodeController extends Controller
                     ]);
 
                 $qrcodeUrl =
-                    'https://www.salamatinnovation.com/product/verify?serial_number=' .
+                    'https://www.salamatinnovation.com/product/verify?serial_number='.
                     $item['serial_number'];
 
-                $barcodePNG = (new DNS1D)->getBarcodePNG($item['serial_number'], "C128");
+                $barcodePNG = (new DNS1D)->getBarcodePNG($item['serial_number'], 'C128');
 
-                $qrCodePNG = (new DNS2D())->getBarcodePNG($qrcodeUrl, "QRCODE");
+                $qrCodePNG = (new DNS2D)->getBarcodePNG($qrcodeUrl, 'QRCODE');
 
                 $data[] = [
-                    'barcode' => 'data:image/png;base64,' . $barcodePNG,
-                    'qrcode' => 'data:image/png;base64,' . $qrCodePNG,
+                    'barcode' => 'data:image/png;base64,'.$barcodePNG,
+                    'qrcode' => 'data:image/png;base64,'.$qrCodePNG,
                     'serial_number' => $item['serial_number'],
                     'product_name' => $productVariant->product->product_name ?? '',
                     'attribute_values' => $productVariant?->attributeValues?->pluck('value')->implode('/'),
                     'price' => $item['max_retail_price'] ?? 0,
                     'warranty' => round(
                         ($productVariant->product->warranty_day ?? 0) / 30
-                    )
+                    ),
                 ];
             }
 
-
-
             return view('pdf.product-barcodes', [
-                'barcodes' => $data
+                'barcodes' => $data,
             ]);
         } catch (\Throwable $e) {
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -506,7 +497,7 @@ class ProductBarcodeController extends Controller
     public function generatedBarcode()
     {
         return ProductSerial::query()
-            ->filters(new ProductSerialFilter())
+            ->filters(new ProductSerialFilter)
             ->with(
                 'tenant:id,name',
                 'generatedBy',
@@ -517,17 +508,15 @@ class ProductBarcodeController extends Controller
             ->where('status', 'generated')
             ->orderBy('created_at', 'desc')
             ->paginate(request('per_page', 10))
-            ->through(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'serial_number' => $item->serial_number,
-                    'product_name' => $item->product->product_name,
-                    'product_image' => $item->product->product_image,
-                    'attribute_value' => $item->variant->attributeValues->pluck('value')->implode('/'),
-                    'price' => $item->variant?->price?->max_retail_price ?? 0,
-                    'tenant' => $item->tenant,
-                    'generated_by' => $item->generatedBy
-                ];
-            });
+            ->through(fn ($item) => [
+                'id' => $item->id,
+                'serial_number' => $item->serial_number,
+                'product_name' => $item->product->product_name,
+                'product_image' => $item->product->product_image,
+                'attribute_value' => $item->variant->attributeValues->pluck('value')->implode('/'),
+                'price' => $item->variant?->price?->max_retail_price ?? 0,
+                'tenant' => $item->tenant,
+                'generated_by' => $item->generatedBy,
+            ]);
     }
 }

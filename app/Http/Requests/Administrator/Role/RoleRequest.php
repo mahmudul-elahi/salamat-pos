@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Administrator\Role;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -25,7 +27,7 @@ class RoleRequest extends FormRequest
         return [
             'name' => [
                 'required',
-                'max:50'
+                'max:50',
             ],
             'permissions' => ['array'],
         ];

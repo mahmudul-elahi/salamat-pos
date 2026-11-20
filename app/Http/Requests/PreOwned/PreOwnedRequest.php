@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\PreOwned;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,12 +21,11 @@ class PreOwnedRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         $productId = $this->route('pre_owned_product') ?? null;
-
 
         return [
             'product_id' => 'required|exists:products,id',
@@ -44,7 +46,7 @@ class PreOwnedRequest extends FormRequest
             'discount_amount' => [
                 'nullable',
                 'numeric',
-                'required_with:discount_type'
+                'required_with:discount_type',
             ],
 
             'box' => ['nullable', 'boolean'],

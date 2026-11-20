@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Setting\Email;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -42,5 +44,4 @@ class EmailSettingRequest extends FormRequest
 
         return $rules;
     }
-
 }

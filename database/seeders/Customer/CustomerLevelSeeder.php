@@ -3,7 +3,6 @@
 namespace Database\Seeders\Customer;
 
 use App\Models\Coupon\CustomerLevel;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CustomerLevelSeeder extends Seeder
@@ -21,7 +20,7 @@ class CustomerLevelSeeder extends Seeder
             CustomerLevel::create([
                 'name' => $type,
                 'min_points' => 0,
-                'max_points' => 0
+                'max_points' => 0,
             ]);
         }
     }

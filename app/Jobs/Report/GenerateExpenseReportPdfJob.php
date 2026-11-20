@@ -29,6 +29,7 @@ class GenerateExpenseReportPdfJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
+
     public int $tries = 1;
 
     public function __construct(
@@ -52,7 +53,7 @@ class GenerateExpenseReportPdfJob implements ShouldQueue
      * Expense rows are cheap to render (no images/serials), so this can
      * afford a much higher cap than the stock report's.
      */
-    private const MAX_ROWS = 5000;
+    private const int MAX_ROWS = 5000;
 
     public function handle(): void
     {
@@ -76,23 +77,23 @@ class GenerateExpenseReportPdfJob implements ShouldQueue
 
     private function generate(): string
     {
-        $tenantId         = $this->tenantId;
-        $categoryIds      = !empty($this->filters['category']) ? explode(',', $this->filters['category']) : null;
-        $paymentMethodIds = !empty($this->filters['payment_method']) ? explode(',', $this->filters['payment_method']) : null;
-        $createdByIds     = !empty($this->filters['created_by']) ? explode(',', $this->filters['created_by']) : null;
-        $dateRange        = $this->filters['date'] ?? null;
+        $tenantId = $this->tenantId;
+        $categoryIds = ! empty($this->filters['category']) ? explode(',', $this->filters['category']) : null;
+        $paymentMethodIds = ! empty($this->filters['payment_method']) ? explode(',', $this->filters['payment_method']) : null;
+        $createdByIds = ! empty($this->filters['created_by']) ? explode(',', $this->filters['created_by']) : null;
+        $dateRange = $this->filters['date'] ?? null;
 
         // Mirrors ExpenseFilter's own methods, kept as plain local variables +
         // ->when() (like GenerateProfitLossPdfJob) rather than reused as a
         // Filter object, since Filter::apply() reads off the global request()
         // helper, which a queued job shouldn't rely on.
         $baseQuery = Expense::query()
-            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($tenantId, fn ($q) => $q->where('tenant_id', $tenantId))
             ->when($categoryIds, function ($q) use ($categoryIds) {
-                $q->whereHas('category', fn($q) => $q->whereIn('expense_category_id', $categoryIds));
+                $q->whereHas('category', fn ($q) => $q->whereIn('expense_category_id', $categoryIds));
             })
-            ->when($paymentMethodIds, fn($q) => $q->whereIn('payment_method_id', $paymentMethodIds))
-            ->when($createdByIds, fn($q) => $q->whereIn('created_by', $createdByIds))
+            ->when($paymentMethodIds, fn ($q) => $q->whereIn('payment_method_id', $paymentMethodIds))
+            ->when($createdByIds, fn ($q) => $q->whereIn('created_by', $createdByIds))
             ->when($dateRange, function ($q) use ($dateRange) {
                 $range = is_string($dateRange) ? json_decode($dateRange, true) : $dateRange;
                 if (is_array($range) && count($range) >= 2) {
@@ -111,7 +112,7 @@ class GenerateExpenseReportPdfJob implements ShouldQueue
         if ($rowCount > self::MAX_ROWS) {
             throw new GeneralException(
                 "This report has {$rowCount} rows, which is too large to export as a PDF at once. "
-                    . 'Please narrow it down with a filter and try again.'
+                    .'Please narrow it down with a filter and try again.'
             );
         }
 

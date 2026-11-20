@@ -39,7 +39,7 @@ class ChatConversationFilter extends BaseFilter
 
     public function unassigned($value = null): void
     {
-        if (!filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
+        if (! filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
             return;
         }
 
@@ -48,7 +48,7 @@ class ChatConversationFilter extends BaseFilter
 
     public function assignedToMe($value = null): void
     {
-        if (!filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
+        if (! filter_var($value, FILTER_VALIDATE_BOOLEAN)) {
             return;
         }
 

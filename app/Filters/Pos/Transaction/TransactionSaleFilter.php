@@ -4,11 +4,13 @@ namespace App\Filters\Pos\Transaction;
 
 use App\Exceptions\GeneralException;
 use App\Filters\Pos\Shop\ShopFilter;
+use App\Models\Pos\Expense\Expense;
+use App\Models\Pos\Purchase\Purchase;
+use App\Models\Pos\Sale\Sale;
 use Carbon\Carbon;
 
 class TransactionSaleFilter extends ShopFilter
 {
-
     public function search($search = null): void
     {
         $this->builder->when($search, function ($query) use ($search) {
@@ -24,7 +26,7 @@ class TransactionSaleFilter extends ShopFilter
         $this->builder->when($customerId, function ($query) use ($customerId) {
             $query->whereHasMorph(
                 'model',
-                \App\Models\Pos\Sale\Sale::class,
+                Sale::class,
                 function ($query) use ($customerId) {
                     $query->whereIn('contact_id', $customerId);
                 }
@@ -39,7 +41,7 @@ class TransactionSaleFilter extends ShopFilter
         $this->builder->when($customerId, function ($query) use ($customerId) {
             $query->whereHasMorph(
                 'model',
-                \App\Models\Pos\Purchase\Purchase::class,
+                Purchase::class,
                 function ($query) use ($customerId) {
                     $query->whereIn('contact_id', $customerId);
                 }
@@ -58,7 +60,7 @@ class TransactionSaleFilter extends ShopFilter
 
     public function status($status = null): void
     {
-        if (!$status) {
+        if (! $status) {
             return;
         }
 
@@ -66,9 +68,9 @@ class TransactionSaleFilter extends ShopFilter
 
         $this->builder->when($status, function ($query) use ($status) {
             $query->whereHasMorph('model', [
-                \App\Models\Pos\Sale\Sale::class,
-                \App\Models\Pos\Purchase\Purchase::class,
-                \App\Models\Pos\Expense\Expense::class,
+                Sale::class,
+                Purchase::class,
+                Expense::class,
             ], function ($query) use ($status) {
                 $query->whereIn('status', $status);
             });
@@ -89,7 +91,7 @@ class TransactionSaleFilter extends ShopFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return;
         }
 
@@ -98,7 +100,7 @@ class TransactionSaleFilter extends ShopFilter
         try {
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid your date range');
         }
 

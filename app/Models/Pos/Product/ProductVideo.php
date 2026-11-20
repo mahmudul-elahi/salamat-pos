@@ -3,6 +3,7 @@
 namespace App\Models\Pos\Product;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductVideo extends Model
 {
@@ -19,12 +20,12 @@ class ProductVideo extends Model
         'order' => 'integer',
     ];
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function attributeValue(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function attributeValue(): BelongsTo
     {
         return $this->belongsTo(AttributeValue::class);
     }

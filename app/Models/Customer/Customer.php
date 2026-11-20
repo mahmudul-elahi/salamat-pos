@@ -6,12 +6,12 @@ use App\Models\Common\BaseModel;
 use App\Models\Pos\Address\Area;
 use App\Models\Pos\Address\NewDistrict;
 use App\Models\Pos\PartyMapping\PartyMapping;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
+use App\Models\Pos\Transaction\Transaction;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Customer extends BaseModel
 {
-
     protected $fillable = [
         'name',
         'email',
@@ -33,14 +33,15 @@ class Customer extends BaseModel
         'new_district_id' => 'integer',
         'area_id' => 'integer',
     ];
+
     protected $appends = ['full_address'];
 
-    public function district(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id');
     }
 
-    public function area(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'area_id');
     }
@@ -53,12 +54,12 @@ class Customer extends BaseModel
         // $thana = $this->area->thana ?? '';
         $postcode = $this->area?->postcode ?? '';
 
-        return trim("$street, $area, $district, $postcode", " ,");
+        return trim("$street, $area, $district, $postcode", ' ,');
     }
 
-    public function payments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function payments(): MorphMany
     {
-        return $this->morphMany(\App\Models\Pos\Transaction\Transaction::class, 'model', 'model_type', 'model_id', 'id');
+        return $this->morphMany(Transaction::class, 'model', 'model_type', 'model_id', 'id');
     }
 
     public function partyMapping()

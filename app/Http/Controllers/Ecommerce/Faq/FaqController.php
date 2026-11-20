@@ -16,8 +16,8 @@ class FaqController extends Controller
             ->whereColumn('id', 'group_id')
             ->when($request->search, function ($query) use ($request) {
                 $query->where(function ($q) use ($request) {
-                    $q->where('question', 'like', '%' . $request->search . '%')
-                        ->orWhere('answer', 'like', '%' . $request->search . '%');
+                    $q->where('question', 'like', '%'.$request->search.'%')
+                        ->orWhere('answer', 'like', '%'.$request->search.'%');
                 });
             })
             ->orderBy('order')
@@ -29,21 +29,21 @@ class FaqController extends Controller
     {
         $common = [
             'tenant_id' => $request->tenant_id,
-            'order'     => $request->order ?? 0,
-            'status'    => $request->status,
+            'order' => $request->order ?? 0,
+            'status' => $request->status,
         ];
 
         $firstFaq = null;
 
         foreach ($request->faqs as $faqData) {
             $faq = Faq::create(array_merge($common, [
-                'lang'     => $faqData['lang'],
+                'lang' => $faqData['lang'],
                 'question' => $faqData['question'],
-                'answer'   => $faqData['answer'],
+                'answer' => $faqData['answer'],
                 'group_id' => $firstFaq?->id ?? 0,
             ]));
 
-            if (!$firstFaq) {
+            if (! $firstFaq) {
                 $firstFaq = $faq;
                 $faq->update(['group_id' => $faq->id]);
             }
@@ -60,11 +60,11 @@ class FaqController extends Controller
             ->get(['id', 'lang', 'question', 'answer']);
 
         return response()->json([
-            'tenant_id'       => $faq->tenant_id,
+            'tenant_id' => $faq->tenant_id,
             'faq_category_id' => $faq->faq_category_id,
-            'order'           => $faq->order,
-            'status'          => $faq->status,
-            'faqs'            => $translations,
+            'order' => $faq->order,
+            'status' => $faq->status,
+            'faqs' => $translations,
         ]);
     }
 
@@ -74,23 +74,23 @@ class FaqController extends Controller
 
         $common = [
             'tenant_id' => $request->tenant_id,
-            'order'     => $request->order ?? 0,
-            'status'    => $request->status,
+            'order' => $request->order ?? 0,
+            'status' => $request->status,
         ];
 
         foreach ($request->faqs as $faqData) {
-            if (!empty($faqData['id'])) {
+            if (! empty($faqData['id'])) {
                 // ->update() on an instance (not the query builder) so the
                 // saved event fires and RevalidatesFrontendTrait triggers.
                 Faq::find($faqData['id'])?->update(array_merge($common, [
                     'question' => $faqData['question'],
-                    'answer'   => $faqData['answer'],
+                    'answer' => $faqData['answer'],
                 ]));
             } else {
                 Faq::create(array_merge($common, [
-                    'lang'     => $faqData['lang'],
+                    'lang' => $faqData['lang'],
                     'question' => $faqData['question'],
-                    'answer'   => $faqData['answer'],
+                    'answer' => $faqData['answer'],
                     'group_id' => $groupId,
                 ]));
             }

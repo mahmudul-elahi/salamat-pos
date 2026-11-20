@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Pos\Ledger;
 
 use App\Models\Common\BaseModel;
@@ -20,7 +22,7 @@ class Ledger extends BaseModel
         'debit',
         'credit',
         'type',
-        'note'
+        'note',
     ];
 
     public function contact()

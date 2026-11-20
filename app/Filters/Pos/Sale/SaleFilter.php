@@ -2,9 +2,9 @@
 
 namespace App\Filters\Pos\Sale;
 
+use App\Exceptions\GeneralException;
 use App\Filters\Pos\Shop\ShopFilter;
 use Illuminate\Support\Carbon;
-use App\Exceptions\GeneralException;
 
 class SaleFilter extends ShopFilter
 {
@@ -13,8 +13,8 @@ class SaleFilter extends ShopFilter
         $this->builder->when($search, function ($query, $search) {
             $table = $query->getModel()->getTable();
             $query->where(function ($q) use ($search, $table) {
-                $q->where($table . '.full_invoice_number', 'like', "%{$search}%")
-                    ->orWhere($table . '.invoice_number', 'like', "%{$search}%")
+                $q->where($table.'.full_invoice_number', 'like', "%{$search}%")
+                    ->orWhere($table.'.invoice_number', 'like', "%{$search}%")
                     ->orWhereHas('items', function ($itemQuery) use ($search) {
                         $itemQuery->where('serial_number', 'like', "%{$search}%");
                     });
@@ -25,7 +25,7 @@ class SaleFilter extends ShopFilter
 
     public function status($status = null): void
     {
-        if (!$status) {
+        if (! $status) {
             return;
         }
 
@@ -41,7 +41,7 @@ class SaleFilter extends ShopFilter
         $customerId = explode(',', $customerId);
 
         $this->builder->when($customerId, function ($query, $customerId) {
-            $query->where($query->getModel()->getTable() . '.contact_id', $customerId);
+            $query->where($query->getModel()->getTable().'.contact_id', $customerId);
         });
     }
 
@@ -50,7 +50,7 @@ class SaleFilter extends ShopFilter
         $sellerId = explode(',', $sellerId);
 
         $this->builder->when($sellerId, function ($query, $sellerId) {
-            $query->where($query->getModel()->getTable() . '.seller_id', $sellerId);
+            $query->where($query->getModel()->getTable().'.seller_id', $sellerId);
         });
     }
 
@@ -65,7 +65,7 @@ class SaleFilter extends ShopFilter
 
     public function brand($ids = null): void
     {
-        if (!$ids) {
+        if (! $ids) {
             return;
         }
 
@@ -78,7 +78,7 @@ class SaleFilter extends ShopFilter
 
     public function paymentMethod($ids = null): void
     {
-        if (!$ids) {
+        if (! $ids) {
             return;
         }
 
@@ -91,15 +91,14 @@ class SaleFilter extends ShopFilter
 
     public function createdBy($ids = null): void
     {
-        if (!$ids) {
+        if (! $ids) {
             return;
         }
 
         $createdByIds = is_array($ids) ? $ids : explode(',', $ids);
 
-        $this->builder->whereIn($this->builder->getModel()->getTable() . '.created_by', $createdByIds);
+        $this->builder->whereIn($this->builder->getModel()->getTable().'.created_by', $createdByIds);
     }
-
 
     public function date($range = null): void
     {
@@ -107,7 +106,8 @@ class SaleFilter extends ShopFilter
             $table = $this->builder->getModel()->getTable();
             // If no date is provided, default to today's date
             if (empty($range)) {
-                $this->builder->whereDate($table . '.date', Carbon::today());
+                $this->builder->whereDate($table.'.date', Carbon::today());
+
                 return;
             }
 
@@ -116,9 +116,10 @@ class SaleFilter extends ShopFilter
                 $range = json_decode($range, true);
             }
 
-            if (!is_array($range) || count($range) < 2) {
+            if (! is_array($range) || count($range) < 2) {
                 // Fallback to today if invalid structure
-                $this->builder->whereDate($table . '.date', Carbon::today());
+                $this->builder->whereDate($table.'.date', Carbon::today());
+
                 return;
             }
 
@@ -127,8 +128,8 @@ class SaleFilter extends ShopFilter
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
 
-            $this->builder->whereBetween($table . '.date', [$start, $end]);
-        } catch (\Exception $e) {
+            $this->builder->whereBetween($table.'.date', [$start, $end]);
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range format.');
         }
     }

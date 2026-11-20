@@ -11,15 +11,15 @@ class CustomerCouponLog extends Model
     protected $fillable = [
         'new_coupon_id',
         'customer_id',
-        'used_at'
+        'used_at',
     ];
 
-    public function coupon() : BelongsTo
+    public function coupon(): BelongsTo
     {
         return $this->belongsTo(NewCoupon::class);
     }
 
-    public function customer() : BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }

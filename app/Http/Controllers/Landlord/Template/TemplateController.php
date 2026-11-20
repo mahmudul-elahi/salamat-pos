@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Template\TemplateRequest;
 use App\Models\Template\Template;
 use App\Models\Template\TemplateType;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 
 class TemplateController extends Controller
 {
-    public function index(): \Illuminate\Database\Eloquent\Collection
+    public function index(): Collection
     {
         return TemplateType::query()
             ->get()
@@ -24,12 +26,12 @@ class TemplateController extends Controller
             ->first();
     }
 
-    public function update(TemplateRequest $request, Template $template): \Illuminate\Http\JsonResponse
+    public function update(TemplateRequest $request, Template $template): JsonResponse
     {
 
         $template->update([
             'subject' => $request->subject,
-            'custom_content' => $request->description
+            'custom_content' => $request->description,
         ]);
 
         return successResponse('Template updated successfully');

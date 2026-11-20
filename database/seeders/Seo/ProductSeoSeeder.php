@@ -30,8 +30,8 @@ class ProductSeoSeeder extends Seeder
 
             $seo = Seo::query()->firstOrNew([
                 'model_type' => Product::class,  // ✅ corrected namespace
-                'model_id'   => $product->id,
-                'tenant_id'  => $tenantId,
+                'model_id' => $product->id,
+                'tenant_id' => $tenantId,
             ]);
 
             // Only update tags (title/description untouched)

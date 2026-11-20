@@ -1,15 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Controllers\Landlord\Ecommerce\SeoController;
 use App\Http\Controllers\Pos\Attribute\AttributeController;
 use App\Http\Controllers\Pos\Brand\BrandController;
 use App\Http\Controllers\Pos\Category\CategoryController;
 use App\Http\Controllers\Pos\Product\ProductBarcodeController;
 use App\Http\Controllers\Pos\Product\ProductCareController;
 use App\Http\Controllers\Pos\Product\ProductController;
-use App\Http\Controllers\Pos\Product\ProductSpecScrapeController;
 use App\Http\Controllers\Pos\Product\ProductSpecificationController;
+use App\Http\Controllers\Pos\Product\ProductSpecScrapeController;
 use App\Http\Controllers\Pos\SpecificationGroup\SpecificationGroupController;
-use App\Http\Controllers\Landlord\Ecommerce\SeoController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 
@@ -26,7 +28,6 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
         ->name('brands.edit');
     $router->post('brands/update-order', [BrandController::class, 'updateOrder'])
         ->name('brands.edit');
-
 
     $router->apiResource('products', ProductController::class);
 
@@ -75,8 +76,6 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
     $router->delete('products/{product}/specifications/{specification}', [ProductSpecificationController::class, 'destroy'])
         ->name('product_specifications.destroy');
 
-
-
     // Specific SEO Update Routes
     $router->get('ecommerce/seo/{model}/{id}', [SeoController::class, 'show'])
         ->name('seo.show');
@@ -89,7 +88,6 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
 
     $router->patch('ecommerce/seo/brand/{id}', [SeoController::class, 'brandSeoUpdate'])
         ->name('brand_seo.update');
-
 
     $router->post('product-barcode-generate', [ProductBarcodeController::class, 'barcodeGenerate'])
         ->name('barcode_generate.product');
@@ -110,7 +108,6 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
         ->name('barcode_generates.index');
 });
 
-
 Route::group(['prefix' => 'landlord'], function (Router $router) {
 
     $router->get('products/variant-show/{product}', [ProductController::class, 'showVariant'])
@@ -126,5 +123,5 @@ Route::group(['prefix' => 'landlord'], function (Router $router) {
         ->name('barcode_multi_pdf.product');
 });
 
-//Gift Product
+// Gift Product
 // Route::apiResource('gift-products', GiftProductController::class);

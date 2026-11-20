@@ -19,7 +19,7 @@ trait CategoryFilterTrait
             $categoryIds = Category::query()
                 ->whereIn('id', explode(',', $ids))
                 ->get()
-                ->flatMap(fn(Category $category) => $category->getAllDescendantIds())
+                ->flatMap(fn (Category $category) => $category->getAllDescendantIds())
                 ->unique()
                 ->values()
                 ->all();

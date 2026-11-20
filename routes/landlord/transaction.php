@@ -1,14 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Controllers\Pos\Transaction\TransactionController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Pos\Transaction\TransactionController;
-
-
-
 
 Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (Router $router) {
-
 
     $router->get('sale-transactions', [TransactionController::class, 'saleTransaction'])
         ->name('sale_transactions.view');

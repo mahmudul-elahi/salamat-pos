@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs\Auth;
 
 use App\Helpers\Setting\SetEmailConfig;
@@ -31,7 +33,7 @@ class PasswordChangeConfirmationJob implements ShouldQueue
     public function middleware(): array
     {
         resolve(SetEmailConfig::class)->set();
+
         return [];
     }
-
 }

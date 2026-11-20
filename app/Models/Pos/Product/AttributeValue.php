@@ -2,8 +2,9 @@
 
 namespace App\Models\Pos\Product;
 
-use App\Models\Pos\Product\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -21,7 +22,6 @@ class AttributeValue extends Model implements HasMedia
         'attribute_id' => 'integer',
     ];
 
-
     public function getFeaturedImageByProduct($productId)
     {
         $featuredImage = $this->media()
@@ -31,19 +31,18 @@ class AttributeValue extends Model implements HasMedia
 
         return $featuredImage?->getFullUrl();
     }
-    public function getSliderImagesByProduct($productId): \Illuminate\Support\Collection
+
+    public function getSliderImagesByProduct($productId): Collection
     {
         return $this->media()
             ->where('collection_name', 'product_slider_images')
             ->where('custom_properties->product_id', $productId)
             ->get()
-            ->map(function ($image) {
-                return [
-                    'id' => $image->id,
-                    'url' => $image->getUrl(),
-                    'full_url' => $image->getFullUrl(),
-                ];
-            });
+            ->map(fn ($image) => [
+                'id' => $image->id,
+                'url' => $image->getUrl(),
+                'full_url' => $image->getFullUrl(),
+            ]);
     }
 
     public function registerMediaCollections(): void
@@ -52,9 +51,8 @@ class AttributeValue extends Model implements HasMedia
         $this->addMediaCollection('product_slider_images');
     }
 
-    public function attribute(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function attribute(): BelongsTo
     {
         return $this->belongsTo(Attribute::class);
     }
-
 }

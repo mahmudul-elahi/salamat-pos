@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Investent\InvestmentCategoryController;
 use App\Http\Controllers\Pos\Investent\InvestmentController;
 use Illuminate\Routing\Router;

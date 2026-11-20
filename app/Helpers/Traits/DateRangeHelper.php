@@ -9,7 +9,7 @@ trait DateRangeHelper
         return [
             'name' => 'total',
             'range' => [],
-            'context' => 'Y'
+            'context' => 'Y',
         ];
     }
 
@@ -18,9 +18,9 @@ trait DateRangeHelper
         return [
             'name' => 'last_7_days',
             'range' => [
-                today()->subDays(6)->toDateTimeString(), now()->toDateTimeString()
+                today()->subDays(6)->toDateTimeString(), now()->toDateTimeString(),
             ],
-            'context' => 'D'
+            'context' => 'D',
         ];
     }
 
@@ -32,7 +32,7 @@ trait DateRangeHelper
                 now()->startOfWeek()->toDateTimeString(),
                 now()->endOfWeek()->toDateTimeString(),
             ],
-            'context' => 'D'
+            'context' => 'D',
         ];
     }
 
@@ -42,9 +42,9 @@ trait DateRangeHelper
             'name' => 'last_week',
             'range' => [
                 now()->subWeek()->startOfWeek()->toDateTimeString(),
-                now()->subWeek()->endOfWeek()->toDateTimeString()
+                now()->subWeek()->endOfWeek()->toDateTimeString(),
             ],
-            'context' => 'D'
+            'context' => 'D',
         ];
     }
 
@@ -54,9 +54,9 @@ trait DateRangeHelper
             'name' => 'this_month',
             'range' => [
                 now()->startOfMonth()->toDateTimeString(),
-                now()->endOfMonth()->toDateTimeString()
+                now()->endOfMonth()->toDateTimeString(),
             ],
-            'context' => 'Y-m-d'
+            'context' => 'Y-m-d',
         ];
     }
 
@@ -66,9 +66,9 @@ trait DateRangeHelper
             'name' => 'last_month',
             'range' => [
                 now()->subMonth()->startOfMonth()->toDateTimeString(),
-                now()->subMonth()->endOfMonth()->lastOfMonth()->toDateTimeString()
+                now()->subMonth()->endOfMonth()->lastOfMonth()->toDateTimeString(),
             ],
-            'context' => 'Y-m-d'
+            'context' => 'Y-m-d',
         ];
     }
 
@@ -78,9 +78,9 @@ trait DateRangeHelper
             'name' => 'this_year',
             'range' => [
                 now()->startOfYear()->toDateTimeString(),
-                now()->endOfYear()->toDateTimeString()
+                now()->endOfYear()->toDateTimeString(),
             ],
-            'context' => 'M'
+            'context' => 'M',
         ];
     }
 
@@ -90,9 +90,9 @@ trait DateRangeHelper
             'name' => 'last_year',
             'range' => [
                 now()->subYear()->startOfYear()->toDateTimeString(),
-                now()->subYear()->endOfYear()->toDateTimeString()
+                now()->subYear()->endOfYear()->toDateTimeString(),
             ],
-            'context' => 'M'
+            'context' => 'M',
         ];
     }
 
@@ -113,7 +113,6 @@ trait DateRangeHelper
             '7' => 'lastYear',
         ][$type];
 
-        return (object)$this->$context();
+        return (object) $this->$context();
     }
-
 }

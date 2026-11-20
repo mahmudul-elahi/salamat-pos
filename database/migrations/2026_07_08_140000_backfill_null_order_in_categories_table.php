@@ -20,11 +20,11 @@ return new class extends Migration
 
         foreach ($parentIds as $parentId) {
             $maxOrder = DB::table('categories')
-                ->when($parentId === null, fn($q) => $q->whereNull('parent_id'), fn($q) => $q->where('parent_id', $parentId))
+                ->when($parentId === null, fn ($q) => $q->whereNull('parent_id'), fn ($q) => $q->where('parent_id', $parentId))
                 ->max('order') ?? 0;
 
             $nullOrderIds = DB::table('categories')
-                ->when($parentId === null, fn($q) => $q->whereNull('parent_id'), fn($q) => $q->where('parent_id', $parentId))
+                ->when($parentId === null, fn ($q) => $q->whereNull('parent_id'), fn ($q) => $q->where('parent_id', $parentId))
                 ->whereNull('order')
                 ->orderBy('id')
                 ->pluck('id');

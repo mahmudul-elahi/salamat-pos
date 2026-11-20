@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class TenantScope implements Scope
 {
-
     public function apply(Builder $builder, Model $model): Builder
     {
         if (app()->runningInConsole() || app()->runningUnitTests()) {
@@ -43,12 +42,13 @@ class TenantScope implements Scope
 
         // Default: use X-domain based tenant
         $tenant = tenant();
-        if (!$tenant && !request()->has('tenant_id')) {
+        if (! $tenant && ! request()->has('tenant_id')) {
             throw new GeneralException('Tenant not found');
         }
 
-        //$tenantId = $tenant?->id ?? request('tenant_id');
+        // $tenantId = $tenant?->id ?? request('tenant_id');
         $tenantId = $tenant?->id;
+
         return $builder->where("{$table}.tenant_id", $tenantId);
     }
 }

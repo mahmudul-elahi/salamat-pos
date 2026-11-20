@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Landlord\Attribute;
 
 use Illuminate\Foundation\Http\FormRequest;
 
 class AttributeRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
     }
-
 
     public function rules(): array
     {
@@ -21,6 +21,7 @@ class AttributeRequest extends FormRequest
             'values.*' => ['required', 'string', 'max:255'],
         ];
     }
+
     public function attributes(): array
     {
         return [

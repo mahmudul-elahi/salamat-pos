@@ -2,13 +2,11 @@
 
 namespace App\Models\Pos\Sale;
 
-use App\Models\Pos\PurchaseReturn\PurchaseReturnItem;
-use App\Models\Pos\Sale\Sale;
 use App\Models\Common\BaseModel;
 use App\Models\Pos\Product\Product;
-use App\Models\Pos\SaleReturn\SaleReturnItem;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Pos\Product\ProductVariant;
+use App\Models\Pos\SaleReturn\SaleReturnItem;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SaleItem extends BaseModel
@@ -32,17 +30,17 @@ class SaleItem extends BaseModel
         'created_at',
     ];
 
-    public function sale(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function productVariant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
     }

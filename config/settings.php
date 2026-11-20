@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 return [
     'app' => [
         ['name' => 'company_name', 'value' => 'Pos'],
@@ -32,14 +35,14 @@ return [
 
     'time_format' => [
         'h',
-        'H'
+        'H',
     ],
 
     'currency_position' => [
         'prefix_only',
         'prefix_with_space',
         'suffix_only',
-        'suffix_with_space'
+        'suffix_with_space',
     ],
 
     'date_format' => [
@@ -51,20 +54,20 @@ return [
         'Y/m/d',
         'm.d.Y',
         'd.m.Y',
-        'Y.m.d'
+        'Y.m.d',
     ],
 
     'decimal_separator' => [
         '.',
-        ','
+        ',',
     ],
 
     'thousand_separator' => [
         '.',
         ',',
-        'space'
+        'space',
     ],
     'number_of_decimal' => [
-        '2'
+        '2',
     ],
 ];

@@ -22,7 +22,7 @@ class CustomerReportDownloadController extends Controller
     public function download(Request $request, $contactId)
     {
         $contactInfo = Contact::query()->find($contactId);
-        if (!$contactInfo) {
+        if (! $contactInfo) {
             throw new GeneralException('Invalid contact info');
         }
 
@@ -34,10 +34,10 @@ class CustomerReportDownloadController extends Controller
         // App-admin + shop selected => filter to that one shop only.
         // App-admin + no shop selected => see all tenants combined.
         // Normal user => always filtered to their own tenant.
-        $applyTenantFilter = !$isAppAdmin || ($isAppAdmin && $tenantId);
+        $applyTenantFilter = ! $isAppAdmin || ($isAppAdmin && $tenantId);
 
         $sales = Sale::query()
-            ->when($applyTenantFilter, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($applyTenantFilter, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select(
                 'id',
                 'date',
@@ -52,7 +52,7 @@ class CustomerReportDownloadController extends Controller
             ->where('contact_id', $contactId);
 
         $saleReturns = SaleReturn::query()
-            ->when($applyTenantFilter, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($applyTenantFilter, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select(
                 'id',
                 'date',
@@ -67,7 +67,7 @@ class CustomerReportDownloadController extends Controller
             ->where('contact_id', $contactId);
 
         $purchases = Purchase::query()
-            ->when($applyTenantFilter, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($applyTenantFilter, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select(
                 'id',
                 'date',
@@ -82,7 +82,7 @@ class CustomerReportDownloadController extends Controller
             ->where('contact_id', $contactId);
 
         $purchaseReturns = PurchaseReturn::query()
-            ->when($applyTenantFilter, fn($q) => $q->where('tenant_id', $tenantId))
+            ->when($applyTenantFilter, fn ($q) => $q->where('tenant_id', $tenantId))
             ->select(
                 'id',
                 'date',
@@ -97,8 +97,8 @@ class CustomerReportDownloadController extends Controller
             ->where('contact_id', $contactId);
 
         $exchangePurchases = Purchase::query()
-            ->when($applyTenantFilter, fn($q) => $q->where('tenant_id', $tenantId))
-            ->whereHas('items', fn($q) => $q->where('purchase_type', 'exchange'))
+            ->when($applyTenantFilter, fn ($q) => $q->where('tenant_id', $tenantId))
+            ->whereHas('items', fn ($q) => $q->where('purchase_type', 'exchange'))
             ->select(
                 'id',
                 'date',
@@ -113,7 +113,7 @@ class CustomerReportDownloadController extends Controller
             ->where('contact_id', $contactId);
 
         $ledgers = Ledger::query()
-            ->when($applyTenantFilter, fn($q) => $q->where('ledgers.tenant_id', $tenantId))
+            ->when($applyTenantFilter, fn ($q) => $q->where('ledgers.tenant_id', $tenantId))
             ->leftJoin('payment_methods', 'ledgers.payment_method_id', '=', 'payment_methods.id')
             ->select(
                 'ledgers.id',
@@ -148,7 +148,7 @@ class CustomerReportDownloadController extends Controller
 
         $ledgerEntries = DB::query()
             ->fromSub($ledgerUnion, 'combined')
-            ->when($search, fn($q) => $q->where('full_invoice_number', 'like', "%{$search}%"))
+            ->when($search, fn ($q) => $q->where('full_invoice_number', 'like', "%{$search}%"))
             ->select('*')
             ->selectRaw('SUM(debit - credit) OVER (ORDER BY date ASC, created_at ASC) as balance')
             ->orderBy('date', 'asc')
@@ -158,12 +158,12 @@ class CustomerReportDownloadController extends Controller
         $tenantSetting = resolve(SettingService::class)->getFormattedSettings('tenant', $tenantId);
 
         $data = [
-            'contactInfo'    => $contactInfo,
-            'ledgerEntries'  => $ledgerEntries,
-            'totalDebit'     => $totals->total_debit ?? 0,
-            'totalCredit'    => $totals->total_credit ?? 0,
-            'balance'        => ($totals->total_debit ?? 0) - ($totals->total_credit ?? 0),
-            'dateRange'      => now()->format('Y-m-d'),
+            'contactInfo' => $contactInfo,
+            'ledgerEntries' => $ledgerEntries,
+            'totalDebit' => $totals->total_debit ?? 0,
+            'totalCredit' => $totals->total_credit ?? 0,
+            'balance' => ($totals->total_debit ?? 0) - ($totals->total_credit ?? 0),
+            'dateRange' => now()->format('Y-m-d'),
             'tenantSettings' => $tenantSetting,
         ];
 

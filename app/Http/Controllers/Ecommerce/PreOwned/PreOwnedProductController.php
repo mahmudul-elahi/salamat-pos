@@ -20,20 +20,18 @@ class PreOwnedProductController extends Controller
     public function index()
     {
         return PreOwned::query()
-            ->filters(new PreOwnedFilter())
-            ->with(['product:id,product_name', 'variant.attributeValues',])
+            ->filters(new PreOwnedFilter)
+            ->with(['product:id,product_name', 'variant.attributeValues'])
             // Available (is_sold = 0) items always sort above sold ones.
             ->orderByRaw('CASE WHEN is_sold = 0 THEN 0 ELSE 1 END')
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(function ($item) {
-                return [
-                    ...$item->toArray(),
-                    'product_name' => $item?->product->product_name,
-                    'product_image' => $item?->thumbnail_image,
-                    'attributes' => $item->variant?->attributeValues ? implode('/', $item->variant->attributeValues->pluck('value')->toArray()) : [],
-                ];
-            });
+            ->through(fn ($item) => [
+                ...$item->toArray(),
+                'product_name' => $item?->product->product_name,
+                'product_image' => $item?->thumbnail_image,
+                'attributes' => $item->variant?->attributeValues ? implode('/', $item->variant->attributeValues->pluck('value')->toArray()) : [],
+            ]);
     }
 
     public function store(PreOwnedRequest $request)
@@ -48,7 +46,7 @@ class PreOwnedProductController extends Controller
             })
             ->exists();
 
-        if (!$checkSerialNumber) {
+        if (! $checkSerialNumber) {
             throw new GeneralException('The provided serial number does not exist in the system');
         }
 
@@ -71,7 +69,6 @@ class PreOwnedProductController extends Controller
                 'description',
             ]));
 
-
             foreach ($request->variant_attributes as $attr) {
                 PreOwnedAttribute::create([
                     'pre_owned_id' => $preOwned->id,
@@ -90,10 +87,11 @@ class PreOwnedProductController extends Controller
                 }
             }
             DB::commit();
-            return successResponse('Pre-owned product created successfully',);
+
+            return successResponse('Pre-owned product created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException(app()->environment('production') ? 'Failed to create pre-owned product' : $e->getMessage(), 500);
+            throw new GeneralException(app()->environment('production') ? 'Failed to create pre-owned product' : $e->getMessage(), 500, $e);
         }
     }
 
@@ -113,7 +111,7 @@ class PreOwnedProductController extends Controller
             })
             ->exists();
 
-        if (!$checkSerialNumber) {
+        if (! $checkSerialNumber) {
             throw new GeneralException('The provided serial number does not exist in the system');
         }
 
@@ -143,12 +141,11 @@ class PreOwnedProductController extends Controller
             // Delete removed ones
             foreach ($existingCollection as $old) {
                 $exists = $newCollection->first(
-                    fn($n) =>
-                    $n['attribute_id'] == $old->attribute_id &&
+                    fn ($n) => $n['attribute_id'] == $old->attribute_id &&
                         $n['attribute_value_id'] == $old->attribute_value_id
                 );
 
-                if (!$exists) {
+                if (! $exists) {
                     $old->delete();
                 }
             }
@@ -156,12 +153,11 @@ class PreOwnedProductController extends Controller
             // Insert new ones
             foreach ($newCollection as $attr) {
                 $exists = $existingCollection->first(
-                    fn($old) =>
-                    $old->attribute_id == $attr['attribute_id'] &&
+                    fn ($old) => $old->attribute_id == $attr['attribute_id'] &&
                         $old->attribute_value_id == $attr['attribute_value_id']
                 );
 
-                if (!$exists) {
+                if (! $exists) {
                     PreOwnedAttribute::create([
                         'pre_owned_id' => $preOwnedProduct->id,
                         'attribute_id' => $attr['attribute_id'],
@@ -184,10 +180,11 @@ class PreOwnedProductController extends Controller
             }
 
             DB::commit();
+
             return successResponse('Pre-owned product updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException(app()->environment('production') ? 'Failed to update pre-owned product' : $e->getMessage(), 500);
+            throw new GeneralException(app()->environment('production') ? 'Failed to update pre-owned product' : $e->getMessage(), 500, $e);
         }
     }
 
@@ -197,10 +194,11 @@ class PreOwnedProductController extends Controller
             DB::beginTransaction();
             $preOwnedProduct->delete();
             DB::commit();
+
             return successResponse('Pre-owned product deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException(app()->environment('production') ? 'Failed to delete pre-owned product' : $e->getMessage(), 500);
+            throw new GeneralException(app()->environment('production') ? 'Failed to delete pre-owned product' : $e->getMessage(), 500, $e);
         }
     }
 
@@ -210,12 +208,12 @@ class PreOwnedProductController extends Controller
             'status' => 'required|boolean',
         ]);
 
-
         if ($preOwned->is_sold == $request->status) {
             throw new GeneralException('Pre-owned product status is already in use');
         }
 
         $preOwned->update(['is_sold' => $request->status]);
+
         return successResponse('Pre-owned product status updated successfully');
     }
 
@@ -240,7 +238,7 @@ class PreOwnedProductController extends Controller
 
         // discount_amount is NOT NULL at the DB level (defaults to 0) — clearing
         // the discount type without this would fail with an integrity error.
-        $validated['discount_amount'] = $validated['discount_amount'] ?? 0;
+        $validated['discount_amount'] ??= 0;
 
         $preOwned->update($validated);
 

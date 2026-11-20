@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\PreOwned;
 
+use App\Models\Pos\Product\Attribute;
+use App\Models\Pos\Product\AttributeValue;
 use Illuminate\Database\Eloquent\Model;
 
 class PreOwnedAttribute extends Model
@@ -16,13 +20,14 @@ class PreOwnedAttribute extends Model
     {
         return $this->belongsTo(PreOwned::class, 'pre_owned_id', 'id');
     }
+
     public function attribute()
     {
-        return $this->belongsTo(\App\Models\Pos\Product\Attribute::class, 'attribute_id', 'id');
+        return $this->belongsTo(Attribute::class, 'attribute_id', 'id');
     }
 
     public function attributeValue()
     {
-        return $this->belongsTo(\App\Models\Pos\Product\AttributeValue::class, 'attribute_value_id', 'id');
+        return $this->belongsTo(AttributeValue::class, 'attribute_value_id', 'id');
     }
 }

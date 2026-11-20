@@ -1,47 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Landlord\Setting\Shop;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Services\Setting\SettingService;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
 class ShopSettingController extends Controller
 {
-    public function __construct(protected SettingService $service)
-    {
+    public function __construct(protected SettingService $service) {}
 
-    }
     public function index()
     {
         if (config('theme29.installed')) {
 
-                return $this->service->getFormattedSettings();
+            return $this->service->getFormattedSettings();
         }
+
         return [];
 
     }
-    public function update(Request $request): \Illuminate\Http\JsonResponse
+
+    public function update(Request $request): JsonResponse
     {
 
-            $request->validate([
-                'shop_name' => 'required',
-            ]);
+        $request->validate([
+            'shop_name' => 'required',
+        ]);
 
-            $this->ImageValidation($request);
+        $this->ImageValidation($request);
 
-            $this->service->update();
+        $this->service->update();
 
         return successResponse('Settings updated successfully');
     }
+
     public function ImageValidation(Request $request): void
     {
         if ($request->file('shop_logo')) {
             $request->validate([
-                'shop_logo' => 'nullable|mimes:jpeg,png,jpg,svg|max:2048'
+                'shop_logo' => 'nullable|mimes:jpeg,png,jpg,svg|max:2048',
             ], [
-                'shop_logo.max' => 'Sorry! Maximum allowed size for an image is 2MB'
+                'shop_logo.max' => 'Sorry! Maximum allowed size for an image is 2MB',
             ]);
         }
 

@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PayslipItem extends Model
 {
     public const TYPE_BASIC = 'basic';
+
     public const TYPE_EARNING = 'earning';
+
     public const TYPE_DEDUCTION = 'deduction';
 
     protected $fillable = [

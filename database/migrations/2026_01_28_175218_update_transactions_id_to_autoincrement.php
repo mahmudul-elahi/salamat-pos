@@ -24,7 +24,7 @@ return new class extends Migration
         Schema::table('transactions', function (Blueprint $table) {
             // Revert logic if needed, though changing back to non-increment is tricky if data exists
             // Usually we just assume it was bigInteger
-            $table->unsignedBigInteger('id')->change(); 
+            $table->unsignedBigInteger('id')->change();
         });
     }
 };

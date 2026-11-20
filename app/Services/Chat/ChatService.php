@@ -31,7 +31,7 @@ class ChatService
                 $conversation->update(['profile_name' => $profileName]);
             }
 
-            if ($profilePictureUrl && !$conversation->contact?->profile_picture) {
+            if ($profilePictureUrl && ! $conversation->contact?->profile_picture) {
                 $conversation->contact?->update(['profile_picture' => $profilePictureUrl]);
             }
 
@@ -109,7 +109,7 @@ class ChatService
     {
         $message = ChatMessage::query()->where('external_message_id', $externalMessageId)->first();
 
-        if (!$message) {
+        if (! $message) {
             return;
         }
 
@@ -158,7 +158,7 @@ class ChatService
 
         $type = $data['type'] ?? 'text';
 
-        if ($type !== 'template' && !$this->isWithinSessionWindow($conversation)) {
+        if ($type !== 'template' && ! $this->isWithinSessionWindow($conversation)) {
             throw new GeneralException(
                 $conversation->channel === 'whatsapp'
                     ? 'The 24-hour customer service window is closed. Send a template message to reopen this conversation.'
@@ -205,7 +205,7 @@ class ChatService
      */
     public function claim(ChatConversation $conversation, User $agent): ChatConversation
     {
-        if ($conversation->assigned_agent_id !== null && $conversation->assigned_agent_id !== $agent->id && !$agent->isAppAdmin()) {
+        if ($conversation->assigned_agent_id !== null && $conversation->assigned_agent_id !== $agent->id && ! $agent->isAppAdmin()) {
             throw new GeneralException('This conversation is already assigned to another agent', 409);
         }
 
@@ -223,7 +223,7 @@ class ChatService
      */
     public function assign(ChatConversation $conversation, int $agentId, User $actor): ChatConversation
     {
-        if (!$actor->isAppAdmin()) {
+        if (! $actor->isAppAdmin()) {
             throw new GeneralException('Only admins can assign conversations', 403);
         }
 
@@ -241,7 +241,7 @@ class ChatService
      */
     public function reassign(ChatConversation $conversation, int $agentId, User $actor): ChatConversation
     {
-        if ($actor->id !== $conversation->assigned_agent_id && !$actor->isAppAdmin()) {
+        if ($actor->id !== $conversation->assigned_agent_id && ! $actor->isAppAdmin()) {
             throw new GeneralException('Only the assigned agent or an admin can reassign this conversation', 403);
         }
 
@@ -285,7 +285,7 @@ class ChatService
      */
     public function assignTeam(ChatConversation $conversation, int $teamId, User $actor): ChatConversation
     {
-        if (!$actor->isAppAdmin()) {
+        if (! $actor->isAppAdmin()) {
             throw new GeneralException('Only admins can assign a team to this conversation', 403);
         }
 

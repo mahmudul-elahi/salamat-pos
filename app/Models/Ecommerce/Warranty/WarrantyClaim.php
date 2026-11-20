@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Ecommerce\Warranty;
 
 use App\Models\Common\BaseModel;

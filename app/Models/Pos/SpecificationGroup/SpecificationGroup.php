@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Pos\SpecificationGroup;
 
 use App\Models\Common\BaseModel;
 
 class SpecificationGroup extends BaseModel
 {
-
     protected $fillable = [
         'name',
-        'parent_id'
+        'parent_id',
     ];
 
     public function parent()

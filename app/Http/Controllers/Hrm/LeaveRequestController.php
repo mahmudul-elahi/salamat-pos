@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Hrm;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hrm\EmployeeLeave;
+use App\Models\Hrm\Holiday;
 use App\Models\Hrm\LeaveRequest;
+use App\Models\Hrm\WorkShift;
+use App\Models\User;
 use App\Notifications\Hrm\LeaveStatusNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,29 +22,29 @@ class LeaveRequestController extends Controller
             ->with(['leaveType:id,name,type', 'user:id,name', 'media'])
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(fn($lr) => $this->formatLeaveRequest($lr));
+            ->through(fn ($lr) => $this->formatLeaveRequest($lr));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'leave_type_id'   => ['required', 'exists:leave_types,id'],
-            'leave_duration'  => ['required', 'in:single_day,multi_day,hours'],
-            'note'            => ['nullable', 'string'],
-            'attachments'     => ['nullable', 'array'],
-            'attachments.*'   => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,svg,pdf', 'max:5120'],
-            'date'            => ['nullable', 'date'],
-            'start_date'      => ['nullable', 'date'],
-            'end_date'        => ['nullable', 'date', 'after_or_equal:start_date'],
-            'start_time'      => ['nullable', 'string'],
-            'end_time'        => ['nullable', 'string'],
+            'leave_type_id' => ['required', 'exists:leave_types,id'],
+            'leave_duration' => ['required', 'in:single_day,multi_day,hours'],
+            'note' => ['nullable', 'string'],
+            'attachments' => ['nullable', 'array'],
+            'attachments.*' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,svg,pdf', 'max:5120'],
+            'date' => ['nullable', 'date'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'start_time' => ['nullable', 'string'],
+            'end_time' => ['nullable', 'string'],
         ]);
 
-        $userId       = auth()->id();
-        $leaveTypeId  = $request->input('leave_type_id');
-        $duration     = $request->input('leave_duration');
+        $userId = auth()->id();
+        $leaveTypeId = $request->input('leave_type_id');
+        $duration = $request->input('leave_duration');
         $requestedDays = $this->calculateDays($request);
-        $refDate      = $request->input('date') ?? $request->input('start_date');
+        $refDate = $request->input('date') ?? $request->input('start_date');
 
         // Check duplicate leave for same date (allow re-apply only if previous was rejected)
         $this->checkDuplicateLeave($request, $userId, $duration);
@@ -55,7 +58,7 @@ class LeaveRequestController extends Controller
         // Check employee has a leave balance for this leave type
         $balance = $this->findBalance($userId, $leaveTypeId, $refDate);
 
-        if (!$balance) {
+        if (! $balance instanceof EmployeeLeave) {
             throw ValidationException::withMessages([
                 'leave_type_id' => ['You do not have any leave balance for this leave type.'],
             ]);
@@ -69,7 +72,7 @@ class LeaveRequestController extends Controller
 
         $data = $request->only(['leave_type_id', 'leave_duration', 'note', 'date', 'start_date', 'end_date', 'start_time', 'end_time']);
         $data['user_id'] = $userId;
-        $data['status']  = 'pending';
+        $data['status'] = 'pending';
 
         $leaveRequest = LeaveRequest::query()->create($data);
 
@@ -85,19 +88,20 @@ class LeaveRequestController extends Controller
     public function show(LeaveRequest $leaveRequest)
     {
         $leaveRequest->load(['leaveType:id,name,type', 'user:id,name', 'media']);
+
         return $this->formatLeaveRequest($leaveRequest);
     }
 
     public function update(Request $request, LeaveRequest $leaveRequest)
     {
         // Quick status-only update (approve / reject) from the list actions.
-        if ($request->has('status') && !$request->has('leave_type_id')) {
+        if ($request->has('status') && ! $request->has('leave_type_id')) {
             $request->validate([
                 'status' => ['required', Rule::in(['approved', 'rejected', 'pending'])],
             ]);
 
             $previousStatus = $leaveRequest->status;
-            $newStatus      = $request->get('status');
+            $newStatus = $request->get('status');
 
             $leaveRequest->update(['status' => $newStatus]);
 
@@ -119,18 +123,18 @@ class LeaveRequestController extends Controller
         }
 
         $request->validate([
-            'leave_type_id'        => ['required', 'exists:leave_types,id'],
-            'leave_duration'       => ['required', 'in:single_day,multi_day,hours'],
-            'note'                 => ['nullable', 'string'],
-            'attachments'          => ['nullable', 'array'],
-            'attachments.*'        => ['file', 'mimes:svg,png,jpg,jpeg,webp', 'max:5120'],
-            'remove_attachments'   => ['nullable', 'array'],
+            'leave_type_id' => ['required', 'exists:leave_types,id'],
+            'leave_duration' => ['required', 'in:single_day,multi_day,hours'],
+            'note' => ['nullable', 'string'],
+            'attachments' => ['nullable', 'array'],
+            'attachments.*' => ['file', 'mimes:svg,png,jpg,jpeg,webp', 'max:5120'],
+            'remove_attachments' => ['nullable', 'array'],
             'remove_attachments.*' => ['integer'],
-            'date'                 => ['nullable', 'date'],
-            'start_date'           => ['nullable', 'date'],
-            'end_date'             => ['nullable', 'date', 'after_or_equal:start_date'],
-            'start_time'           => ['nullable', 'string'],
-            'end_time'             => ['nullable', 'string'],
+            'date' => ['nullable', 'date'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'start_time' => ['nullable', 'string'],
+            'end_time' => ['nullable', 'string'],
         ]);
 
         $data = $request->only(['leave_type_id', 'leave_duration', 'note', 'date', 'start_date', 'end_date', 'start_time', 'end_time']);
@@ -140,7 +144,7 @@ class LeaveRequestController extends Controller
             $leaveRequest->media()
                 ->whereIn('id', $request->input('remove_attachments'))
                 ->get()
-                ->each(fn($media) => $media->delete());
+                ->each(fn ($media) => $media->delete());
         }
 
         foreach ($request->file('attachments', []) as $file) {
@@ -155,6 +159,7 @@ class LeaveRequestController extends Controller
     public function destroy(LeaveRequest $leaveRequest)
     {
         $leaveRequest->delete();
+
         return successResponse('Leave request deleted successfully');
     }
 
@@ -164,22 +169,26 @@ class LeaveRequestController extends Controller
 
     private function checkWeekendConflict(Request $request, int $userId, string $duration): void
     {
-        $user         = \App\Models\User::with('currentDepartment')->find($userId);
+        $user = User::with('currentDepartment')->find($userId);
         $departmentId = $user?->currentDepartment?->department_id;
 
-        if (!$departmentId) return;
+        if (! $departmentId) {
+            return;
+        }
 
-        $shift = \App\Models\Hrm\WorkShift::query()
-            ->whereHas('departments', fn($q) => $q->where('departments.id', $departmentId))
+        $shift = WorkShift::query()
+            ->whereHas('departments', fn ($q) => $q->where('departments.id', $departmentId))
             ->first();
 
-        if (!$shift || empty($shift->weekend_days)) return;
+        if (! $shift || empty($shift->weekend_days)) {
+            return;
+        }
 
         $weekendDays = $shift->weekend_days; // e.g. ["Saturday", "Sunday"]
 
         if ($duration === 'multi_day') {
             $current = Carbon::parse($request->input('start_date'))->startOfDay();
-            $end     = Carbon::parse($request->input('end_date'))->startOfDay();
+            $end = Carbon::parse($request->input('end_date'))->startOfDay();
 
             while ($current->lte($end)) {
                 if (in_array($current->format('l'), $weekendDays)) {
@@ -212,7 +221,7 @@ class LeaveRequestController extends Controller
 
         if ($duration === 'multi_day') {
             $leaveStart = $request->input('start_date');
-            $leaveEnd   = $request->input('end_date');
+            $leaveEnd = $request->input('end_date');
 
             $exists = $query->where('leave_duration', 'multi_day')
                 ->where('start_date', '<=', $leaveEnd)
@@ -225,7 +234,7 @@ class LeaveRequestController extends Controller
                 ]);
             }
         } else {
-            $date   = $request->input('date');
+            $date = $request->input('date');
             $exists = $query->where('leave_duration', $duration)
                 ->where('date', $date)
                 ->exists();
@@ -244,18 +253,18 @@ class LeaveRequestController extends Controller
 
         if ($duration === 'multi_day') {
             $leaveStart = Carbon::parse($request->input('start_date'))->startOfDay();
-            $leaveEnd   = Carbon::parse($request->input('end_date'))->endOfDay();
+            $leaveEnd = Carbon::parse($request->input('end_date'))->endOfDay();
         } else {
-            $date       = Carbon::parse($request->input('date'))->startOfDay();
+            $date = Carbon::parse($request->input('date'))->startOfDay();
             $leaveStart = $date;
-            $leaveEnd   = $date->copy()->endOfDay();
+            $leaveEnd = $date->copy()->endOfDay();
         }
 
         // Resolve user's current department for department-specific holidays
-        $user           = \App\Models\User::with('currentDepartment')->find($userId);
-        $departmentId   = $user?->currentDepartment?->department_id;
+        $user = User::with('currentDepartment')->find($userId);
+        $departmentId = $user?->currentDepartment?->department_id;
 
-        $holiday = \App\Models\Hrm\Holiday::query()
+        $holiday = Holiday::query()
             ->where(function ($q) use ($departmentId) {
                 $q->whereNull('department_id');
                 if ($departmentId) {
@@ -267,10 +276,10 @@ class LeaveRequestController extends Controller
             ->first();
 
         if ($holiday) {
-            $start     = Carbon::parse($holiday->start_date)->format('d M Y');
-            $end       = Carbon::parse($holiday->end_date)->format('d M Y');
-            $label     = $start === $end ? $start : "{$start} – {$end}";
-            $errorKey  = $duration === 'multi_day' ? 'start_date' : 'date';
+            $start = Carbon::parse($holiday->start_date)->format('d M Y');
+            $end = Carbon::parse($holiday->end_date)->format('d M Y');
+            $label = $start === $end ? $start : "{$start} – {$end}";
+            $errorKey = $duration === 'multi_day' ? 'start_date' : 'date';
 
             throw ValidationException::withMessages([
                 $errorKey => ["You cannot apply leave on a holiday: {$holiday->name} ({$label})."],
@@ -282,10 +291,10 @@ class LeaveRequestController extends Controller
     {
         return match ($request->input('leave_duration')) {
             'single_day' => 1,
-            'multi_day'  => Carbon::parse($request->input('start_date'))
+            'multi_day' => Carbon::parse($request->input('start_date'))
                 ->diffInDays(Carbon::parse($request->input('end_date'))) + 1,
-            'hours'      => 0.5,
-            default      => 1,
+            'hours' => 0.5,
+            default => 1,
         };
     }
 
@@ -310,7 +319,9 @@ class LeaveRequestController extends Controller
             $refDate?->toDateString()
         );
 
-        if (!$balance) return;
+        if (! $balance instanceof EmployeeLeave) {
+            return;
+        }
 
         $days = $this->calculateDaysFromLeaveRequest($leaveRequest);
         $balance->decrement('day', $days);
@@ -325,7 +336,9 @@ class LeaveRequestController extends Controller
             $refDate?->toDateString()
         );
 
-        if (!$balance) return;
+        if (! $balance instanceof EmployeeLeave) {
+            return;
+        }
 
         $days = $this->calculateDaysFromLeaveRequest($leaveRequest);
         $balance->increment('day', $days);
@@ -335,11 +348,11 @@ class LeaveRequestController extends Controller
     {
         return match ($leaveRequest->leave_duration) {
             'single_day' => 1,
-            'multi_day'  => $leaveRequest->start_date && $leaveRequest->end_date
+            'multi_day' => $leaveRequest->start_date && $leaveRequest->end_date
                 ? $leaveRequest->start_date->diffInDays($leaveRequest->end_date) + 1
                 : 1,
-            'hours'      => 0.5,
-            default      => 1,
+            'hours' => 0.5,
+            default => 1,
         };
     }
 
@@ -347,13 +360,14 @@ class LeaveRequestController extends Controller
     {
         $data = $leaveRequest->toArray();
         $data['attachments'] = $leaveRequest->getMedia('leave_attachments')
-            ->map(fn($media) => [
-                'id'        => $media->id,
-                'name'      => $media->file_name,
-                'url'       => $media->getFullUrl(),
+            ->map(fn ($media) => [
+                'id' => $media->id,
+                'name' => $media->file_name,
+                'url' => $media->getFullUrl(),
                 'mime_type' => $media->mime_type,
-                'size'      => $media->size,
+                'size' => $media->size,
             ])->values()->toArray();
+
         return $data;
     }
 }

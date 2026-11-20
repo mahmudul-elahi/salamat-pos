@@ -13,9 +13,9 @@ class StockReportFilter extends BaseFilter
     public function search($search = null): void
     {
         $this->builder->when($search, function ($query, $search) {
-            $query->where('products.product_name', 'like', '%' . $search . '%')
+            $query->where('products.product_name', 'like', '%'.$search.'%')
                 ->orWhereHas('serial', function ($query) use ($search) {
-                    $query->where('serial_number', 'like', '%' . $search . '%');
+                    $query->where('serial_number', 'like', '%'.$search.'%');
                 });
         });
     }
@@ -61,7 +61,6 @@ class StockReportFilter extends BaseFilter
         });
     }
 
-
     public function warehouse($ids = null): void
     {
         // $warehouse = explode(',', $ids);
@@ -74,7 +73,7 @@ class StockReportFilter extends BaseFilter
 
         $product = explode(',', $ids);
 
-        $this->builder->when($ids, fn(Builder $query) => $query->whereIn('product_id', $product));
+        $this->builder->when($ids, fn (Builder $query) => $query->whereIn('product_id', $product));
     }
 
     /**
@@ -91,7 +90,7 @@ class StockReportFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return;
         }
 
@@ -100,8 +99,9 @@ class StockReportFilter extends BaseFilter
         try {
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
+
             return $this->builder->whereBetween('updated_at', [$start, $end]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid your date range');
         }
     }

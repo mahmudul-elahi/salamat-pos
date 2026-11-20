@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filters\Landlord\Company;
 
 use App\Filters\BaseFilter;
@@ -9,11 +11,11 @@ class CompanyFilter extends BaseFilter
 {
     public function search($search = null)
     {
-        return $this->builder->when($search, fn(Builder $builder) => $builder->where('name', 'LIKE', "%$search%"));
+        return $this->builder->when($search, fn (Builder $builder) => $builder->where('name', 'LIKE', "%$search%"));
     }
 
     public function status($status = null)
     {
-        return $this->builder->when($status, fn(Builder $builder) => $builder->where('status', $status));
+        return $this->builder->when($status, fn (Builder $builder) => $builder->where('status', $status));
     }
 }

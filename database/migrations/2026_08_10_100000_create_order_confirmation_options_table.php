@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * The three badge dropdowns on the order confirmation sheet — advance
      * media ("Bkash 22", "SSL", "EMI"), delivery status and courier — all

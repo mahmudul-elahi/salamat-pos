@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Pos\SaleReturn;
 
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\SaleReturn\SaleReturn;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Milon\Barcode\DNS1D;
 
@@ -20,7 +20,7 @@ class SaleReturnDownloadController extends Controller
         ]);
 
         $customer = $saleReturn->contact;
-        $address  = '';
+        $address = '';
         if ($customer) {
             if ($customer->shipping_address_id && $customer->shippingAddress) {
                 $address = $customer->shippingAddress->getFullAddressAttribute() ?? '';
@@ -29,11 +29,11 @@ class SaleReturnDownloadController extends Controller
             }
         }
 
-        //$receivedAmount = $saleReturn->getTransactionAmountAttribute();
-        //$dueAmount      = max(0, $saleReturn->grand_total - $receivedAmount);
-        $totalQuantity  = $saleReturn->items->sum('quantity');
-        $totalUnitPrice = $saleReturn->items->sum(fn($i) => $i->unit_price * $i->quantity);
-        $totalDiscount  = $saleReturn->items->sum(fn($i) => (float)($i->discount_amount ?? 0));
+        // $receivedAmount = $saleReturn->getTransactionAmountAttribute();
+        // $dueAmount      = max(0, $saleReturn->grand_total - $receivedAmount);
+        $totalQuantity = $saleReturn->items->sum('quantity');
+        $totalUnitPrice = $saleReturn->items->sum(fn ($i) => $i->unit_price * $i->quantity);
+        $totalDiscount = $saleReturn->items->sum(fn ($i) => (float) ($i->discount_amount ?? 0));
 
         $barcodeBase64 = (new DNS1D)->getBarcodePNG($saleReturn->full_invoice_number, 'C128', 1, 40);
 
@@ -41,53 +41,54 @@ class SaleReturnDownloadController extends Controller
 
         $itemRows = $groupedItems->map(function ($items) {
             $first = $items->first();
+
             return [
-                'product_name'  => $first->product?->product_name,
+                'product_name' => $first->product?->product_name,
                 'product_image' => to_cdn_url($first->product?->product_image),
-                'attributes'    => $first->productVariant?->attributeValues?->pluck('value') ?? [],
-                'total_qty'     => $items->sum('quantity'),
-                'lines'         => $items->map(fn($item) => [
-                    'serial_number'   => $item->serial_number,
-                    'unit_price'      => $item->unit_price,
-                    'discount_amount' => (float)($item->discount_amount ?? 0),
-                    'line_total'      => ($item->unit_price * $item->quantity) - ($item->discount_amount ?? 0),
+                'attributes' => $first->productVariant?->attributeValues?->pluck('value') ?? [],
+                'total_qty' => $items->sum('quantity'),
+                'lines' => $items->map(fn ($item) => [
+                    'serial_number' => $item->serial_number,
+                    'unit_price' => $item->unit_price,
+                    'discount_amount' => (float) ($item->discount_amount ?? 0),
+                    'line_total' => ($item->unit_price * $item->quantity) - ($item->discount_amount ?? 0),
                 ])->values(),
             ];
         })->values();
 
         $paymentSummary = $saleReturn->payments
             ->groupBy('payment_method_id')
-            ->map(fn($txns) => [
+            ->map(fn ($txns) => [
                 'method' => optional($txns->first()->paymentMethod)->name,
                 'amount' => $txns->sum('amount'),
             ])->values();
 
         return response()->json([
             'customer' => [
-                'name'         => $customer?->name,
+                'name' => $customer?->name,
                 'company_name' => $customer?->company_name,
-                'phone'        => $customer?->phone,
-                'email'        => $customer?->email,
-                'address'      => $address,
+                'phone' => $customer?->phone,
+                'email' => $customer?->email,
+                'address' => $address,
             ],
             'sale_return' => [
-                'date'                => $saleReturn->date,
+                'date' => $saleReturn->date,
                 'full_invoice_number' => $saleReturn->full_invoice_number,
-                'grand_total'         => $saleReturn->grand_total,
-                'status'              => $saleReturn->status,
-                'order_tax'           => $saleReturn->order_tax,
-                'shipping_cost'       => $saleReturn->shipping_cost,
-                'note'                => $saleReturn->note,
+                'grand_total' => $saleReturn->grand_total,
+                'status' => $saleReturn->status,
+                'order_tax' => $saleReturn->order_tax,
+                'shipping_cost' => $saleReturn->shipping_cost,
+                'note' => $saleReturn->note,
             ],
-            'items'            => $itemRows,
-            'items_count'      => $groupedItems->count(),
-            'barcode'          => 'data:image/png;base64,' . $barcodeBase64,
-            'payment_summary'  => $paymentSummary,
-            'total_quantity'   => $totalQuantity,
+            'items' => $itemRows,
+            'items_count' => $groupedItems->count(),
+            'barcode' => 'data:image/png;base64,'.$barcodeBase64,
+            'payment_summary' => $paymentSummary,
+            'total_quantity' => $totalQuantity,
             'total_unit_price' => $totalUnitPrice,
-            'total_discount'   => $totalDiscount,
-            //'received_amount'  => $receivedAmount,
-            //'due_amount'       => $dueAmount,
+            'total_discount' => $totalDiscount,
+            // 'received_amount'  => $receivedAmount,
+            // 'due_amount'       => $dueAmount,
         ]);
     }
 
@@ -98,7 +99,7 @@ class SaleReturnDownloadController extends Controller
         if (request()->has('preview')) {
             return response()->make($pdf->stream(), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $saleReturn->full_invoice_number . '.pdf"',
+                'Content-Disposition' => 'inline; filename="'.$saleReturn->full_invoice_number.'.pdf"',
             ]);
         }
 
@@ -112,7 +113,7 @@ class SaleReturnDownloadController extends Controller
             'items.product',
             'items.productVariant.attributeValues.attribute',
             'payments',
-            'tenant'
+            'tenant',
         ]);
         $logo = to_cdn_url(config('settings.application.company_logo'));
 
@@ -121,13 +122,13 @@ class SaleReturnDownloadController extends Controller
 
         $data = [
             'saleReturn' => $saleReturn,
-            'customer'   => $saleReturn->contact,
-            'items'      => $saleReturn->items,
-            'payments'   => $saleReturn->payments,
-            'tenant'     => $saleReturn->tenant,
-            'return_amount'=> $returnAmount,
-            'due_amount'   => $dueAmount,
-            'logo'             => $logo,
+            'customer' => $saleReturn->contact,
+            'items' => $saleReturn->items,
+            'payments' => $saleReturn->payments,
+            'tenant' => $saleReturn->tenant,
+            'return_amount' => $returnAmount,
+            'due_amount' => $dueAmount,
+            'logo' => $logo,
         ];
 
         return Pdf::loadView('pdf.sale-return-invoice', $data)

@@ -4,7 +4,6 @@ namespace Database\Seeders\Contact;
 
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PurchaseReturnSupplierToContactSeeder extends Seeder
@@ -19,14 +18,14 @@ class PurchaseReturnSupplierToContactSeeder extends Seeder
             ->get();
 
         $purchases->each(function (PurchaseReturn $purchase) {
-            if ($purchase->supplier && $purchase->supplier->phone){
+            if ($purchase->supplier && $purchase->supplier->phone) {
                 $contact = Contact::query()
                     ->where('phone', $purchase->supplier->phone)
                     ->first();
 
-                if ($contact){
+                if ($contact) {
                     $purchase->update([
-                        'contact_id' => $contact->id
+                        'contact_id' => $contact->id,
                     ]);
                 }
             }

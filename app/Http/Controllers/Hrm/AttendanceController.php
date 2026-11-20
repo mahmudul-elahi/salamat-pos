@@ -38,32 +38,32 @@ class AttendanceController extends Controller
             ->orderBy('user_id')
             ->paginate(request('per_page', 10))
             ->through(function (Attendance $attendance) {
-                $details      = $attendance->details->sortBy('in_time')->values();
-                $firstIn      = $details->first();
-                $lastOut      = $details->filter(fn(AttendanceDetail $d) => $d->out_time)->sortBy('out_time')->last();
-                $totalSeconds = $details->sum(fn(AttendanceDetail $d) => $this->sessionSeconds($d));
-                $breakSeconds = $attendance->breaks->sum(fn(AttendanceBreak $b) => $b->durationSeconds());
+                $details = $attendance->details->sortBy('in_time')->values();
+                $firstIn = $details->first();
+                $lastOut = $details->filter(fn (AttendanceDetail $d) => $d->out_time)->sortBy('out_time')->last();
+                $totalSeconds = $details->sum(fn (AttendanceDetail $d) => $this->sessionSeconds($d));
+                $breakSeconds = $attendance->breaks->sum(fn (AttendanceBreak $b) => $b->durationSeconds());
 
                 return [
-                    'id'              => $attendance->id,
-                    'employee'        => $attendance->user?->name,
+                    'id' => $attendance->id,
+                    'employee' => $attendance->user?->name,
                     'profile_picture' => $attendance->user?->profile_picture,
-                    'employee_code'   => $attendance->user?->employeeProfile?->employee_id,
-                    'email'           => $attendance->user?->email,
-                    'in_date'       => to_user_timezone_date($attendance->in_date),
+                    'employee_code' => $attendance->user?->employeeProfile?->employee_id,
+                    'email' => $attendance->user?->email,
+                    'in_date' => to_user_timezone_date($attendance->in_date),
                     'records_count' => $details->count(),
-                    'in_time'       => $firstIn?->in_time ? to_user_timezone_datetime($firstIn->in_time, 'h:i A') : null,
-                    'in_ip'         => $this->extractIp($firstIn?->in_ip_data),
-                    'in_location'   => $this->extractLocationData($firstIn?->in_ip_data),
-                    'in_selfie'     => $firstIn?->in_selfie_url,
-                    'out_time'      => $lastOut?->out_time ? to_user_timezone_datetime($lastOut->out_time, 'h:i A') : null,
-                    'out_ip'        => $this->extractIp($lastOut?->out_ip_data),
-                    'out_location'  => $this->extractLocationData($lastOut?->out_ip_data),
-                    'out_selfie'    => $lastOut?->out_selfie_url,
-                    'behavior'      => $attendance->behavior,
-                    'status'        => $attendance->status,
-                    'break_time'    => $this->formatSeconds($breakSeconds),
-                    'total_hours'   => $this->formatSeconds($totalSeconds),
+                    'in_time' => $firstIn?->in_time ? to_user_timezone_datetime($firstIn->in_time, 'h:i A') : null,
+                    'in_ip' => $this->extractIp($firstIn?->in_ip_data),
+                    'in_location' => $this->extractLocationData($firstIn?->in_ip_data),
+                    'in_selfie' => $firstIn?->in_selfie_url,
+                    'out_time' => $lastOut?->out_time ? to_user_timezone_datetime($lastOut->out_time, 'h:i A') : null,
+                    'out_ip' => $this->extractIp($lastOut?->out_ip_data),
+                    'out_location' => $this->extractLocationData($lastOut?->out_ip_data),
+                    'out_selfie' => $lastOut?->out_selfie_url,
+                    'behavior' => $attendance->behavior,
+                    'status' => $attendance->status,
+                    'break_time' => $this->formatSeconds($breakSeconds),
+                    'total_hours' => $this->formatSeconds($totalSeconds),
                 ];
             });
     }
@@ -94,12 +94,12 @@ class AttendanceController extends Controller
             // shouldn't vanish from their own attendance history).
             ->where(function ($query) use ($year, $month) {
                 $query->where('status', 'active')
-                    ->orWhereHas('attendances', fn($q) => $q->whereYear('in_date', $year)->whereMonth('in_date', $month));
+                    ->orWhereHas('attendances', fn ($q) => $q->whereYear('in_date', $year)->whereMonth('in_date', $month));
             })
             ->with(['media', 'employeeProfile', 'currentDepartment.department.workShifts', 'workShifts']);
 
         if ($departmentId) {
-            $employeesQuery->whereHas('currentDepartment', fn($q) => $q->where('department_id', $departmentId));
+            $employeesQuery->whereHas('currentDepartment', fn ($q) => $q->where('department_id', $departmentId));
         }
 
         $employees = $employeesQuery->get();
@@ -108,7 +108,7 @@ class AttendanceController extends Controller
         // Employees, so also pull in anyone who actually punched this month
         // (e.g. an admin account without an employee profile) — otherwise
         // their attendance would silently never show up in this report.
-        if (!$departmentId) {
+        if (! $departmentId) {
             $punchedUserIds = Attendance::query()
                 ->whereYear('in_date', $year)
                 ->whereMonth('in_date', $month)
@@ -175,7 +175,7 @@ class AttendanceController extends Controller
             $holidayDays = $this->holidayDaysInMonth($holidays, $department?->id, $year, $month, $daysInMonth);
             $leaveDays = $this->leaveDaysInMonth($leaveRequestsByUser->get($employee->id, collect()), $year, $month, $daysInMonth);
             $attendanceMap = collect($attendancesByUser->get($employee->id, collect()))
-                ->keyBy(fn(Attendance $a) => $a->in_date->day);
+                ->keyBy(fn (Attendance $a) => $a->in_date->day);
 
             $totalPresent = 0;
             $dayStatuses = [];
@@ -210,20 +210,20 @@ class AttendanceController extends Controller
             }
 
             return [
-                'id'              => $employee->id,
-                'name'            => $employee->name,
+                'id' => $employee->id,
+                'name' => $employee->name,
                 'profile_picture' => $employee->profile_picture,
-                'department'      => $department?->name,
-                'days'            => $dayStatuses,
-                'late_days'       => $lateDays,
-                'total_present'   => $totalPresent,
+                'department' => $department?->name,
+                'days' => $dayStatuses,
+                'late_days' => $lateDays,
+                'total_present' => $totalPresent,
             ];
         });
 
         // Build the {day, name} structure separately for the response,
         // so all the internal logic above keeps working with plain day numbers.
-        $daysWithNames = collect($days)->map(fn($day) => [
-            'day'  => $day,
+        $daysWithNames = collect($days)->map(fn ($day) => [
+            'day' => $day,
             'name' => Carbon::createFromDate($year, $month, $day)->format('D'), // Mon, Tue, Wed...
         ]);
 
@@ -305,11 +305,11 @@ class AttendanceController extends Controller
      */
     public function punchDetails(Attendance $attendance)
     {
-        $attendance->load(['user:id,name,email', 'user.employeeProfile', 'details' => fn($q) => $q->orderBy('in_time')]);
+        $attendance->load(['user:id,name,email', 'user.employeeProfile', 'details' => fn ($q) => $q->orderBy('in_time')]);
 
         $details = $attendance->details;
-        $totalSeconds = $details->sum(fn(AttendanceDetail $d) => $this->sessionSeconds($d));
-        $lastOut = $details->filter(fn(AttendanceDetail $d) => $d->out_time)->sortBy('out_time')->last();
+        $totalSeconds = $details->sum(fn (AttendanceDetail $d) => $this->sessionSeconds($d));
+        $lastOut = $details->filter(fn (AttendanceDetail $d) => $d->out_time)->sortBy('out_time')->last();
 
         return [
             'employee' => $attendance->user?->name,
@@ -319,16 +319,16 @@ class AttendanceController extends Controller
             'first_in' => $details->first()?->in_time ? to_user_timezone_datetime($details->first()->in_time, 'h:i A') : null,
             'last_out' => $lastOut?->out_time ? to_user_timezone_datetime($lastOut->out_time, 'h:i A') : null,
             'total_worked' => $this->formatSeconds($totalSeconds),
-            'sessions' => $details->values()->map(fn(AttendanceDetail $detail, int $index) => [
+            'sessions' => $details->values()->map(fn (AttendanceDetail $detail, int $index) => [
                 'index' => $index + 1,
                 'in_time' => $detail->in_time ? to_user_timezone_datetime($detail->in_time, 'h:i A') : null,
                 'out_time' => $detail->out_time ? to_user_timezone_datetime($detail->out_time, 'h:i A') : null,
-                'in_ip'          => $this->extractIp($detail->in_ip_data),
-                'in_location'    => $this->extractLocationData($detail->in_ip_data),
-                'in_selfie'      => $detail->in_selfie_url,
-                'out_ip'         => $this->extractIp($detail->out_ip_data),
-                'out_location'   => $this->extractLocationData($detail->out_ip_data),
-                'out_selfie'     => $detail->out_selfie_url,
+                'in_ip' => $this->extractIp($detail->in_ip_data),
+                'in_location' => $this->extractLocationData($detail->in_ip_data),
+                'in_selfie' => $detail->in_selfie_url,
+                'out_ip' => $this->extractIp($detail->out_ip_data),
+                'out_location' => $this->extractLocationData($detail->out_ip_data),
+                'out_selfie' => $detail->out_selfie_url,
                 'duration' => $this->formatSeconds($this->sessionSeconds($detail)),
                 'work_from_home' => (bool) $detail->work_from_home,
             ]),
@@ -352,7 +352,7 @@ class AttendanceController extends Controller
     public function update(Request $request, Attendance $attendance)
     {
         // Quick status-only update (approve / reject / cancel) from the list actions.
-        if ($request->has('status') && !$request->has('user_id')) {
+        if ($request->has('status') && ! $request->has('user_id')) {
             $request->validate([
                 'status' => ['required', Rule::in(['approved', 'rejected', 'cancel', 'pending'])],
             ]);
@@ -385,11 +385,11 @@ class AttendanceController extends Controller
             ->pluck('value', 'name');
 
         $geoProvider = $geoSettings->get('geo_provider', 'none');
-        $geoApiKey   = match ($geoProvider) {
-            'mapbox'         => $geoSettings->get('mapbox_api_key'),
-            'google_map'     => $geoSettings->get('google_map_api_key'),
+        $geoApiKey = match ($geoProvider) {
+            'mapbox' => $geoSettings->get('mapbox_api_key'),
+            'google_map' => $geoSettings->get('google_map_api_key'),
             'ip_geolocation' => $geoSettings->get('ip_geolocation_api_key'),
-            default          => null,
+            default => null,
         };
 
         return ['geo_provider' => $geoProvider, 'geo_api_key' => $geoApiKey];
@@ -409,14 +409,14 @@ class AttendanceController extends Controller
             ->with(['details', 'breaks.breakTime', 'workShift.breakTimes'])
             ->first();
 
-        $openDetail   = $attendance?->details->firstWhere('out_time', null);
-        $lastDetail   = $attendance?->details->sortByDesc('in_time')->first();
-        $openBreak    = $attendance?->breaks->firstWhere('ended_at', null);
+        $openDetail = $attendance?->details->firstWhere('out_time', null);
+        $lastDetail = $attendance?->details->sortByDesc('in_time')->first();
+        $openBreak = $attendance?->breaks->firstWhere('ended_at', null);
         $totalBreakSeconds = $attendance?->breaks
-            ->sum(fn(AttendanceBreak $b) => $b->durationSeconds()) ?? 0;
+            ->sum(fn (AttendanceBreak $b) => $b->durationSeconds()) ?? 0;
 
         $availableBreakTimes = $attendance?->workShift?->breakTimes
-            ?->map(fn(BreakTime $bt) => ['id' => $bt->id, 'name' => $bt->name, 'duration' => $bt->duration])
+            ?->map(fn (BreakTime $bt) => ['id' => $bt->id, 'name' => $bt->name, 'duration' => $bt->duration])
             ->values() ?? collect();
 
         $geoSettings = Customization::where('type', 'attendance')
@@ -425,43 +425,43 @@ class AttendanceController extends Controller
             ->pluck('value', 'name');
 
         $geoProvider = $geoSettings->get('geo_provider', 'none');
-        $geoApiKey   = match ($geoProvider) {
-            'mapbox'          => $geoSettings->get('mapbox_api_key'),
-            'google_map'      => $geoSettings->get('google_map_api_key'),
-            'ip_geolocation'  => $geoSettings->get('ip_geolocation_api_key'),
-            default           => null,
+        $geoApiKey = match ($geoProvider) {
+            'mapbox' => $geoSettings->get('mapbox_api_key'),
+            'google_map' => $geoSettings->get('google_map_api_key'),
+            'ip_geolocation' => $geoSettings->get('ip_geolocation_api_key'),
+            default => null,
         };
 
         // Direct employee assignment takes priority over department shifts
         $directShifts = $user->workShifts()->select('id', 'shift_name')->get();
         $availableWorkShifts = $directShifts->isNotEmpty()
-            ? $directShifts->map(fn(WorkShift $s) => ['id' => $s->id, 'name' => $s->shift_name])->values()
+            ? $directShifts->map(fn (WorkShift $s) => ['id' => $s->id, 'name' => $s->shift_name])->values()
             : ($user->currentDepartment?->department?->workShifts()
                 ->select('id', 'shift_name')
                 ->get()
-                ->map(fn(WorkShift $s) => ['id' => $s->id, 'name' => $s->shift_name])
+                ->map(fn (WorkShift $s) => ['id' => $s->id, 'name' => $s->shift_name])
                 ->values() ?? collect());
 
         return [
-            'punched_in'          => (bool) $openDetail,
-            'in_time'             => $openDetail?->in_time ? to_user_timezone_datetime($openDetail->in_time, 'h:i A') : null,
-            'in_date'             => $attendance?->in_date ? to_user_timezone_date($attendance->in_date, 'Y-m-d') : null,
-            'work_from_home'      => (bool) ($openDetail?->work_from_home ?? $lastDetail?->work_from_home),
-            'status'              => $attendance?->status,
-            'behavior'            => $attendance?->behavior,
-            'on_break'            => (bool) $openBreak,
-            'break_started_at'    => $openBreak?->started_at ? to_user_timezone_datetime($openBreak->started_at, 'h:i A') : null,
-            'break_name'          => $openBreak?->breakTime?->name,
-            'total_break'         => $this->formatSeconds($totalBreakSeconds),
+            'punched_in' => (bool) $openDetail,
+            'in_time' => $openDetail?->in_time ? to_user_timezone_datetime($openDetail->in_time, 'h:i A') : null,
+            'in_date' => $attendance?->in_date ? to_user_timezone_date($attendance->in_date, 'Y-m-d') : null,
+            'work_from_home' => (bool) ($openDetail?->work_from_home ?? $lastDetail?->work_from_home),
+            'status' => $attendance?->status,
+            'behavior' => $attendance?->behavior,
+            'on_break' => (bool) $openBreak,
+            'break_started_at' => $openBreak?->started_at ? to_user_timezone_datetime($openBreak->started_at, 'h:i A') : null,
+            'break_name' => $openBreak?->breakTime?->name,
+            'total_break' => $this->formatSeconds($totalBreakSeconds),
             'available_break_times' => $availableBreakTimes,
-            'breaks_today'        => $attendance?->breaks->map(fn(AttendanceBreak $b) => [
-                'name'       => $b->breakTime?->name,
+            'breaks_today' => $attendance?->breaks->map(fn (AttendanceBreak $b) => [
+                'name' => $b->breakTime?->name,
                 'started_at' => $b->started_at ? to_user_timezone_datetime($b->started_at, 'h:i A') : null,
-                'ended_at'   => $b->ended_at ? to_user_timezone_datetime($b->ended_at, 'h:i A') : null,
-                'duration'   => $this->formatSeconds($b->durationSeconds()),
+                'ended_at' => $b->ended_at ? to_user_timezone_datetime($b->ended_at, 'h:i A') : null,
+                'duration' => $this->formatSeconds($b->durationSeconds()),
             ])->values() ?? collect(),
-            'geo_provider'        => $geoProvider,
-            'geo_api_key'         => $geoApiKey,
+            'geo_provider' => $geoProvider,
+            'geo_api_key' => $geoApiKey,
             'available_work_shifts' => $availableWorkShifts,
         ];
     }
@@ -492,10 +492,10 @@ class AttendanceController extends Controller
             'in_date' => $now->toDateString(),
         ]);
 
-        if (!$attendance->exists) {
+        if (! $attendance->exists) {
             $workShiftId = $request->input('work_shift_id');
 
-            if (!$workShiftId) {
+            if (! $workShiftId) {
                 // 1. Direct employee assignment takes priority
                 $directShift = $user->workShifts()->first();
 
@@ -505,7 +505,7 @@ class AttendanceController extends Controller
                     // 2. Fall back to department's work shift (only if exactly one)
                     $deptShifts = $user->currentDepartment?->department?->workShifts;
 
-                    if (!$deptShifts || $deptShifts->isEmpty()) {
+                    if (! $deptShifts || $deptShifts->isEmpty()) {
                         throw new GeneralException('No work shift found for this employee. Please select a work shift.');
                     }
 
@@ -564,13 +564,13 @@ class AttendanceController extends Controller
             ->where('in_date', $now->toDateString())
             ->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             throw new GeneralException("You haven't punched in today");
         }
 
         $detail = $attendance->details()->whereNull('out_time')->latest('in_time')->first();
 
-        if (!$detail) {
+        if (! $detail) {
             throw new GeneralException('You are not currently punched in');
         }
 
@@ -578,10 +578,10 @@ class AttendanceController extends Controller
         $attendance->breaks()->whereNull('ended_at')->update(['ended_at' => $now]);
 
         $detail->update([
-            'out_time'    => $now,
+            'out_time' => $now,
             'out_ip_data' => $this->buildIpData($request),
-            'out_note'    => $request->input('note'),
-            'out_selfie'  => $request->file('selfie')?->store("attendance/{$user->id}/out"),
+            'out_note' => $request->input('note'),
+            'out_selfie' => $request->file('selfie')?->store("attendance/{$user->id}/out"),
         ]);
 
         return successResponse('Punched out successfully');
@@ -594,18 +594,18 @@ class AttendanceController extends Controller
         ]);
 
         $user = auth()->user();
-        $now  = now('UTC');
+        $now = now('UTC');
 
         $attendance = Attendance::query()
             ->where('user_id', $user->id)
             ->where('in_date', $now->toDateString())
             ->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             throw new GeneralException("You haven't punched in today");
         }
 
-        if (!$attendance->details()->whereNull('out_time')->exists()) {
+        if (! $attendance->details()->whereNull('out_time')->exists()) {
             throw new GeneralException('You are not currently punched in');
         }
 
@@ -615,7 +615,7 @@ class AttendanceController extends Controller
 
         $attendance->breaks()->create([
             'break_time_id' => $request->input('break_time_id'),
-            'started_at'    => $now,
+            'started_at' => $now,
         ]);
 
         return successResponse('Break started');
@@ -624,20 +624,20 @@ class AttendanceController extends Controller
     public function endBreak(Request $request)
     {
         $user = auth()->user();
-        $now  = now('UTC');
+        $now = now('UTC');
 
         $attendance = Attendance::query()
             ->where('user_id', $user->id)
             ->where('in_date', $now->toDateString())
             ->first();
 
-        if (!$attendance) {
+        if (! $attendance) {
             throw new GeneralException("You haven't punched in today");
         }
 
         $openBreak = $attendance->breaks()->whereNull('ended_at')->latest('started_at')->first();
 
-        if (!$openBreak) {
+        if (! $openBreak) {
             throw new GeneralException('You are not on a break');
         }
 
@@ -657,46 +657,46 @@ class AttendanceController extends Controller
             ->value('value') ?? 'none';
 
         return json_encode([
-            'server_ip'      => $request->ip(),
-            'client_ip'      => $request->input('ip'),
-            'latitude'       => $request->input('latitude'),
-            'longitude'      => $request->input('longitude'),
-            'address'        => $request->input('address'),
+            'server_ip' => $request->ip(),
+            'client_ip' => $request->input('ip'),
+            'latitude' => $request->input('latitude'),
+            'longitude' => $request->input('longitude'),
+            'address' => $request->input('address'),
             'location_error' => $request->input('location_error'),
-            'geo_provider'   => $geoProvider,
+            'geo_provider' => $geoProvider,
         ]);
     }
 
     private function extractLocationData(?string $ipData): ?array
     {
-        if (!$ipData) {
+        if (! $ipData) {
             return null;
         }
 
         $data = json_decode($ipData, true);
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return $ipData ? ['ip' => $ipData] : null;
         }
 
         $ip = $data['client_ip'] ?? $data['server_ip'] ?? null;
 
-        if (!$ip && !($data['latitude'] ?? null)) {
+        if (! $ip && ! ($data['latitude'] ?? null)) {
             return null;
         }
 
         return [
-            'ip'           => $ip,
-            'latitude'     => $data['latitude']  ?? null,
-            'longitude'    => $data['longitude'] ?? null,
-            'address'      => $data['address']   ?? null,
+            'ip' => $ip,
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
+            'address' => $data['address'] ?? null,
             'geo_provider' => $data['geo_provider'] ?? null,
         ];
     }
 
     private function extractIp(?string $ipData): ?string
     {
-        if (!$ipData) {
+        if (! $ipData) {
             return null;
         }
 
@@ -711,7 +711,7 @@ class AttendanceController extends Controller
 
     private function sessionSeconds(AttendanceDetail $detail): int
     {
-        if (!$detail->in_time || !$detail->out_time) {
+        if (! $detail->in_time || ! $detail->out_time) {
             return 0;
         }
 
@@ -723,6 +723,7 @@ class AttendanceController extends Controller
         $h = intdiv($seconds, 3600);
         $m = intdiv($seconds % 3600, 60);
         $s = $seconds % 60;
+
         return sprintf('%d:%02d:%02d', $h, $m, $s);
     }
 
@@ -736,11 +737,11 @@ class AttendanceController extends Controller
             ? $shift->schedules->firstWhere('day_name', $localPunch->format('l'))?->start_time
             : $shift->start_time;
 
-        if (!$startTime) {
+        if (! $startTime) {
             return 'regular';
         }
 
-        $scheduledStart = Carbon::parse($localPunch->toDateString() . ' ' . $startTime, $tz);
+        $scheduledStart = Carbon::parse($localPunch->toDateString().' '.$startTime, $tz);
 
         if ($localPunch->lt($scheduledStart)) {
             return 'early';

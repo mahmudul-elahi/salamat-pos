@@ -2,10 +2,11 @@
 
 namespace Database\Factories\Pos;
 
+use App\Models\Pos\EntryJob;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pos\EntryJob>
+ * @extends Factory<EntryJob>
  */
 class EntryJobFactory extends Factory
 {

@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Pos\Report;
 
 use App\Exceptions\GeneralException;
+use App\Filters\Pos\Report\PurchaseReportFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
-use App\Filters\Pos\Report\PurchaseReportFilter;
 use App\Models\Tenant\Tenant;
-use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use App\Services\Setting\SettingService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class PurchaseReturnReportController extends Controller
 {
@@ -23,7 +21,7 @@ class PurchaseReturnReportController extends Controller
         $salesQuery = PurchaseReturn::query()
             ->with(['contact:id,name,profile_picture', 'payments.paymentMethod', 'createdBy:id,name', 'tenant:id,name'])
             ->withCount('items as total_items')
-            ->filters(new PurchaseReportFilter())
+            ->filters(new PurchaseReportFilter)
             ->orderByDesc('id');
 
         $paginated = (clone $salesQuery)->paginate($perPage)->through(function ($row) {
@@ -36,8 +34,8 @@ class PurchaseReturnReportController extends Controller
                 'full_invoice_number' => $row->full_invoice_number,
                 'supplier_name' => $row->contact->name ?? '-',
                 'supplier_image' => $row->contact?->profile_picture,
-                'narration' => $row->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
-                'payment_methods' => $row->payments->map(fn($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
+                'narration' => $row->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'payment_methods' => $row->payments->map(fn ($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn ($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
                 'total_item' => $row->total_items,
                 'grand_total' => $row->grand_total,
                 'received_amount' => $received,
@@ -47,7 +45,6 @@ class PurchaseReturnReportController extends Controller
                 'status' => $row->status,
             ];
         });
-
 
         $grandTotal = (clone $salesQuery)->sum('grand_total');
         $totalReceivedAmount = (clone $salesQuery)
@@ -79,7 +76,7 @@ class PurchaseReturnReportController extends Controller
         $isAppAdmin = auth()->user()->isAppAdmin();
         $wareHouse = $request->input('warehouse');
 
-        if ($isAppAdmin && !$wareHouse) {
+        if ($isAppAdmin && ! $wareHouse) {
             throw new GeneralException('Select warehouse first');
         }
 
@@ -94,17 +91,17 @@ class PurchaseReturnReportController extends Controller
             ->withCount('items as total_items')
             ->orderByDesc('id');
 
-
         $sales = (clone $salesQuery)->get();
 
         $combined = $sales->map(function ($sale) {
             $received = $sale->payments->sum('amount');
             $due = $sale->grand_total - $received;
+
             return [
                 'id' => $sale->id,
                 'date' => $sale->date,
                 'supplier_name' => $sale->contact->name ?? '-',
-                'narration' => $sale->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'narration' => $sale->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
                 'full_invoice_number' => $sale->full_invoice_number,
                 'total_item' => $sale->total_items,
                 'grand_total' => $sale->grand_total,
@@ -112,7 +109,6 @@ class PurchaseReturnReportController extends Controller
                 'received_amount' => $received,
             ];
         });
-
 
         $grandTotal = (clone $salesQuery)->sum('grand_total');
 
@@ -125,10 +121,9 @@ class PurchaseReturnReportController extends Controller
 
         $totalDueAmount = $grandTotal - $totalReceived;
 
-//        $totalItems = (clone $salesQuery)
-//            ->join('purchase_return_items', 'purchase_returns.id', '=', 'purchase_return_items.purchase_return_id')
-//            ->sum('purchase_return_items.quantity');
-
+        //        $totalItems = (clone $salesQuery)
+        //            ->join('purchase_return_items', 'purchase_returns.id', '=', 'purchase_return_items.purchase_return_id')
+        //            ->sum('purchase_return_items.quantity');
 
         $tenantSettings = resolve(SettingService::class)->getFormattedSettings('tenant', $tenantId);
 
@@ -136,7 +131,7 @@ class PurchaseReturnReportController extends Controller
 
         $pdf = Pdf::loadView('pdf.purchase-return-report', [
             'returns' => $combined,
-//            'total_items' => $totalItems,
+            //            'total_items' => $totalItems,
             'grand_total' => $grandTotal,
             'total_received' => $totalReceived,
             'total_due' => $totalDueAmount,

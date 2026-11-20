@@ -2,10 +2,10 @@
 
 namespace App\Filters\Landlord\Expense;
 
-use App\Filters\BaseFilter;
-use Illuminate\Support\Carbon;
 use App\Exceptions\GeneralException;
+use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 
 class ExpenseFilter extends BaseFilter
 {
@@ -13,9 +13,9 @@ class ExpenseFilter extends BaseFilter
     {
         $this->builder->when($search, function ($builder) use ($search) {
             $table = $builder->getModel()->getTable();
-            $builder->where($table . '.title', 'LIKE', "%$search%")
-                ->orWhere($table . '.id', 'LIKE', "%$search%")
-                ->orWhere($table . '.amount', 'LIKE', "%$search%");
+            $builder->where($table.'.title', 'LIKE', "%$search%")
+                ->orWhere($table.'.id', 'LIKE', "%$search%")
+                ->orWhere($table.'.amount', 'LIKE', "%$search%");
 
             // The invoice number shown on screen ("EXP-{id}") is synthetic
             // (built in the controller, not a real column), so searching
@@ -24,11 +24,10 @@ class ExpenseFilter extends BaseFilter
             // above. Strip any non-digit prefix and match against id too.
             $numeric = preg_replace('/^\D+/', '', trim($search));
             if ($numeric !== '' && is_numeric($numeric)) {
-                $builder->orWhere($table . '.id', (int) $numeric);
+                $builder->orWhere($table.'.id', (int) $numeric);
             }
         });
     }
-
 
     /**
      * @throws GeneralException
@@ -46,8 +45,8 @@ class ExpenseFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
-            return $this->builder->whereDate($table . '.date', Carbon::today());
+        if (! is_array($range) || count($range) < 2) {
+            return $this->builder->whereDate($table.'.date', Carbon::today());
         }
 
         [$startDate, $endDate] = $range;
@@ -55,8 +54,9 @@ class ExpenseFilter extends BaseFilter
         try {
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
-            return $this->builder->whereBetween($table . '.date', [$start, $end]);
-        } catch (\Exception $e) {
+
+            return $this->builder->whereBetween($table.'.date', [$start, $end]);
+        } catch (\Exception) {
             throw new GeneralException('Invalid your date range');
         }
     }
@@ -65,18 +65,23 @@ class ExpenseFilter extends BaseFilter
     {
         $category = explode(',', $ids);
 
-        $this->builder->when($ids, fn(Builder $query) => $query->whereHas('category', fn(Builder $query) => $query->whereIn('expense_category_id', $category)));
+        $this->builder->when($ids, fn (Builder $query) => $query->whereHas('category', fn (Builder $query) => $query->whereIn('expense_category_id', $category)));
     }
 
     public function shop($shopId = null): void
     {
-        if (!$shopId) return;
-        $this->builder->when($shopId, fn($query) => $query->where('tenant_id', $shopId));
+        if (! $shopId) {
+            return;
+        }
+        $this->builder->when($shopId, fn ($query) => $query->where('tenant_id', $shopId));
     }
+
     public function warehouse($shopId = null): void
     {
-        if (!$shopId) return;
-        $this->builder->when($shopId, fn($query) => $query->where('tenant_id', $shopId));
+        if (! $shopId) {
+            return;
+        }
+        $this->builder->when($shopId, fn ($query) => $query->where('tenant_id', $shopId));
     }
 
     // Used when this filter is applied to Income (incomes.user_id = the director who
@@ -84,21 +89,27 @@ class ExpenseFilter extends BaseFilter
     // Not applicable to Expense — expenses has no user_id/director column.
     public function director($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('user_id', $ids);
     }
 
     public function paymentMethod($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('payment_method_id', $ids);
     }
 
     public function createdBy($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('created_by', $ids);
     }

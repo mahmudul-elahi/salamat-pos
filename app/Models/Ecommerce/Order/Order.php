@@ -3,15 +3,12 @@
 namespace App\Models\Ecommerce\Order;
 
 use App\Models\Common\BaseModel;
-use App\Models\Customer\Customer;
 use App\Models\Pos\Address\Area;
 use App\Models\Pos\Address\CustomerAddress;
 use App\Models\Pos\Address\NewDistrict;
 use App\Models\Pos\Contact\Contact;
-use App\Models\PreOwned\PreOwned;
 use App\Models\Tenant\Tenant;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends BaseModel
@@ -68,12 +65,12 @@ class Order extends BaseModel
         });
     }
 
-    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Contact::class, 'contact_id', 'id');
     }
 
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
@@ -83,17 +80,17 @@ class Order extends BaseModel
         return $this->hasMany(OrderList::class, 'order_id', 'id');
     }
 
-    public function area(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'area_id', 'id');
     }
 
-    public function district(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id');
     }
 
-    public function shippingAddress(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function shippingAddress(): BelongsTo
     {
         return $this->belongsTo(CustomerAddress::class, 'shipping_address_id', 'id');
     }

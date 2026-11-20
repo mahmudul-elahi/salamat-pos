@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Pos\Report;
 
 use App\Exceptions\GeneralException;
+use App\Filters\Pos\Report\SalesReportFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Sale\Sale;
-use App\Filters\Pos\Report\SalesReportFilter;
 use App\Models\Tenant\Tenant;
-use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\Setting\SettingService;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class SalesReportController extends Controller
 {
@@ -20,7 +20,7 @@ class SalesReportController extends Controller
         $salesQuery = Sale::query()
             ->with(['contact:id,name,profile_picture', 'payments.paymentMethod', 'createdBy:id,name', 'seller:id,name,profile_photo', 'tenant:id,name'])
             ->withCount('items as total_items')
-            ->filters(new SalesReportFilter())
+            ->filters(new SalesReportFilter)
             ->orderByDesc('id');
 
         $paginated = (clone $salesQuery)->paginate($perPage)->through(function ($row) {
@@ -33,8 +33,8 @@ class SalesReportController extends Controller
                 'full_invoice_number' => $row->full_invoice_number,
                 'customer_name' => $row->contact->name ?? '-',
                 'customer_image' => $row->contact?->profile_picture,
-                'narration' => $row->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
-                'payment_methods' => $row->payments->map(fn($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
+                'narration' => $row->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'payment_methods' => $row->payments->map(fn ($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn ($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
                 'total_item' => $row->total_items,
                 'grand_total' => $row->grand_total,
                 'received_amount' => $received,
@@ -46,7 +46,6 @@ class SalesReportController extends Controller
                 'status' => $row->status,
             ];
         });
-
 
         $grandTotal = (clone $salesQuery)->sum('grand_total');
         $totalReceivedAmount = (clone $salesQuery)
@@ -82,32 +81,32 @@ class SalesReportController extends Controller
         $isAppAdmin = auth()->user()->isAppAdmin();
         $wareHouse = $request->input('warehouse');
 
-        if ($isAppAdmin && !$wareHouse) {
+        if ($isAppAdmin && ! $wareHouse) {
             throw new GeneralException('Select warehouse first');
         }
 
         $tenantId = $isAppAdmin ? $wareHouse : tenant()->id;
 
         $salesQuery = Sale::query()
-            ->filters(new SalesReportFilter())
+            ->filters(new SalesReportFilter)
             ->when($isAppAdmin, function ($query) use ($tenantId) {
                 $query->where('sales.tenant_id', $tenantId);
             })
             ->with(['contact:id,name', 'payments.paymentMethod', 'items'])
             ->withCount('items as total_items')
-            ->orderByDesc('id');;
-
+            ->orderByDesc('id');
 
         $sales = (clone $salesQuery)->get();
 
         $combined = $sales->map(function ($sale) {
             $received = $sale->payments->sum('amount');
             $due = $sale->grand_total - $received;
+
             return [
                 'id' => $sale->id,
                 'date' => $sale->date,
                 'customer_name' => $sale->contact->name ?? '-',
-                'narration' => $sale->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'narration' => $sale->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
                 'full_invoice_number' => $sale->full_invoice_number,
                 'total_item' => $sale->total_items,
                 'grand_total' => $sale->grand_total,
@@ -115,7 +114,6 @@ class SalesReportController extends Controller
                 'received_amount' => $received,
             ];
         });
-
 
         $grandTotal = (clone $salesQuery)->sum('grand_total');
 
@@ -131,7 +129,6 @@ class SalesReportController extends Controller
         $totalItems = (clone $salesQuery)
             ->join('sale_items', 'sales.id', '=', 'sale_items.sale_id')
             ->sum('sale_items.quantity');
-
 
         $tenantSettings = resolve(SettingService::class)->getFormattedSettings('tenant', $tenantId);
 

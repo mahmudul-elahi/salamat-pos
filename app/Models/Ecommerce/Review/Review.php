@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Review extends BaseModel
 {
-    use SoftDeletes, RevalidatesFrontendTrait;
+    use RevalidatesFrontendTrait, SoftDeletes;
 
     protected $revalidationType = 'review';
 

@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Call outcomes ("Sale Done", "Follow Up", "Stock Out", …). Kept in their
      * own table rather than an enum so the sales team can add, rename and

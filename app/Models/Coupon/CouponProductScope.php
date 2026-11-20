@@ -4,8 +4,8 @@ namespace App\Models\Coupon;
 
 use App\Models\Landlord\Brand\Brand;
 use App\Models\Landlord\Category\Category;
-use App\Models\PreOwned\PreOwned;
 use App\Models\Pos\Product\Product;
+use App\Models\PreOwned\PreOwned;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;

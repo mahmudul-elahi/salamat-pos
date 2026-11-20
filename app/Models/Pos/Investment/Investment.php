@@ -7,6 +7,7 @@ use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Transaction\Transaction;
 use App\Models\TenantBaseModel;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -29,22 +30,22 @@ class Investment extends TenantBaseModel implements HasMedia
         'created_by',
     ];
 
-    public function investmentCategory(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function investmentCategory(): BelongsTo
     {
         return $this->belongsTo(InvestmentCategory::class);
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function contact(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class, 'contact_id', 'id');
     }
@@ -61,12 +62,10 @@ class Investment extends TenantBaseModel implements HasMedia
 
     public function getImagesAttribute(): array
     {
-        return $this->getMedia('images')->map(function ($media) {
-            return [
-                'id' => $media->id,
-                'url' => $media->getFullUrl(),
-            ];
-        })->toArray();
+        return $this->getMedia('images')->map(fn ($media) => [
+            'id' => $media->id,
+            'url' => $media->getFullUrl(),
+        ])->toArray();
     }
 
     public function registerMediaCollections(): void

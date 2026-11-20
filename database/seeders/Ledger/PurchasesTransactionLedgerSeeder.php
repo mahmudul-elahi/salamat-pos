@@ -5,7 +5,6 @@ namespace Database\Seeders\Ledger;
 use App\Models\Pos\Ledger\Ledger;
 use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\Transaction\Transaction;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -46,7 +45,7 @@ class PurchasesTransactionLedgerSeeder extends Seeder
                 ->where('type', 'payment_sent')
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 // ✅ clean notes
                 $notes = collect(explode(',', $transaction->notes))
                     ->filter()
@@ -71,7 +70,7 @@ class PurchasesTransactionLedgerSeeder extends Seeder
                 $ledger = Ledger::query()->create([
                     'date' => $transaction->date,
                     'invoice_number' => $lastInvoice + 1,
-                    'full_invoice_number' => 'PRP-' . ($lastInvoice + 1), // 🔥 fix
+                    'full_invoice_number' => 'PRP-'.($lastInvoice + 1), // 🔥 fix
                     'contact_id' => $transaction->contact_id,
                     'tenant_id' => $transaction->tenant_id,
                     'payment_method_id' => $paymentMethodId,

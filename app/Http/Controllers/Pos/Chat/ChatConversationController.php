@@ -11,9 +11,7 @@ use Illuminate\Http\Request;
 
 class ChatConversationController extends Controller
 {
-    public function __construct(protected ChatService $service, protected ChatConversationFilter $filter)
-    {
-    }
+    public function __construct(protected ChatService $service, protected ChatConversationFilter $filter) {}
 
     public function index()
     {

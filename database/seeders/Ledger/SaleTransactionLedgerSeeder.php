@@ -3,11 +3,9 @@
 namespace Database\Seeders\Ledger;
 
 use App\Models\Pos\Ledger\Ledger;
-use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\Sale\Sale;
 use App\Models\Pos\Transaction\Transaction;
 use App\Scopes\TenantScope;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -19,7 +17,7 @@ class SaleTransactionLedgerSeeder extends Seeder
     public function run(): void
     {
         $transactions = Transaction::query()
-            ->withoutGlobalScope(new TenantScope())
+            ->withoutGlobalScope(new TenantScope)
             ->join('sales', function ($join) {
                 $join->on('transactions.model_id', '=', 'sales.id')
                     ->where('transactions.model_type', Sale::class);
@@ -48,8 +46,7 @@ class SaleTransactionLedgerSeeder extends Seeder
                 ->where('type', 'payment_received')
                 ->exists();
 
-
-            if (!$exists) {
+            if (! $exists) {
                 // ✅ clean notes
                 $notes = collect(explode(',', $transaction->notes))
                     ->filter()
@@ -71,10 +68,10 @@ class SaleTransactionLedgerSeeder extends Seeder
 
                 $lastInvoice = Ledger::query()->max('invoice_number') ?? 0;
 
-                $ledger = \App\Models\Pos\Ledger\Ledger::query()->create([
+                $ledger = Ledger::query()->create([
                     'date' => $transaction->date,
                     'invoice_number' => $lastInvoice + 1,
-                    'full_invoice_number' => 'SLT-' . $lastInvoice + 1,
+                    'full_invoice_number' => 'SLT-'.$lastInvoice + 1,
                     'contact_id' => $transaction->contact_id,
                     'tenant_id' => $transaction->tenant_id,
                     'payment_method_id' => $paymentMethodId,

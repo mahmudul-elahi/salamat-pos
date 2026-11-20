@@ -41,15 +41,15 @@ class AssignEmployeeLeavesJob implements ShouldQueue
         // ── Settings ──────────────────────────────────────────────────────
         $raw = $settingService->getFormattedSettings('leave');
 
-        $startMonth      = (int) ($raw['start_month'] ?? 1);
-        $paidStatusIds   = array_map('intval', json_decode($raw['statuses_for_paid_leave']   ?? '[]', true) ?: []);
-        $unpaidStatusIds = array_map('intval', json_decode($raw['statuses_for_unpaid_leave'] ?? '[]', true) ?: []);
+        $startMonth = (int) ($raw['start_month'] ?? 1);
+        $paidStatusIds = array_map(intval(...), json_decode($raw['statuses_for_paid_leave'] ?? '[]', true) ?: []);
+        $unpaidStatusIds = array_map(intval(...), json_decode($raw['statuses_for_unpaid_leave'] ?? '[]', true) ?: []);
 
         // ── Leave year window ─────────────────────────────────────────────
-        $today     = now();
+        $today = now();
         $startYear = $today->month >= $startMonth ? $today->year : $today->year - 1;
         $startDate = Carbon::createFromDate($startYear, $startMonth, 1)->startOfMonth();
-        $endDate   = $startDate->copy()->addYear()->subDay();
+        $endDate = $startDate->copy()->addYear()->subDay();
 
         // Months of this leave year that have already begun — the current month
         // included, so the entitlement lands on day one of each month.
@@ -58,9 +58,9 @@ class AssignEmployeeLeavesJob implements ShouldQueue
             $months[] = $month->copy();
         }
 
-        if (empty($months)) {
+        if ($months === []) {
             Log::info('AssignEmployeeLeavesJob skipped — leave year has not started yet.', [
-                'leave_year' => $startDate->toDateString() . ' – ' . $endDate->toDateString(),
+                'leave_year' => $startDate->toDateString().' – '.$endDate->toDateString(),
             ]);
 
             return;
@@ -80,21 +80,21 @@ class AssignEmployeeLeavesJob implements ShouldQueue
         $existing = EmployeeLeave::query()
             ->whereBetween('start_date', [$startDate->toDateString(), $endDate->toDateString()])
             ->get(['employee_id', 'leave_type_id', 'start_date'])
-            ->map(fn(EmployeeLeave $el) => $el->employee_id . ':' . $el->leave_type_id . ':' . $el->start_date->toDateString())
+            ->map(fn (EmployeeLeave $el) => $el->employee_id.':'.$el->leave_type_id.':'.$el->start_date->toDateString())
             ->flip();
 
         // ── Assign ────────────────────────────────────────────────────────
         $rows = [];
-        $now  = now();
+        $now = now();
 
         foreach ($employees as $employee) {
             $statusId = (int) $employee->currentEmployeeStatus?->employee_status_id;
 
             foreach ($leaveTypes as $leaveType) {
                 if ($leaveType->type === 'paid') {
-                    $eligible = empty($paidStatusIds) || in_array($statusId, $paidStatusIds, true);
+                    $eligible = $paidStatusIds === [] || in_array($statusId, $paidStatusIds, true);
                 } else {
-                    $eligible = empty($unpaidStatusIds) || in_array($statusId, $unpaidStatusIds, true);
+                    $eligible = $unpaidStatusIds === [] || in_array($statusId, $unpaidStatusIds, true);
                 }
 
                 if (! $eligible) {
@@ -104,19 +104,19 @@ class AssignEmployeeLeavesJob implements ShouldQueue
                 foreach ($months as $month) {
                     $monthStart = $month->toDateString();
 
-                    if ($existing->has($employee->id . ':' . $leaveType->id . ':' . $monthStart)) {
+                    if ($existing->has($employee->id.':'.$leaveType->id.':'.$monthStart)) {
                         continue;
                     }
 
                     $rows[] = [
-                        'employee_id'   => $employee->id,
+                        'employee_id' => $employee->id,
                         'leave_type_id' => $leaveType->id,
-                        'start_date'    => $monthStart,
-                        'end_date'      => $month->copy()->endOfMonth()->toDateString(),
-                        'day'           => $leaveType->day,
-                        'is_updated'    => false,
-                        'created_at'    => $now,
-                        'updated_at'    => $now,
+                        'start_date' => $monthStart,
+                        'end_date' => $month->copy()->endOfMonth()->toDateString(),
+                        'day' => $leaveType->day,
+                        'is_updated' => false,
+                        'created_at' => $now,
+                        'updated_at' => $now,
                     ];
                 }
             }
@@ -127,16 +127,16 @@ class AssignEmployeeLeavesJob implements ShouldQueue
         }
 
         Log::info('AssignEmployeeLeavesJob completed.', [
-            'leave_year'  => $startDate->toDateString() . ' – ' . $endDate->toDateString(),
-            'months'      => count($months),
-            'employees'   => $employees->count(),
+            'leave_year' => $startDate->toDateString().' – '.$endDate->toDateString(),
+            'months' => count($months),
+            'employees' => $employees->count(),
             'leave_types' => $leaveTypes->count(),
-            'assigned'    => count($rows),
+            'assigned' => count($rows),
         ]);
     }
 
     public function failed(Throwable $e): void
     {
-        Log::error('AssignEmployeeLeavesJob failed: ' . $e->getMessage());
+        Log::error('AssignEmployeeLeavesJob failed: '.$e->getMessage());
     }
 }

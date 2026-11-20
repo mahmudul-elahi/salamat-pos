@@ -18,7 +18,7 @@ class AssetCategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'   => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'status' => ['required', 'boolean'],
         ]);
 
@@ -35,7 +35,7 @@ class AssetCategoryController extends Controller
     public function update(Request $request, AssetCategory $assetCategory)
     {
         $validated = $request->validate([
-            'name'   => ['sometimes', 'string', 'max:255'],
+            'name' => ['sometimes', 'string', 'max:255'],
             'status' => ['sometimes', 'boolean'],
         ]);
 

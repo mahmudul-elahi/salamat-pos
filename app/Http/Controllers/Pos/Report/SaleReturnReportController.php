@@ -3,17 +3,13 @@
 namespace App\Http\Controllers\Pos\Report;
 
 use App\Exceptions\GeneralException;
-use App\Http\Controllers\Controller;
-use App\Models\Pos\Sale\Sale;
-use App\Models\Pos\SaleReturn\SaleReturn;
 use App\Filters\Pos\Report\SalesReportFilter;
+use App\Http\Controllers\Controller;
+use App\Models\Pos\SaleReturn\SaleReturn;
 use App\Models\Tenant\Tenant;
-use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use App\Services\Setting\SettingService;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 class SaleReturnReportController extends Controller
 {
@@ -37,8 +33,8 @@ class SaleReturnReportController extends Controller
                 'full_invoice_number' => $row->full_invoice_number,
                 'customer_name' => $row->contact->name ?? '-',
                 'customer_image' => $row->contact?->profile_picture,
-                'narration' => $row->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
-                'payment_methods' => $row->payments->map(fn($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
+                'narration' => $row->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'payment_methods' => $row->payments->map(fn ($p) => $p->paymentMethod)->filter()->unique('id')->values()->map(fn ($pm) => ['name' => $pm->name, 'logo' => $pm->logo])->toArray(),
                 'total_item' => $row->total_items,
                 'grand_total' => $row->grand_total,
                 'received_amount' => $received,
@@ -48,7 +44,6 @@ class SaleReturnReportController extends Controller
                 'status' => $row->status,
             ];
         });
-
 
         $grandTotal = (clone $salesQuery)->sum('grand_total');
         $totalReceivedAmount = (clone $salesQuery)
@@ -81,14 +76,14 @@ class SaleReturnReportController extends Controller
         $isAppAdmin = auth()->user()->isAppAdmin();
         $wareHouse = $request->input('warehouse');
 
-        if ($isAppAdmin && !$wareHouse) {
+        if ($isAppAdmin && ! $wareHouse) {
             throw new GeneralException('Select warehouse first');
         }
 
         $tenantId = $isAppAdmin ? $wareHouse : tenant()->id;
 
         $salesQuery = SaleReturn::query()
-            ->filters(new SalesReportFilter())
+            ->filters(new SalesReportFilter)
             ->when($isAppAdmin, function ($query) use ($tenantId) {
                 $query->where('sale_returns.tenant_id', $tenantId);
             })
@@ -96,17 +91,17 @@ class SaleReturnReportController extends Controller
             ->withCount('items as total_items')
             ->orderByDesc('id');
 
-
         $sales = (clone $salesQuery)->get();
 
         $returns = $sales->map(function ($sale) {
             $received = $sale->payments->sum('amount');
             $due = $sale->grand_total - $received;
+
             return [
                 'id' => $sale->id,
                 'date' => $sale->date,
                 'customer_name' => $sale->contact->name ?? '-',
-                'narration' => $sale->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'narration' => $sale->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
                 'full_invoice_number' => $sale->full_invoice_number,
                 'total_item' => $sale->total_items,
                 'grand_total' => $sale->grand_total,
@@ -114,7 +109,6 @@ class SaleReturnReportController extends Controller
                 'received_amount' => $received,
             ];
         });
-
 
         $grandTotal = (clone $salesQuery)->sum('grand_total');
 
@@ -130,7 +124,6 @@ class SaleReturnReportController extends Controller
         $totalItems = (clone $salesQuery)
             ->join('sale_return_items', 'sale_returns.id', '=', 'sale_return_items.sale_return_id')
             ->sum('sale_return_items.quantity');
-
 
         $tenantSettings = resolve(SettingService::class)->getFormattedSettings('tenant', $tenantId);
 

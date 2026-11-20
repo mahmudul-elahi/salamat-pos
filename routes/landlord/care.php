@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Care\CareController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;

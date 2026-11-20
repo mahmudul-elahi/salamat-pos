@@ -3,7 +3,6 @@
 namespace Database\Seeders\Role;
 
 use App\Models\Role\Role;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
@@ -17,7 +16,7 @@ class RoleSeeder extends Seeder
             'name' => 'Administrator',
             'alias' => null,
             'is_admin' => 1,
-            'is_default' => 1
+            'is_default' => 1,
         ]);
     }
 }

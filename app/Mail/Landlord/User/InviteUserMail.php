@@ -5,7 +5,6 @@ namespace App\Mail\Landlord\User;
 use App\Helpers\Notification\NotificationHelper;
 use App\Mail\Tags\Landlord\UserInvitationTag;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -65,6 +64,4 @@ class InviteUserMail extends Mailable
             ->on('user_invitation')
             ->mail();
     }
-
-
 }

@@ -6,9 +6,9 @@ use App\Helpers\Notification\NotificationHelper;
 use App\Mail\Tags\Auth\PasswordChangeConfirmationTag;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Queue\SerializesModels;
 
 class PasswordChangeConfirmationMail extends Mailable
@@ -64,5 +64,4 @@ class PasswordChangeConfirmationMail extends Mailable
             ->on('password_change_confirmation')
             ->mail();
     }
-
 }

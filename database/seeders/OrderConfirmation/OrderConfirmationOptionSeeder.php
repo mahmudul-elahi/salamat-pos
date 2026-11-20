@@ -61,7 +61,7 @@ class OrderConfirmationOptionSeeder extends Seeder
             ->where('name', 'SteadFast')
             ->exists();
 
-        if ($legacy && !$newSpellingExists) {
+        if ($legacy && ! $newSpellingExists) {
             $legacy->update(['name' => 'SteadFast']);
             $this->command?->info('Renamed courier "Stead Fast" to "SteadFast".');
         }
@@ -79,6 +79,6 @@ class OrderConfirmationOptionSeeder extends Seeder
             }
         }
 
-        $this->command?->info($added ? 'Options added: ' . implode(', ', $added) : 'No new options to add.');
+        $this->command?->info($added ? 'Options added: '.implode(', ', $added) : 'No new options to add.');
     }
 }

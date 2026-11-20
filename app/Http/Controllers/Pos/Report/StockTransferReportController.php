@@ -16,24 +16,22 @@ class StockTransferReportController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $transfersQuery = StockTransfer::query()
-            ->filters(new StockTransferReportFilter())
+            ->filters(new StockTransferReportFilter)
             ->with(['fromTenant:id,name', 'toTenant:id,name', 'createdBy:id,name', 'approvedBy:id,name'])
             ->withCount('items as total_items')
             ->orderByDesc('id');
 
-        $paginated = (clone $transfersQuery)->paginate($perPage)->through(function ($row) {
-            return [
-                'id' => $row->id,
-                'reference_no' => $row->reference_no,
-                'transfer_date' => $row->transfer_date,
-                'from_warehouse_name' => $row->fromTenant?->name ?? '-',
-                'to_warehouse_name' => $row->toTenant?->name ?? '-',
-                'total_items' => $row->total_items,
-                'status' => $row->status,
-                'created_by_name' => $row->createdBy?->name ?? '-',
-                'received_by_name' => $row->approvedBy?->name ?? '-',
-            ];
-        });
+        $paginated = (clone $transfersQuery)->paginate($perPage)->through(fn ($row) => [
+            'id' => $row->id,
+            'reference_no' => $row->reference_no,
+            'transfer_date' => $row->transfer_date,
+            'from_warehouse_name' => $row->fromTenant?->name ?? '-',
+            'to_warehouse_name' => $row->toTenant?->name ?? '-',
+            'total_items' => $row->total_items,
+            'status' => $row->status,
+            'created_by_name' => $row->createdBy?->name ?? '-',
+            'received_by_name' => $row->approvedBy?->name ?? '-',
+        ]);
 
         $totalTransfers = (clone $transfersQuery)->count();
         $totalItems = (clone $transfersQuery)
@@ -56,23 +54,21 @@ class StockTransferReportController extends Controller
         $tenantId = $isAppAdmin ? $warehouse : tenant()->id;
 
         $transfersQuery = StockTransfer::query()
-            ->filters(new StockTransferReportFilter())
+            ->filters(new StockTransferReportFilter)
             ->with(['fromTenant:id,name', 'toTenant:id,name', 'createdBy:id,name', 'approvedBy:id,name'])
             ->withCount('items as total_items')
             ->orderByDesc('id');
 
-        $transfers = (clone $transfersQuery)->get()->map(function ($row) {
-            return [
-                'reference_no' => $row->reference_no,
-                'transfer_date' => $row->transfer_date,
-                'from_warehouse_name' => $row->fromTenant?->name ?? '-',
-                'to_warehouse_name' => $row->toTenant?->name ?? '-',
-                'total_items' => $row->total_items,
-                'status' => $row->status,
-                'created_by_name' => $row->createdBy?->name ?? '-',
-                'received_by_name' => $row->approvedBy?->name ?? '-',
-            ];
-        });
+        $transfers = (clone $transfersQuery)->get()->map(fn ($row) => [
+            'reference_no' => $row->reference_no,
+            'transfer_date' => $row->transfer_date,
+            'from_warehouse_name' => $row->fromTenant?->name ?? '-',
+            'to_warehouse_name' => $row->toTenant?->name ?? '-',
+            'total_items' => $row->total_items,
+            'status' => $row->status,
+            'created_by_name' => $row->createdBy?->name ?? '-',
+            'received_by_name' => $row->approvedBy?->name ?? '-',
+        ]);
 
         $totalTransfers = (clone $transfersQuery)->count();
         $totalItems = (clone $transfersQuery)

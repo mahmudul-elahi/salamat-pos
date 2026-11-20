@@ -7,6 +7,7 @@ use App\Models\Ecommerce\Order\Order;
 use App\Models\Pos\Contact\Contact;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OrderConfirmation extends BaseModel
@@ -39,12 +40,12 @@ class OrderConfirmation extends BaseModel
     ];
 
     protected $casts = [
-        'date'              => 'date',
+        'date' => 'date',
         'confirmation_date' => 'date',
-        'advance_amount'    => 'decimal:2',
-        'selling_price'     => 'decimal:2',
-        'shipping_charge'   => 'decimal:2',
-        'cod'               => 'decimal:2',
+        'advance_amount' => 'decimal:2',
+        'selling_price' => 'decimal:2',
+        'shipping_charge' => 'decimal:2',
+        'cod' => 'decimal:2',
     ];
 
     protected $appends = ['product_name', 'is_confirmed'];
@@ -56,7 +57,7 @@ class OrderConfirmation extends BaseModel
      */
     public function getProductNameAttribute(): ?string
     {
-        $names = $this->items->map(fn(OrderConfirmationItem $item) => $item->product_name)->filter()->values();
+        $names = $this->items->map(fn (OrderConfirmationItem $item) => $item->product_name)->filter()->values();
 
         if ($names->isEmpty()) {
             return null;
@@ -64,7 +65,7 @@ class OrderConfirmation extends BaseModel
 
         return $names->count() === 1
             ? $names->first()
-            : $names->first() . ' +' . ($names->count() - 1);
+            : $names->first().' +'.($names->count() - 1);
     }
 
     /**
@@ -86,7 +87,7 @@ class OrderConfirmation extends BaseModel
         return $this->belongsTo(Order::class);
     }
 
-    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(OrderConfirmationItem::class);
     }

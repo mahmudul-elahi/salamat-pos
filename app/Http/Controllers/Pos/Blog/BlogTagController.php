@@ -16,8 +16,8 @@ class BlogTagController extends Controller
 
         return BlogTag::query()
             ->withCount('posts')
-            ->when($request->search, fn($q) => $q->where('name', 'like', '%' . $request->search . '%'))
-            ->when($selected, fn($q) => $q->whereIn('id', explode(',', $selected)))
+            ->when($request->search, fn ($q) => $q->where('name', 'like', '%'.$request->search.'%'))
+            ->when($selected, fn ($q) => $q->whereIn('id', explode(',', $selected)))
             ->orderByDesc('id')
             ->paginate($request->input('per_page', 10));
     }

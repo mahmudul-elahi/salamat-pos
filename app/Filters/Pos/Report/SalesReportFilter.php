@@ -13,9 +13,9 @@ class SalesReportFilter extends BaseFilter
     {
         $this->builder->when($search, function ($query, $search) {
             $table = $query->getModel()->getTable();
-            $query->where($table . '.full_invoice_number', 'like', '%' . $search . '%')
+            $query->where($table.'.full_invoice_number', 'like', '%'.$search.'%')
                 ->orWhereHas('customer', function ($query) use ($search) {
-                    $query->where('name', 'like', '%' . $search . '%');
+                    $query->where('name', 'like', '%'.$search.'%');
                 });
         });
     }
@@ -28,7 +28,7 @@ class SalesReportFilter extends BaseFilter
             $customerIds = explode(',', $ids);
         }
         $this->builder->when($ids, function (Builder $query) use ($customerIds) {
-            $query->whereIn($query->getModel()->getTable() . '.contact_id', $customerIds);
+            $query->whereIn($query->getModel()->getTable().'.contact_id', $customerIds);
         });
     }
 
@@ -40,7 +40,7 @@ class SalesReportFilter extends BaseFilter
             $warehouseIds = explode(',', $ids);
         }
         $this->builder->when($ids, function (Builder $query) use ($warehouseIds) {
-            $query->whereIn($query->getModel()->getTable() . '.tenant_id', $warehouseIds);
+            $query->whereIn($query->getModel()->getTable().'.tenant_id', $warehouseIds);
         });
     }
 
@@ -52,7 +52,7 @@ class SalesReportFilter extends BaseFilter
             $sellerIds = explode(',', $ids);
         }
         $this->builder->when($ids, function (Builder $query) use ($sellerIds) {
-            $query->whereIn($query->getModel()->getTable() . '.seller_id', $sellerIds);
+            $query->whereIn($query->getModel()->getTable().'.seller_id', $sellerIds);
         });
     }
 
@@ -64,7 +64,7 @@ class SalesReportFilter extends BaseFilter
             $createdByIds = explode(',', $ids);
         }
         $this->builder->when($ids, function (Builder $query) use ($createdByIds) {
-            $query->whereIn($query->getModel()->getTable() . '.created_by', $createdByIds);
+            $query->whereIn($query->getModel()->getTable().'.created_by', $createdByIds);
         });
     }
 
@@ -76,7 +76,7 @@ class SalesReportFilter extends BaseFilter
             $statusList = explode(',', $statuses);
         }
         $this->builder->when($statuses, function (Builder $query) use ($statusList) {
-            $query->whereIn($query->getModel()->getTable() . '.status', $statusList);
+            $query->whereIn($query->getModel()->getTable().'.status', $statusList);
         });
     }
 
@@ -121,7 +121,7 @@ class SalesReportFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return;
         }
 
@@ -131,8 +131,9 @@ class SalesReportFilter extends BaseFilter
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
             $table = $this->builder->getModel()->getTable();
-            return $this->builder->whereBetween($table . '.date', [$start, $end]);
-        } catch (\Exception $e) {
+
+            return $this->builder->whereBetween($table.'.date', [$start, $end]);
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range');
         }
     }

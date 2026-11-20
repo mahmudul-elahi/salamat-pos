@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands\Michael;
 
-use App\Models\Pos\Product\ProductSerial;
 use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\Purchase\PurchaseItem;
 use Illuminate\Console\Command;
@@ -43,7 +42,7 @@ class MichaelJapanShiftCommand extends Command
                     'created_by' => 1,
                     'date' => now(),
                     'invoice_number' => $invoiceNumber,
-                    'full_invoice_number' => 'PP-' . str_pad($invoiceNumber, 6, '0', STR_PAD_LEFT),
+                    'full_invoice_number' => 'PP-'.str_pad($invoiceNumber, 6, '0', STR_PAD_LEFT),
                     'sub_total' => 0,
                     'discount_type' => null,
                     'discount_amount' => 0,
@@ -99,8 +98,6 @@ class MichaelJapanShiftCommand extends Command
                 ['serial_number' => '353841101230647', 'unit_price' => 32000],
                 ['serial_number' => '352823110339040', 'unit_price' => 32000],
             ];
-
-
 
             foreach ($purchasesItems as $item) {
                 PurchaseItem::query()

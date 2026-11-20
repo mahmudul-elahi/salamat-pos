@@ -1,11 +1,14 @@
 <?php
 
+use App\Models\Pos\Product\Product;
 use App\Models\Pos\Product\ProductVariant;
+use App\Models\Tenant\Tenant;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -15,7 +18,7 @@ return new class extends Migration {
             $table->id();
             $table->string('serial_number')->unique();
 
-            $table->foreignIdFor(\App\Models\Pos\Product\Product::class)
+            $table->foreignIdFor(Product::class)
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
@@ -24,7 +27,7 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->foreignIdFor(\App\Models\Tenant\Tenant::class)
+            $table->foreignIdFor(Tenant::class)
                 ->nullable()
                 ->constrained('tenants')
                 ->cascadeOnDelete();

@@ -21,7 +21,7 @@ class SupplierRequest extends FormRequest
     public function rules(): array
     {
         $supplierId = $this->supplierId();
-        $user = auth()->user();
+        auth()->user();
 
         return [
 

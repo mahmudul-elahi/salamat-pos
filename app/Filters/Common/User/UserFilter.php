@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filters\Common\User;
 
 use App\Filters\BaseFilter;
@@ -15,7 +17,6 @@ class UserFilter extends BaseFilter
         });
     }
 
-
     // public function status($status = null): \Illuminate\Support\HigherOrderWhenProxy|Builder
     // {
     //     return $this->builder->when($status, fn(Builder $query) => $query->whereHas('userProfile', fn(Builder $query) => $query->where('status', $status)));
@@ -23,10 +24,6 @@ class UserFilter extends BaseFilter
 
     public function role($id = null)
     {
-        return $this->builder->when($id, fn(Builder $query) => $query->whereHas('roles', fn(Builder $query) => $query->where('role_id', $id)));
+        return $this->builder->when($id, fn (Builder $query) => $query->whereHas('roles', fn (Builder $query) => $query->where('role_id', $id)));
     }
-
-
-
-
 }

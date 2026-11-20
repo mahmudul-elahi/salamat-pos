@@ -1,11 +1,13 @@
 <?php
 
+use App\Models\Pos\PaymentMethod\PaymentMethod;
 use App\Models\Tenant\Tenant;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -19,7 +21,7 @@ return new class extends Migration {
             $table->string('model_type');
             $table->unsignedBigInteger('model_id');
             $table->decimal('amount', 15, 2);
-            $table->foreignIdFor(\App\Models\Pos\PaymentMethod\PaymentMethod::class)->constrained();
+            $table->foreignIdFor(PaymentMethod::class)->constrained();
             $table->foreignIdFor(Tenant::class)->nullable()->constrained();
             $table->text('note')->nullable();
             $table->timestamps();

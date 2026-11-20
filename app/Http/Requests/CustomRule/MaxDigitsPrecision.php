@@ -7,12 +7,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 class MaxDigitsPrecision implements ValidationRule
 {
-    private int $digits;
-
-    public function __construct(int $digits)
-    {
-        $this->digits = $digits;
-    }
+    public function __construct(private readonly int $digits) {}
 
     /**
      * Run the validation rule.

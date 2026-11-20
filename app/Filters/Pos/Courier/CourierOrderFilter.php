@@ -30,6 +30,6 @@ class CourierOrderFilter extends BaseFilter
 
         $provider = explode(',', $provider);
 
-        $this->builder->when($provider, fn($query) => $query->whereIn('provider', $provider));
+        $this->builder->when($provider, fn ($query) => $query->whereIn('provider', $provider));
     }
 }

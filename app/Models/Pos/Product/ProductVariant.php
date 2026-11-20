@@ -3,6 +3,11 @@
 namespace App\Models\Pos\Product;
 
 use App\Models\Common\BaseModel;
+use App\Models\Pos\Purchase\PurchaseItem;
+use App\Models\Pos\Sale\SaleItem;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductVariant extends BaseModel
@@ -14,25 +19,25 @@ class ProductVariant extends BaseModel
         'sku',
         'stock',
         'is_prebook',
-        'status'
+        'status',
     ];
 
     public $casts = [
         'stock' => 'integer',
-        'is_prebook' => 'boolean'
+        'is_prebook' => 'boolean',
     ];
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function attributeValues(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function attributeValues(): BelongsToMany
     {
         return $this->belongsToMany(AttributeValue::class, 'variant_attribute_values')->withTimestamps();
     }
 
-    public function price(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function price(): HasOne
     {
         return $this->hasOne(VariantPrice::class, 'product_variant_id', 'id');
     }
@@ -44,11 +49,11 @@ class ProductVariant extends BaseModel
 
     public function purchaseItems()
     {
-        return $this->hasMany(\App\Models\Pos\Purchase\PurchaseItem::class, 'product_variant_id', 'id');
+        return $this->hasMany(PurchaseItem::class, 'product_variant_id', 'id');
     }
 
     public function saleItems()
     {
-        return $this->hasMany(\App\Models\Pos\Sale\SaleItem::class, 'product_variant_id', 'id');
+        return $this->hasMany(SaleItem::class, 'product_variant_id', 'id');
     }
 }

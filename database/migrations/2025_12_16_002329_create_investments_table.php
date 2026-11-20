@@ -1,10 +1,13 @@
 <?php
 
+use App\Models\Pos\Investment\InvestmentCategory;
+use App\Models\Tenant\Tenant;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -15,13 +18,13 @@ return new class extends Migration {
             $table->string('title')->index();
             $table->date('date')->index();
 
-            $table->foreignIdFor(\App\Models\Pos\Investment\InvestmentCategory::class)
+            $table->foreignIdFor(InvestmentCategory::class)
                 ->constrained('investment_categories')
                 ->cascadeOnDelete();
 
             $table->decimal('amount', 15, 2)->index();
             $table->text('note')->nullable();
-            $table->foreignIdFor(\App\Models\Tenant\Tenant::class, 'tenant_id')
+            $table->foreignIdFor(Tenant::class, 'tenant_id')
                 ->nullable()
                 ->constrained()
                 ->cascadeOnDelete();

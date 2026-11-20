@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Pos\PurchaseReturn;
 
-use Throwable;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Exceptions\GeneralException;
-use App\Http\Controllers\Controller;
-use App\Models\Pos\Purchase\Purchase;
 use App\Filters\Pos\Purchase\PurchaseFilter;
-use App\Services\Pos\PurchaseReturn\PurchaseReturnService;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Pos\PurchaseReturn\PurchaseReturnRequest;
+use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
+use App\Services\Pos\PurchaseReturn\PurchaseReturnService;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class PurchaseReturnController extends Controller
 {
@@ -36,6 +35,7 @@ class PurchaseReturnController extends Controller
             $carry['grand_total'] += $item->grand_total;
             $carry['paid_amount'] += $paid;
             $carry['due_amount'] += $item->grand_total - $paid;
+
             return $carry;
         }, ['grand_total' => 0, 'paid_amount' => 0, 'due_amount' => 0]);
 
@@ -44,6 +44,7 @@ class PurchaseReturnController extends Controller
             ->paginate($perPage)
             ->through(function ($item) {
                 $paid = $item->getTransactionAmountAttribute();
+
                 return [
                     ...$item->toArray(),
                     'invoice_bill' => $item->getPurchaseReturnBillAttachmentAttribute(),
@@ -63,9 +64,9 @@ class PurchaseReturnController extends Controller
         ];
     }
 
-
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function store(PurchaseReturnRequest $request)
@@ -88,9 +89,9 @@ class PurchaseReturnController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Purchase return creation failed', 500);
+                throw new GeneralException('Purchase return creation failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
@@ -105,6 +106,7 @@ class PurchaseReturnController extends Controller
             'items' => $purchaseReturn->items()->with(['product:id,product_name', 'product.serial:product_id,serial_number,status', 'productVariant:id,sku'])->get()->map(function ($item) {
                 $matchedSerial = $item->product?->serial
                     ->firstWhere('serial_number', $item->serial_number);
+
                 return [
                     'id' => $item->id,
                     'product_id' => $item->product_id,
@@ -125,6 +127,7 @@ class PurchaseReturnController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws Throwable
      */
     public function update(PurchaseReturnRequest $request, PurchaseReturn $purchase_return)
@@ -145,15 +148,15 @@ class PurchaseReturnController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Purchase Return update failed', 500);
+                throw new GeneralException('Purchase Return update failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
-
     /**
      * Remove the specified resource from storage.
+     *
      * @throws GeneralException
      * @throws Throwable
      */
@@ -177,9 +180,9 @@ class PurchaseReturnController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Purchase return deletion failed', 500);
+                throw new GeneralException('Purchase return deletion failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
@@ -197,16 +200,17 @@ class PurchaseReturnController extends Controller
 
             $purchaseReturn->payments()->delete();
             $purchaseReturn->update([
-                'status' => 'due'
+                'status' => 'due',
             ]);
             DB::commit();
+
             return successResponse('Purchase return status updated successfully');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Purchase return status update failed', 500);
+                throw new GeneralException('Purchase return status update failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 }

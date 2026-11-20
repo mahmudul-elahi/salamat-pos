@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Common\Notification;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-
 
 class NotificationController extends Controller
 {
@@ -20,11 +20,13 @@ class NotificationController extends Controller
         // Count unread notifications separately
         $unreadCount = $user->unreadNotifications()->count();
 
-        if ($request->status === 'read')
+        if ($request->status === 'read') {
             $notifications = $notifications->whereNotNull('read_at');
+        }
 
-        if ($request->status === 'unread')
+        if ($request->status === 'unread') {
             $notifications = $notifications->whereNull('read_at');
+        }
 
         $notifications = $notifications->latest('created_at');
 
@@ -33,17 +35,17 @@ class NotificationController extends Controller
         $notifications = $notifications->when($date, function (Builder $builder) use ($date) {
             $builder->whereBetween(DB::raw('DATE(created_at)'), array_values($date));
         })->when($request->get('search'), function (Builder $builder) use ($request) {
-            $builder->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.message")) LIKE ?', ["%" . $request->get('search') . "%"]);
+            $builder->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(data, "$.message")) LIKE ?', ['%'.$request->get('search').'%']);
         })->paginate($request->get('per_page', 10))->toArray();
 
         return [
             ...$notifications,
-            'unread_count' => $unreadCount
+            'unread_count' => $unreadCount,
         ];
 
     }
 
-    public function markAsRead($id): \Illuminate\Http\JsonResponse
+    public function markAsRead($id): JsonResponse
     {
         $notification = auth()->user()
             ->notifications()
@@ -51,16 +53,15 @@ class NotificationController extends Controller
             ->first();
         $notification->markAsRead();
 
-        return successResponse("Notifications read successfully", $notification);
-        
+        return successResponse('Notifications read successfully', $notification);
+
     }
 
-    public function markAllAsRead(): \Illuminate\Http\JsonResponse
+    public function markAllAsRead(): JsonResponse
     {
         auth()->user()->unreadNotifications->markAsRead();
 
-        return successResponse("Notifications marked all as read successfully");
+        return successResponse('Notifications marked all as read successfully');
 
     }
-
 }

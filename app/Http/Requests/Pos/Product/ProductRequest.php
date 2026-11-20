@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Pos\Product;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class ProductRequest extends FormRequest
 {
@@ -22,7 +22,7 @@ class ProductRequest extends FormRequest
         // Ensure variants have 'selected' key
         $variants = $this->input('variants', []);
         foreach ($variants as $index => $variant) {
-            if (!isset($variant['selected'])) {
+            if (! isset($variant['selected'])) {
                 $variants[$index]['selected'] = 0;
             }
         }
@@ -31,7 +31,7 @@ class ProductRequest extends FormRequest
         // Ensure color_images are arrays
         $colorImages = $this->input('color_images', []);
         foreach ($colorImages as $index => $color) {
-            if (!is_array($color)) {
+            if (! is_array($color)) {
                 $colorImages[$index] = [];
             }
         }
@@ -40,8 +40,7 @@ class ProductRequest extends FormRequest
 
     public function rules(): array
     {
-        $productId = $this->route('product') ?? null;
-
+        $this->route('product') ?? null;
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -82,16 +81,15 @@ class ProductRequest extends FormRequest
 
             'variants.*.sku' => ['required'],
 
-
             // Color Images
             'color_images' => ['nullable', 'array', 'min:1'],
 
             'color_images.*.featured_image' => [
                 'nullable',
-                'url'
+                'url',
             ],
 
-            'video_links'   => ['nullable', 'array'],
+            'video_links' => ['nullable', 'array'],
             'video_links.*' => ['nullable', 'string', 'max:500'],
 
             'color_images.*.video_links' => ['nullable', 'array'],
@@ -99,11 +97,10 @@ class ProductRequest extends FormRequest
             'color_images.*.remove_video_links' => ['nullable', 'array'],
             'color_images.*.remove_video_links.*' => ['nullable', 'integer'],
 
-
             'color_images.*.slider_images.*' => [
                 'nullable',
                 'url',
-            ]
+            ],
         ];
     }
 

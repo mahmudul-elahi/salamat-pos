@@ -5,6 +5,9 @@ namespace App\Models\Pos\Courier;
 use App\Models\Common\BaseModel;
 use App\Models\Pos\Sale\Sale;
 use App\Models\User;
+use App\Services\Courier\PathaoService;
+use App\Services\Courier\RedxService;
+use App\Services\Courier\SteadfastService;
 
 class CourierOrder extends BaseModel
 {
@@ -66,14 +69,14 @@ class CourierOrder extends BaseModel
     public function getTrackUrlAttribute(): ?string
     {
         return match ($this->provider) {
-            'steadfast' => app(\App\Services\Courier\SteadfastService::class)->trackingUrlFrom($this->raw_response),
-            'pathao'    => $this->consignment_id
-                ? app(\App\Services\Courier\PathaoService::class)->trackingUrl($this->consignment_id)
+            'steadfast' => app(SteadfastService::class)->trackingUrlFrom($this->raw_response),
+            'pathao' => $this->consignment_id
+                ? app(PathaoService::class)->trackingUrl($this->consignment_id)
                 : null,
-            'redx'      => $this->tracking_code
-                ? app(\App\Services\Courier\RedxService::class)->trackingUrl($this->tracking_code)
+            'redx' => $this->tracking_code
+                ? app(RedxService::class)->trackingUrl($this->tracking_code)
                 : null,
-            default     => null,
+            default => null,
         };
     }
 

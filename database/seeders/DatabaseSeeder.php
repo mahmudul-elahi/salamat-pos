@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
 
             // User to customer table data move seeder
 
-            UserTableCustomerMigrateSeeder::class
+            UserTableCustomerMigrateSeeder::class,
 
         ]);
 

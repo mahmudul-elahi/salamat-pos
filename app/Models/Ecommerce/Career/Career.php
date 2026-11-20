@@ -3,7 +3,6 @@
 namespace App\Models\Ecommerce\Career;
 
 use App\Models\Common\BaseModel;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -55,11 +54,11 @@ class Career extends BaseModel
 
         while (
             static::where('slug', $slug)
-            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->withTrashed()
-            ->exists()
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->withTrashed()
+                ->exists()
         ) {
-            $slug = $originalSlug . '-' . $count++;
+            $slug = $originalSlug.'-'.$count++;
         }
 
         return $slug;

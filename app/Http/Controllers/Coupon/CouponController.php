@@ -53,7 +53,6 @@ class CouponController extends Controller
             ]
         );
 
-
         // Create coupon
         $coupon = NewCoupon::create($request->only([
             'code',
@@ -101,7 +100,7 @@ class CouponController extends Controller
 
         return response()->json([
             'message' => 'Coupon created successfully',
-            'data' => $coupon->load(['productScopes', 'customerScopes'])
+            'data' => $coupon->load(['productScopes', 'customerScopes']),
         ], 201);
     }
 
@@ -114,7 +113,7 @@ class CouponController extends Controller
 
         $request->validate(
             [
-                'code' => 'required|unique:new_coupons,code,' . $id,
+                'code' => 'required|unique:new_coupons,code,'.$id,
                 'type' => 'required|in:product,category,brand,customer,pre_owned,all',
                 'discount_value' => 'required|numeric|min:0',
                 'start_date' => 'required|date',
@@ -188,7 +187,7 @@ class CouponController extends Controller
 
         return response()->json([
             'message' => 'Coupon updated successfully',
-            'data' => $coupon->load(['productScopes', 'customerScopes'])
+            'data' => $coupon->load(['productScopes', 'customerScopes']),
         ]);
     }
 
@@ -202,15 +201,16 @@ class CouponController extends Controller
 
         return response()->json([
             'message' => 'Coupon fetched successfully',
-            'data' => $coupon
+            'data' => $coupon,
         ]);
     }
 
     public function destroy(NewCoupon $coupon)
     {
         $coupon->delete();
+
         return response()->json([
-            'message' => 'Coupon deleted successfully'
+            'message' => 'Coupon deleted successfully',
         ]);
     }
 
@@ -221,11 +221,11 @@ class CouponController extends Controller
         $newStatus = $coupon->status == 1 ? 0 : 1;
 
         $coupon->update([
-            'status' => $newStatus
+            'status' => $newStatus,
         ]);
 
         return response()->json([
-            'message' => 'Coupon status updated successfully'
+            'message' => 'Coupon status updated successfully',
         ], 200);
     }
 }

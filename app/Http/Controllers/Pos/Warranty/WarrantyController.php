@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Pos\Warranty;
 
 use App\Enums\StatusEnum;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Filters\Landlord\Common\NameFilter;
+use App\Http\Controllers\Controller;
 use App\Models\Ecommerce\Warranty\Warranty;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class WarrantyController extends Controller
 {
@@ -15,7 +16,6 @@ class WarrantyController extends Controller
     /**
      * Display a listing of the resource.
      */
-
     public function index(Request $request)
     {
         $status = $request->get('status');
@@ -26,28 +26,27 @@ class WarrantyController extends Controller
         return Warranty::query()
             ->filters($this->filter)
             ->with('product:id,product_name')
-            ->when($statusEnum, fn($query) => $query->where('status', $statusEnum->value))
+            ->when($statusEnum, fn ($query) => $query->where('status', $statusEnum->value))
             ->orderByDesc('id')
             ->paginate($perPage)
-            ->through(fn($warranty) => $this->transformWarranty($warranty));
+            ->through(fn ($warranty) => $this->transformWarranty($warranty));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-
-    public function store(WarrantyRequest $request): \Illuminate\Http\JsonResponse
+    public function store(WarrantyRequest $request): JsonResponse
     {
         $data = $request->validated();
         $data['tenant_id'] = null;
         Warranty::create($data);
+
         return successResponse('Expense Category created successfully');
     }
 
     /**
      * Display the specified resource.
      */
-
     public function show(Warranty $expense_category): Warranty
     {
         return $expense_category;
@@ -56,7 +55,7 @@ class WarrantyController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(WarrantyRequest $request, Warranty $expense_category): \Illuminate\Http\JsonResponse
+    public function update(WarrantyRequest $request, Warranty $expense_category): JsonResponse
     {
         $expense_category->update($request->validated());
 
@@ -66,10 +65,10 @@ class WarrantyController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(Warranty $expense_category): \Illuminate\Http\JsonResponse
+    public function destroy(Warranty $expense_category): JsonResponse
     {
         $expense_category->delete();
+
         return successResponse('Expense Category deleted successfully');
     }
 
@@ -85,6 +84,7 @@ class WarrantyController extends Controller
             default => null,
         };
     }
+
     /**
      * Transform warranty data for API response
      */
@@ -100,18 +100,17 @@ class WarrantyController extends Controller
             ],
         ];
     }
-        public function warrantyStatus(Request $request, Warranty $warranty, $action)
+
+    public function warrantyStatus(Request $request, Warranty $warranty, $action)
     {
         $statusMap = [
             'rejected' => 3,
             'approved' => 4,
         ];
 
-
-        if (!isset($statusMap[$action])) {
+        if (! isset($statusMap[$action])) {
             return response()->json(['message' => 'Invalid status action'], 400);
         }
-
 
         $warranty->status = $statusMap[$action];
         $warranty->save();

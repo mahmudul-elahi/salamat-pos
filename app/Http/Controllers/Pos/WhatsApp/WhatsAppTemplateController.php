@@ -9,9 +9,7 @@ use App\Services\WhatsApp\WhatsAppCloudApiService;
 
 class WhatsAppTemplateController extends Controller
 {
-    public function __construct(protected WhatsAppCloudApiService $client)
-    {
-    }
+    public function __construct(protected WhatsAppCloudApiService $client) {}
 
     public function index()
     {

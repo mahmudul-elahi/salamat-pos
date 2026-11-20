@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Pos\Statement;
 
+use App\Filters\Pos\Report\DepositReportFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Investment\Investment;
-use App\Filters\Pos\Report\DepositReportFilter;
-use Illuminate\Http\Request;
+use App\Services\Setting\SettingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\Setting\SettingService;
 
 class DepositStatementController extends Controller
 {
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $filter = new DepositReportFilter();
+        $filter = new DepositReportFilter;
 
         $grandTotal = Investment::query()
             ->filters($filter)
@@ -33,30 +33,25 @@ class DepositStatementController extends Controller
                 'tenant:id,name',
             ]);
 
-
         // Pagination
         $paginated = (clone $baseQuery)->paginate($perPage);
         $currentPage = $paginated->currentPage();
 
-        $paginated = $paginated->through(function ($row, $index) use ($perPage, $currentPage) {
-
-            return [
-                'sl' => (($currentPage - 1) * $perPage) + $index + 1,
-                'id' => $row->id,
-                'full_invoice_number' => 'INV-' . $row->id,
-                'date' => $row->date,
-                'title' => $row->title,
-                'investment_category' => $row->investmentCategory,
-                'contact' => $row->contact,
-                'user' => $row->user,
-                'created_by_name' => $row->createdBy?->name ?? '-',
-                'warehouse_name' => $row->tenant?->name ?? '-',
-                'transaction_mode' => 'Deposit',
-                'amount' => (float) $row->amount,
-                'note' => $row->note ?? '-',
-            ];
-        });
-
+        $paginated = $paginated->through(fn ($row, $index) => [
+            'sl' => (($currentPage - 1) * $perPage) + $index + 1,
+            'id' => $row->id,
+            'full_invoice_number' => 'INV-'.$row->id,
+            'date' => $row->date,
+            'title' => $row->title,
+            'investment_category' => $row->investmentCategory,
+            'contact' => $row->contact,
+            'user' => $row->user,
+            'created_by_name' => $row->createdBy?->name ?? '-',
+            'warehouse_name' => $row->tenant?->name ?? '-',
+            'transaction_mode' => 'Deposit',
+            'amount' => (float) $row->amount,
+            'note' => $row->note ?? '-',
+        ]);
 
         return response()->json([
             ...$paginated->toArray(),
@@ -67,7 +62,7 @@ class DepositStatementController extends Controller
         ]);
     }
 
-    private const PDF_TOGGLEABLE_COLUMNS = ['user', 'narration', 'amount'];
+    private const array PDF_TOGGLEABLE_COLUMNS = ['user', 'narration', 'amount'];
 
     public function depositStatementPdf(Request $request)
     {
@@ -79,41 +74,38 @@ class DepositStatementController extends Controller
 
         $depositQuery = Investment::query()
             ->with(['user:id,name'])
-            ->filters(new DepositReportFilter())
+            ->filters(new DepositReportFilter)
             ->whereDate('investments.date', Carbon::today());
 
-        if (!$isAppAdmin && tenant()) {
+        if (! $isAppAdmin && tenant()) {
             $depositQuery->where('tenant_id', tenant()->id);
         }
 
         $deposits = $depositQuery->get();
 
-        $combined = $deposits->map(function($deposit) {
-            return [
-                'date_obj' => Carbon::parse($deposit->date),
-                'id' => $deposit->id,
-                'date' => Carbon::parse($deposit->date)->format('d.m.y'),
-                'title' => $deposit->title,
-                'user' => $deposit->user?->name ?? '-',
-                'transaction_mode' => 'Deposit',
-                'narration' => $deposit->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
-                'amount' => (float)$deposit->amount,
-                'note' => $deposit->note ?? '-',
-            ];
-        })->sortByDesc(function ($item) {
-            return $item['date_obj']->format('Y-m-d') . $item['id'];
-        })->values();
+        $combined = $deposits->map(fn ($deposit) => [
+            'date_obj' => Carbon::parse($deposit->date),
+            'id' => $deposit->id,
+            'date' => Carbon::parse($deposit->date)->format('d.m.y'),
+            'title' => $deposit->title,
+            'user' => $deposit->user?->name ?? '-',
+            'transaction_mode' => 'Deposit',
+            'narration' => $deposit->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+            'amount' => (float) $deposit->amount,
+            'note' => $deposit->note ?? '-',
+        ])->sortByDesc(fn ($item) => $item['date_obj']->format('Y-m-d').$item['id'])->values();
 
         // Add SL after sorting
         $combined = $combined->map(function ($item, $index) {
             $item['sl'] = $index + 1;
+
             return $item;
         });
 
         $totalDeposit = $deposits->sum('amount');
 
         $wareHouse = $request->input('warehouse');
-        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (strpos($wareHouse, ',') !== false ? explode(',', $wareHouse)[0] : $wareHouse);
+        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (str_contains($wareHouse, ',') ? explode(',', $wareHouse)[0] : $wareHouse);
         $tenantId = $isAppAdmin ? $firstWarehouseId : (tenant() ? tenant()->id : null);
 
         $appSettings = resolve(SettingService::class)->getFormattedSettings('app');

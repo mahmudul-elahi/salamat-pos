@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications\Hrm;
 
 use App\Models\Hrm\LeaveRequest;
@@ -23,10 +25,10 @@ class LeaveStatusNotification extends Notification
         $statusLabel = ucfirst($this->status);
 
         return [
-            'title'            => "Leave Request {$statusLabel}",
-            'message'          => "Your {$leaveType} request has been {$this->status}.",
+            'title' => "Leave Request {$statusLabel}",
+            'message' => "Your {$leaveType} request has been {$this->status}.",
             'leave_request_id' => $this->leaveRequest->id,
-            'status'           => $this->status,
+            'status' => $this->status,
         ];
     }
 }

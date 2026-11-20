@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Jobs\ExpireCouponsJob;
+use Illuminate\Console\Command;
 
 class ExpireCouponsCommand extends Command
 {

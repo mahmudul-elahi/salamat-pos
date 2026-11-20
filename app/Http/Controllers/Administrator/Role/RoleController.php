@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Administrator\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Administrator\Role\RoleRequest;
 use App\Models\Role\Role;
-use Illuminate\Http\Request;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
@@ -13,7 +14,7 @@ class RoleController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function index(): LengthAwarePaginator
     {
         return Role::query()
 //            ->withCount('users as total_users')
@@ -25,7 +26,7 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(RoleRequest $request): \Illuminate\Http\JsonResponse
+    public function store(RoleRequest $request): JsonResponse
     {
         try {
             DB::beginTransaction();
@@ -36,12 +37,14 @@ class RoleController extends Controller
             }
 
             DB::commit();
+
             return successResponse('Role created successfully');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
                 return errorResponse('Role created has been failed', null, 500);
             }
+
             return errorResponse($exception->getMessage(), null, 500);
         }
 
@@ -69,12 +72,14 @@ class RoleController extends Controller
             }
 
             DB::commit();
+
             return successResponse('Role updated successfully');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                return errorResponse("Role updated has been failed", null, 500);
+                return errorResponse('Role updated has been failed', null, 500);
             }
+
             return errorResponse($exception->getMessage(), null, 500);
         }
     }
@@ -85,6 +90,7 @@ class RoleController extends Controller
     public function destroy(Role $role)
     {
         $role->delete();
+
         return successResponse('Role deleted successfully');
     }
 }

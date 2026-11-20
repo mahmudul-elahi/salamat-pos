@@ -19,15 +19,13 @@ class SendInstagramMessageJob implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(protected int $messageId)
-    {
-    }
+    public function __construct(protected int $messageId) {}
 
     public function handle(InstagramApiService $client): void
     {
         $message = ChatMessage::query()->find($this->messageId);
 
-        if (!$message) {
+        if (! $message) {
             return;
         }
 

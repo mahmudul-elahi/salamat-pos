@@ -16,7 +16,8 @@ class PermissionMiddleware
     /**
      * Handle an incoming request.
      *
-     * @param Closure(Request): (Response) $next
+     * @param  Closure(Request): (Response)  $next
+     *
      * @throws AuthorizeException
      * @throws GeneralException
      */
@@ -26,8 +27,8 @@ class PermissionMiddleware
         $routeName = preg_replace('/core\.|app\.|hrm\./', '', $request->route()->getName(), 1);
 
         // Ensure the route has a valid name
-        if (!$routeName) {
-            throw new GeneralException("Route must have a name");
+        if (! $routeName) {
+            throw new GeneralException('Route must have a name');
         }
 
         // If the user is an app admin, bypass further permission checks
@@ -40,9 +41,7 @@ class PermissionMiddleware
             ->validateRouteName()
             ->getPermissionString();
 
-         //dd($permissionName);
-
-
+        // dd($permissionName);
 
         /**
          * Authorize the user with the specified permission and determine allowed resources.

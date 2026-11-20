@@ -3,14 +3,13 @@
 namespace App\Services\Pos\Report\ProfitLoss;
 
 use App\Helpers\Traits\DateRangeHelper;
+use App\Models\Pos\Expense\Expense;
 use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\Sale\Sale;
 use App\Models\Pos\SaleReturn\SaleReturn;
 use App\Models\Pos\Transaction\Transaction;
-use App\Models\Pos\Expense\Expense;
 use App\Services\BaseService;
-use Carbon\Carbon;
 
 class ProfitLossService extends BaseService
 {
@@ -23,7 +22,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return Sale::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->sum('grand_total');
     }
 
@@ -33,7 +32,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return Purchase::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->sum('grand_total');
     }
 
@@ -43,7 +42,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return SaleReturn::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->sum('grand_total');
     }
 
@@ -53,7 +52,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return PurchaseReturn::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->sum('grand_total');
     }
 
@@ -64,7 +63,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return Sale::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->count();
     }
 
@@ -74,7 +73,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return Purchase::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->count();
     }
 
@@ -84,7 +83,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return SaleReturn::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->count();
     }
 
@@ -94,7 +93,7 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return PurchaseReturn::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->count();
     }
 
@@ -105,8 +104,8 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         return Transaction::query()
-            ->whereIn('model_type', ['App\Models\Pos\Sale\Sale', 'App\Models\Pos\PurchaseReturn\PurchaseReturn'])
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->whereIn('model_type', [Sale::class, PurchaseReturn::class])
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->sum('amount');
     }
 
@@ -116,12 +115,12 @@ class ProfitLossService extends BaseService
         $range = $dateRange->range;
 
         $purchaseAndReturnPayments = Transaction::query()
-            ->whereIn('model_type', ['App\Models\Pos\Purchase\Purchase', 'App\Models\Pos\SaleReturn\SaleReturn'])
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->whereIn('model_type', [Purchase::class, SaleReturn::class])
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->sum('amount');
 
         $expensePayments = Expense::query()
-            ->when($range, fn($q) => $q->whereBetween('date', $range))
+            ->when($range, fn ($q) => $q->whereBetween('date', $range))
             ->sum('amount');
 
         return $purchaseAndReturnPayments + $expensePayments;
@@ -135,7 +134,7 @@ class ProfitLossService extends BaseService
         $totalPurchases = $this->totalPurchasesAmount($rangeType);
         $totalSaleReturns = $this->totalSaleReturnAmount($rangeType);
         $totalExpenses = Expense::query()
-            ->when($this->dateRange($rangeType)->range, fn($q) => $q->whereBetween('date', $this->dateRange($rangeType)->range))
+            ->when($this->dateRange($rangeType)->range, fn ($q) => $q->whereBetween('date', $this->dateRange($rangeType)->range))
             ->sum('amount');
 
         $profitOrLoss = ($totalSales + $totalPurchaseReturns) - ($totalPurchases + $totalSaleReturns + $totalExpenses);

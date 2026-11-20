@@ -8,13 +8,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Payrun extends Model
 {
     public const STATUS_PROCESSING = 'processing';
+
     public const STATUS_GENERATED = 'generated';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_SENT = 'sent';
 
     public const TYPE_CUSTOMIZED = 'customized';
+
     public const TYPE_SETTINGS = 'settings';
+
     public const TYPE_AUTO = 'auto';
+
     public const TYPE_MANUAL = 'manual';
 
     protected $fillable = [

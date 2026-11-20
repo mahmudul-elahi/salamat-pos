@@ -114,7 +114,7 @@ class PurchasePaymentController extends Controller
         $this->validatePaymentDate($model->date, $request->date);
 
         if ($model->status === 'paid') {
-            throw new GeneralException("The record is already paid.", 400);
+            throw new GeneralException('The record is already paid.', 400);
         }
 
         $dueAmount = $this->getDueAmount($model);
@@ -132,7 +132,7 @@ class PurchasePaymentController extends Controller
             $model->payments()->create([
                 'date' => $request->date,
                 'invoice_number' => $invoiceNumber,
-                'full_invoice_number' => $prefix . $invoiceNumber,
+                'full_invoice_number' => $prefix.$invoiceNumber,
                 'payment_method_id' => $request->payment_method_id,
                 'amount' => $request->amount,
                 'tenant_id' => $model->tenant_id,
@@ -157,14 +157,15 @@ class PurchasePaymentController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Payment creation failed', 500);
+                throw new GeneralException('Payment creation failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
     /**
      * Validate that payment date is not earlier than model date.
+     *
      * @throws GeneralException
      */
     protected function validatePaymentDate($modelDate, $paymentDate): void
@@ -241,7 +242,7 @@ class PurchasePaymentController extends Controller
     protected function nextInvoiceNumber(): int
     {
         return Transaction::query()
-                ->withoutGlobalScope(new TenantScope())
-                ->max('invoice_number') + 1;
+            ->withoutGlobalScope(new TenantScope)
+            ->max('invoice_number') + 1;
     }
 }

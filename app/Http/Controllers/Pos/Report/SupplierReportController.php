@@ -3,25 +3,24 @@
 namespace App\Http\Controllers\Pos\Report;
 
 use App\Filters\Pos\Purchase\PurchaseFilter;
+use App\Filters\Pos\Report\SupplierReportFilter;
 use App\Filters\Pos\Shop\ShopDynamicTableFilter;
 use App\Filters\Pos\Shop\ShopFilter;
-use App\Models\Pos\Contact\Contact;
-use Illuminate\Support\Facades\DB;
+use App\Filters\Pos\Transaction\TransactionSaleFilter;
 use App\Http\Controllers\Controller;
+use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Purchase\Purchase;
+use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\Supplier\Supplier;
 use App\Models\Pos\Transaction\Transaction;
-use App\Filters\Pos\Report\SupplierReportFilter;
-use App\Models\Pos\PurchaseReturn\PurchaseReturn;
-use App\Filters\Pos\Transaction\TransactionSaleFilter;
+use Illuminate\Support\Facades\DB;
 
 class SupplierReportController extends Controller
 {
-
     private function transactionSum($modelClass, $search = null)
     {
         return Transaction::query()
-            ->filters(new ShopFilter())
+            ->filters(new ShopFilter)
             ->whereHasMorph('model', [$modelClass], function ($query) use ($search) {
                 if ($search) {
                     $query->whereHas('supplier', function ($q) use ($search) {
@@ -37,27 +36,24 @@ class SupplierReportController extends Controller
         $search = request('search');
 
         $purchaseGrandTotal = Purchase::query()
-            ->filters(new ShopFilter())
-            ->when($search, fn($query) => $query->whereHas('contacts', fn($query) => $query->where('name', 'like', "%{$search}%")))
+            ->filters(new ShopFilter)
+            ->when($search, fn ($query) => $query->whereHas('contacts', fn ($query) => $query->where('name', 'like', "%{$search}%")))
             ->sum('grand_total');
 
         $purchasesPaidAmount = $this->transactionSum(Purchase::class, $search);
         $purchasesDueAmount = $purchaseGrandTotal - $purchasesPaidAmount;
 
         $purchaseReturnsGrandTotal = PurchaseReturn::query()
-            ->filters(new ShopFilter())
-            ->when($search, fn($query) => $query->whereHas('contacts', fn($query) => $query->where('name', 'like', "%{$search}%")))
+            ->filters(new ShopFilter)
+            ->when($search, fn ($query) => $query->whereHas('contacts', fn ($query) => $query->where('name', 'like', "%{$search}%")))
             ->sum('grand_total');
-
 
         $purchaseReturnsPaidAmount = $this->transactionSum(PurchaseReturn::class, $search);
 
-
         $purchaseReturnsDueAmount = $purchaseReturnsGrandTotal - $purchaseReturnsPaidAmount;
 
-
         $suppliers = Contact::query()
-            ->filters(new SupplierReportFilter())
+            ->filters(new SupplierReportFilter)
             ->whereHas('purchases')
             ->select([
                 'contacts.id',
@@ -78,27 +74,25 @@ class SupplierReportController extends Controller
             // Purchase payments (Transaction model where model_type = Purchase)
             ->leftJoin('transactions as purchase_payments', function ($join) {
                 $join->on('purchase_payments.model_id', '=', 'purchases.id')
-                    ->where('purchase_payments.model_type', '=', DB::raw("'" . addslashes(Purchase::class) . "'"));
+                    ->where('purchase_payments.model_type', '=', DB::raw("'".addslashes(Purchase::class)."'"));
             })
 
             // Return payments (Transaction model where model_type = PurchaseReturn)
             ->leftJoin('transactions as return_payments', function ($join) {
                 $join->on('return_payments.model_id', '=', 'purchase_returns.id')
-                    ->where('return_payments.model_type', '=', DB::raw("'" . addslashes(PurchaseReturn::class) . "'"));
+                    ->where('return_payments.model_type', '=', DB::raw("'".addslashes(PurchaseReturn::class)."'"));
             })
             ->groupBy('contacts.id', 'contacts.name', 'contacts.phone')
             ->orderBy('contacts.id', 'desc')
             ->paginate(request('per_page', 10))
-            ->through(function ($supplier) {
-                return [
-                    ...$supplier->toArray(),
-                    'total_amount' => $supplier->getPaidAmountAttribute() + $supplier->getDueAmountAttribute(),
-                    'purchase_due_amount' => $supplier->getDueAmountAttribute(),
-                    'purchase_paid_amount' => $supplier->getPaidAmountAttribute(),
-                    'total_purchase_return_due_amount' => $supplier->getPurchaseReturnDueAmountAttribute(),
-                    'total_purchase_return_paid_amount' => $supplier->getPurchaseReturnPaidAmountAttribute(),
-                ];
-            });
+            ->through(fn ($supplier) => [
+                ...$supplier->toArray(),
+                'total_amount' => $supplier->getPaidAmountAttribute() + $supplier->getDueAmountAttribute(),
+                'purchase_due_amount' => $supplier->getDueAmountAttribute(),
+                'purchase_paid_amount' => $supplier->getPaidAmountAttribute(),
+                'total_purchase_return_due_amount' => $supplier->getPurchaseReturnDueAmountAttribute(),
+                'total_purchase_return_paid_amount' => $supplier->getPurchaseReturnPaidAmountAttribute(),
+            ]);
 
         return [
             ...$suppliers->toArray(),
@@ -108,7 +102,7 @@ class SupplierReportController extends Controller
                 'purchase_due_amount' => $purchasesDueAmount,
                 'total_purchase_return_paid_amount' => $purchaseReturnsPaidAmount,
                 'total_purchase_return_due_amount' => $purchaseReturnsDueAmount,
-            ]
+            ],
         ];
     }
 
@@ -129,7 +123,7 @@ class SupplierReportController extends Controller
             ->groupBy('suppliers.id', 'suppliers.name', 'suppliers.phone', 'suppliers.company_name')
             ->first();
 
-        if (!$supplier) {
+        if (! $supplier) {
             return response()->json(['message' => 'Supplier not found'], 404);
         }
 
@@ -167,9 +161,7 @@ class SupplierReportController extends Controller
 
         // Calculate totals efficiently
         $grandTotal = (clone $baseQuery)->sum('grand_total');
-        $paidTotal = (clone $baseQuery)->with('payments')->get()->sum(function ($purchase) {
-            return $purchase->transaction_amount;
-        });
+        $paidTotal = (clone $baseQuery)->with('payments')->get()->sum(fn ($purchase) => $purchase->transaction_amount);
         $dueTotal = $grandTotal - $paidTotal;
 
         // Transform paginated collection
@@ -201,7 +193,6 @@ class SupplierReportController extends Controller
         ];
     }
 
-
     public function supplierPurchaseReturns($supplierId)
     {
         $perPage = request('per_page', 10);
@@ -212,9 +203,7 @@ class SupplierReportController extends Controller
             ->where('contact_id', $supplierId);
 
         $grandTotal = $query->sum('grand_total');
-        $paidAmount = $query->with('payments')->get()->sum(function ($purchaseReturn) {
-            return $purchaseReturn->payments->sum('amount');
-        });
+        $paidAmount = $query->with('payments')->get()->sum(fn ($purchaseReturn) => $purchaseReturn->payments->sum('amount'));
         $dueAmount = $grandTotal - $paidAmount;
 
         // Paginate results
@@ -249,14 +238,13 @@ class SupplierReportController extends Controller
         ];
     }
 
-
     public function purchaseTransactionBySupplier($supplierId)
     {
         $perPage = request('per_page', 10);
 
         // Base query for transactions
         $query = Transaction::query()
-            ->filters(new TransactionSaleFilter())
+            ->filters(new TransactionSaleFilter)
             ->purchases()
             ->where('model_type', Purchase::class)
             ->whereIn('model_id', function ($query) use ($supplierId) {
@@ -267,14 +255,14 @@ class SupplierReportController extends Controller
             ->with([
                 'model:id,contact_id,status,grand_total',
                 'model.contact:id,name',
-                'paymentMethod:id,name'
+                'paymentMethod:id,name',
             ]);
 
         // Calculate totals for all matching transactions
         $allTransactions = $query->get();
 
-        $grandTotal = $allTransactions->sum(fn($item) => $item->model?->grand_total ?? 0);
-        $paidAmount = $allTransactions->sum(fn($item) => $item->amount ?? 0);
+        $grandTotal = $allTransactions->sum(fn ($item) => $item->model?->grand_total ?? 0);
+        $paidAmount = $allTransactions->sum(fn ($item) => $item->amount ?? 0);
         $dueAmount = $grandTotal - $paidAmount;
 
         // Paginate results for API
@@ -308,14 +296,13 @@ class SupplierReportController extends Controller
         ];
     }
 
-
     public function purchaseReturnTransactionBySupplier($supplierId)
     {
         $perPage = request('per_page', 10);
 
         // Base query
         $query = Transaction::query()
-            ->filters(new TransactionSaleFilter())
+            ->filters(new TransactionSaleFilter)
             ->purchaseReturns()
             ->where('model_type', PurchaseReturn::class)
             ->whereIn('model_id', function ($query) use ($supplierId) {
@@ -326,33 +313,31 @@ class SupplierReportController extends Controller
             ->with([
                 'model:id,contact_id,status,grand_total',
                 'model.contact:id,name',
-                'paymentMethod:id,name'
+                'paymentMethod:id,name',
             ]);
 
         // Calculate totals for all matching transactions
         $allTransactions = $query->get();
 
-        $grandTotal = $allTransactions->sum(fn($item) => $item->model?->grand_total ?? 0);
-        $paidAmount = $allTransactions->sum(fn($item) => $item->amount ?? 0);
+        $grandTotal = $allTransactions->sum(fn ($item) => $item->model?->grand_total ?? 0);
+        $paidAmount = $allTransactions->sum(fn ($item) => $item->amount ?? 0);
         $dueAmount = $grandTotal - $paidAmount;
 
         // Paginate results for API
         $transactions = $query->orderByDesc('id')->paginate($perPage);
 
         // Transform paginated collection
-        $transactions->getCollection()->transform(function ($item) {
-            return [
-                'id' => $item->id,
-                'date' => $item->date,
-                'invoice_number' => $item->full_invoice_number ?? null,
-                'supplier_name' => $item->model?->contact?->name ?? null,
-                'payment_method' => $item->paymentMethod?->name ?? null,
-                'grand_total' => $item->model?->grand_total ?? 0,
-                'paid' => $item->amount ?? 0,
-                'due' => ($item->model?->grand_total ?? 0) - ($item->amount ?? 0),
-                'status' => $item->model?->status,
-            ];
-        });
+        $transactions->getCollection()->transform(fn ($item) => [
+            'id' => $item->id,
+            'date' => $item->date,
+            'invoice_number' => $item->full_invoice_number ?? null,
+            'supplier_name' => $item->model?->contact?->name ?? null,
+            'payment_method' => $item->paymentMethod?->name ?? null,
+            'grand_total' => $item->model?->grand_total ?? 0,
+            'paid' => $item->amount ?? 0,
+            'due' => ($item->model?->grand_total ?? 0) - ($item->amount ?? 0),
+            'status' => $item->model?->status,
+        ]);
 
         // Return paginated data along with totals
         return [
@@ -364,7 +349,6 @@ class SupplierReportController extends Controller
             ],
         ];
     }
-
 
     public function supplierLedgerDetail($supplierId)
     {
@@ -397,7 +381,6 @@ class SupplierReportController extends Controller
             ->whereNull('deleted_at')
             ->where('supplier_id', $supplierId);
 
-
         //  Payments Sent → Credit
         $paymentsSent = Transaction::query()
             ->filters(new ShopDynamicTableFilter('transactions'))
@@ -410,7 +393,7 @@ class SupplierReportController extends Controller
                 DB::raw('0 as debit'),
                 DB::raw('transactions.amount as credit')
             )
-            ->where('transactions.model_type', 'App\\Models\\Pos\\Purchase\\Purchase')
+            ->where('transactions.model_type', Purchase::class)
             ->where(function ($q) use ($supplierId) {
                 $q->where('p.supplier_id', $supplierId)
                     ->orWhereNull('p.id');
@@ -428,7 +411,7 @@ class SupplierReportController extends Controller
                 DB::raw('transactions.amount as debit'), // ✅ correct
                 DB::raw('0 as credit')
             )
-            ->where('transactions.model_type', 'App\\Models\\Pos\\PurchaseReturn\\PurchaseReturn')
+            ->where('transactions.model_type', PurchaseReturn::class)
             ->where(function ($q) use ($supplierId) {
                 $q->where('pr.supplier_id', $supplierId)
                     ->orWhereNull('pr.id');
@@ -442,7 +425,7 @@ class SupplierReportController extends Controller
         //  Add running balance
         $search = request('search');
         $data = DB::query()
-            ->when($search, fn($query) => $query->where('full_invoice_number', 'LIKE', '%' . $search . '%'))
+            ->when($search, fn ($query) => $query->where('full_invoice_number', 'LIKE', '%'.$search.'%'))
             ->fromSub($ledgerQuery, 'ledger')
             ->select(
                 'id',
@@ -462,29 +445,26 @@ class SupplierReportController extends Controller
         // Grand totals
         $totalDebit = Purchase::query()
             ->filters(new ShopDynamicTableFilter('purchases'))
-            ->when($search, fn($query) => $query->where('full_invoice_number', 'LIKE', '%' . $search . '%'))
+            ->when($search, fn ($query) => $query->where('full_invoice_number', 'LIKE', '%'.$search.'%'))
             ->where('supplier_id', $supplierId)
             ->whereNull('deleted_at')
             ->sum('grand_total');
 
         $totalCredit = Transaction::query()
             ->filters(new ShopDynamicTableFilter('transactions'))
-            ->when($search, fn($query) => $query->where('transactions.full_invoice_number', 'LIKE', '%' . $search . '%'))
+            ->when($search, fn ($query) => $query->where('transactions.full_invoice_number', 'LIKE', '%'.$search.'%'))
             ->leftJoin('purchase_returns as pr', 'transactions.model_id', '=', 'pr.id')
-            ->where('transactions.model_type', 'App\\Models\\Pos\\PurchaseReturn\\PurchaseReturn')
+            ->where('transactions.model_type', PurchaseReturn::class)
             ->where('pr.supplier_id', $supplierId)
             ->sum('transactions.amount'); // Payment Received → Debit
 
-
-
         $totalCredit += Transaction::query()
             ->filters(new ShopDynamicTableFilter('transactions'))
-            ->when($search, fn($query) => $query->where('transactions.full_invoice_number', 'LIKE', '%' . $search . '%'))
+            ->when($search, fn ($query) => $query->where('transactions.full_invoice_number', 'LIKE', '%'.$search.'%'))
             ->leftJoin('purchases as p', 'transactions.model_id', '=', 'p.id')
-            ->where('transactions.model_type', 'App\\Models\\Pos\\Purchase\\Purchase')
+            ->where('transactions.model_type', Purchase::class)
             ->where('p.supplier_id', $supplierId)
             ->sum('transactions.amount'); // Payment Sent → Credit
-
 
         $closingBalance = $totalDebit - $totalCredit;
 
@@ -498,5 +478,4 @@ class SupplierReportController extends Controller
             ],
         ]);
     }
-
 }

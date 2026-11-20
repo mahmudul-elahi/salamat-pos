@@ -1,6 +1,8 @@
 <?php
-return [
 
+declare(strict_types=1);
+
+return [
 
     'installer_finish' => 'login',
 
@@ -16,7 +18,7 @@ return [
     */
     'core' => [
         'minPhpVersion' => '8.2',
-        'minMysqlVersion' => '5.6'
+        'minMysqlVersion' => '5.6',
     ],
     'final' => [
         'key' => true,
@@ -37,7 +39,7 @@ return [
             'ctype',
             'iconv',
             'zip',
-            'session'
+            'session',
         ],
         'apache' => [
             'mod_rewrite',

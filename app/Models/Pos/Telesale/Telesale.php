@@ -30,7 +30,7 @@ class Telesale extends BaseModel
     ];
 
     protected $casts = [
-        'date'                 => 'date',
+        'date' => 'date',
         'is_existing_customer' => 'boolean',
     ];
 

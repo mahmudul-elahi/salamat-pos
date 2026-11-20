@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Exceptions;
+declare(strict_types=1);
 
+namespace App\Exceptions;
 
 class OrderValidationException extends \RuntimeException {}

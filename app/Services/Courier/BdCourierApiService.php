@@ -24,18 +24,18 @@ class BdCourierApiService
     {
         $apiKey = config('services.bdcourier.api_key');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             throw new GeneralException('BD Courier API key is not configured', 422);
         }
 
         $response = Http::timeout(20)
             ->acceptJson()
             ->withToken($apiKey)
-            ->post($this->baseUrl() . '/courier-check', [
+            ->post($this->baseUrl().'/courier-check', [
                 'phone' => $phone,
             ]);
 
-        if (!$response->successful() || $response->json('status') !== 'success') {
+        if (! $response->successful() || $response->json('status') !== 'success') {
             $message = $response->json('message') ?? 'Failed to check fraud status with BD Courier';
             throw new GeneralException($message, 422);
         }

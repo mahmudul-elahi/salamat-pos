@@ -20,17 +20,17 @@ class PreOwnedCareController extends Controller
     public function store(Request $request, PreOwned $preOwned): JsonResponse
     {
         $request->validate([
-            'care_items'           => ['required', 'array', 'min:1'],
+            'care_items' => ['required', 'array', 'min:1'],
             'care_items.*.care_id' => ['required', 'integer', 'exists:cares,id'],
         ]);
 
         $preOwned->cares()->delete();
 
-        $cares = collect($request->care_items)->map(fn($item) => [
+        $cares = collect($request->care_items)->map(fn ($item) => [
             'pre_owned_id' => $preOwned->id,
-            'care_id'      => $item['care_id'],
-            'created_at'   => now(),
-            'updated_at'   => now(),
+            'care_id' => $item['care_id'],
+            'created_at' => now(),
+            'updated_at' => now(),
         ])->toArray();
 
         PreOwnedCare::insert($cares);

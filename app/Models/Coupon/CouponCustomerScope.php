@@ -14,7 +14,7 @@ class CouponCustomerScope extends Model
         'new_coupon_id',
         'customer_level_id',
         'point_amount',
-        'discount_amount'
+        'discount_amount',
     ];
 
     public function coupon(): BelongsTo

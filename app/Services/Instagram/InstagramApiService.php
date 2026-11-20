@@ -10,7 +10,7 @@ class InstagramApiService
 {
     private function baseUrl(): string
     {
-        return rtrim(config('services.instagram.base_url'), '/') . '/' . config('services.instagram.graph_api_version');
+        return rtrim(config('services.instagram.base_url'), '/').'/'.config('services.instagram.graph_api_version');
     }
 
     private function accountId(): string
@@ -26,9 +26,9 @@ class InstagramApiService
         $response = Http::timeout(20)
             ->acceptJson()
             ->withToken(config('services.instagram.access_token'))
-            ->{$method}($this->baseUrl() . $uri, $payload);
+            ->{$method}($this->baseUrl().$uri, $payload);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $message = $response->json('error.message') ?? 'Instagram API request failed';
 
             Log::error('Instagram API error', [

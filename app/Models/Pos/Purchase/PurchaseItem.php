@@ -3,9 +3,10 @@
 namespace App\Models\Pos\Purchase;
 
 use App\Models\Pos\Product\Product;
+use App\Models\Pos\Product\ProductVariant;
 use App\Models\Pos\PurchaseReturn\PurchaseReturnItem;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Pos\Product\ProductVariant;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PurchaseItem extends Model
@@ -33,17 +34,17 @@ class PurchaseItem extends Model
         'unit_price' => 'float',
     ];
 
-    public function purchase(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);
     }
 
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function productVariant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
     }

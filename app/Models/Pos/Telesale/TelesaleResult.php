@@ -15,7 +15,7 @@ class TelesaleResult extends BaseModel
     ];
 
     protected $casts = [
-        'status'     => 'boolean',
+        'status' => 'boolean',
         'sort_order' => 'integer',
     ];
 

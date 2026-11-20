@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\verify\ProductVerifyController;
+use App\Http\Controllers\Pos\Warranty\WarrantyClaimController;
+use App\Http\Controllers\Pos\Warranty\WarrantyController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Pos\Warranty\WarrantyController;
-use App\Http\Controllers\Pos\Warranty\WarrantyClaimController;
 
 Route::group(['prefix' => 'ecommerce', 'middleware' => 'auth.permission'], function (Router $router) {
 

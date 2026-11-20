@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Services\Traits\HasAttrs;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class BaseService
 {
     use HasAttrs;
+
     protected Model $model;
 
     /**
@@ -16,6 +19,7 @@ class BaseService
     public function setModel(Model $model): static
     {
         $this->model = $model;
+
         return $this;
     }
 
@@ -32,14 +36,15 @@ class BaseService
      */
     public function save(array $data = []): Model
     {
-        $this->model->fill(!empty($data) ? $data : request()->all())->save();
+        $this->model->fill($data !== [] ? $data : request()->all())->save();
+
         return $this->model;
     }
 
     /**
      * Find a model by its primary key.
      */
-    public function find(int|string $id): Model|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Builder|array|null
+    public function find(int|string $id): Model|Collection|Builder|array|null
     {
         return $this->model = $this->model::query()->find($id);
     }

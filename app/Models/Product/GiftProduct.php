@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class GiftProduct extends Model
 {
-    use SoftDeletes, RevalidatesFrontendTrait;
+    use RevalidatesFrontendTrait, SoftDeletes;
 
     protected $revalidationType = 'gift-product';
 

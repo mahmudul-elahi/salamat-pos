@@ -13,8 +13,8 @@ use Illuminate\Support\Str;
 
 class BlogPost extends BaseModel
 {
-    use SoftDeletes;
     use RevalidatesFrontendTrait;
+    use SoftDeletes;
 
     protected string $revalidationType = 'blog';
 
@@ -53,13 +53,13 @@ class BlogPost extends BaseModel
     protected static function booted(): void
     {
         static::creating(function (BlogPost $post) {
-            if (!$post->slug) {
+            if (! $post->slug) {
                 $post->slug = static::generateSlug($post->title);
             }
         });
 
         static::updating(function (BlogPost $post) {
-            if ($post->isDirty('title') && !$post->isDirty('slug')) {
+            if ($post->isDirty('title') && ! $post->isDirty('slug')) {
                 $post->slug = static::generateSlug($post->title, $post->id);
             }
         });
@@ -74,11 +74,11 @@ class BlogPost extends BaseModel
 
         while (
             static::withTrashed()
-            ->where('slug', $candidate)
-            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()
+                ->where('slug', $candidate)
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
         ) {
-            $candidate = $baseSlug . '-' . $count++;
+            $candidate = $baseSlug.'-'.$count++;
         }
 
         return $candidate;

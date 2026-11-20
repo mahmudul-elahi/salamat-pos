@@ -12,7 +12,7 @@ class CashTransferReportFilter extends BaseFilter
     public function search($search = null): void
     {
         $this->builder->when($search, function ($query, $search) {
-            $query->where($query->getModel()->getTable() . '.reference_no', 'like', '%' . $search . '%');
+            $query->where($query->getModel()->getTable().'.reference_no', 'like', '%'.$search.'%');
         });
     }
 
@@ -28,8 +28,8 @@ class CashTransferReportFilter extends BaseFilter
         $this->builder->when($ids, function (Builder $query) use ($warehouseIds) {
             $table = $query->getModel()->getTable();
             $query->where(function (Builder $q) use ($table, $warehouseIds) {
-                $q->whereIn($table . '.from_tenant_id', $warehouseIds)
-                    ->orWhereIn($table . '.to_tenant_id', $warehouseIds);
+                $q->whereIn($table.'.from_tenant_id', $warehouseIds)
+                    ->orWhereIn($table.'.to_tenant_id', $warehouseIds);
             });
         });
     }
@@ -39,7 +39,7 @@ class CashTransferReportFilter extends BaseFilter
         $warehouseIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($warehouseIds) {
-            $query->whereIn($query->getModel()->getTable() . '.from_tenant_id', $warehouseIds);
+            $query->whereIn($query->getModel()->getTable().'.from_tenant_id', $warehouseIds);
         });
     }
 
@@ -48,7 +48,7 @@ class CashTransferReportFilter extends BaseFilter
         $warehouseIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($warehouseIds) {
-            $query->whereIn($query->getModel()->getTable() . '.to_tenant_id', $warehouseIds);
+            $query->whereIn($query->getModel()->getTable().'.to_tenant_id', $warehouseIds);
         });
     }
 
@@ -57,7 +57,7 @@ class CashTransferReportFilter extends BaseFilter
         $statusList = is_array($statuses) ? $statuses : explode(',', (string) $statuses);
 
         $this->builder->when($statuses, function (Builder $query) use ($statusList) {
-            $query->whereIn($query->getModel()->getTable() . '.status', $statusList);
+            $query->whereIn($query->getModel()->getTable().'.status', $statusList);
         });
     }
 
@@ -66,7 +66,7 @@ class CashTransferReportFilter extends BaseFilter
         $createdByIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($createdByIds) {
-            $query->whereIn($query->getModel()->getTable() . '.created_by', $createdByIds);
+            $query->whereIn($query->getModel()->getTable().'.created_by', $createdByIds);
         });
     }
 
@@ -75,7 +75,7 @@ class CashTransferReportFilter extends BaseFilter
         $receivedByIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($receivedByIds) {
-            $query->whereIn($query->getModel()->getTable() . '.approved_by', $receivedByIds);
+            $query->whereIn($query->getModel()->getTable().'.approved_by', $receivedByIds);
         });
     }
 
@@ -92,7 +92,7 @@ class CashTransferReportFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return;
         }
 
@@ -103,8 +103,8 @@ class CashTransferReportFilter extends BaseFilter
             $end = Carbon::parse($endDate)->endOfDay();
             $table = $this->builder->getModel()->getTable();
 
-            return $this->builder->whereBetween($table . '.transfer_date', [$start, $end]);
-        } catch (\Exception $e) {
+            return $this->builder->whereBetween($table.'.transfer_date', [$start, $end]);
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range');
         }
     }

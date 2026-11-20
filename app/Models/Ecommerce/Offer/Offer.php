@@ -21,7 +21,7 @@ class Offer extends Model
         'start_at',
         'end_at',
         'priority',
-        'is_active'
+        'is_active',
     ];
 
     public static function boot()
@@ -33,16 +33,12 @@ class Offer extends Model
             $slug = $baseSlug;
             $i = 1;
             while (self::where('slug', $slug)->exists()) {
-                $slug = $baseSlug . '-' . $i;
+                $slug = $baseSlug.'-'.$i;
                 $i++;
             }
             $offer->slug = $slug;
         });
     }
-
-
-
-
 
     public function products()
     {

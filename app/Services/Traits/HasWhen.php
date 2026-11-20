@@ -8,7 +8,8 @@ trait HasWhen
     {
         if ($value) {
             return $callback($this, $value) ?: $this;
-        } elseif ($fallback) {
+        }
+        if ($fallback) {
             return $fallback($this, $value) ?: $this;
         }
 

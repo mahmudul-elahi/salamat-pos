@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class DeliveryChargeSettingController extends Controller
 {
-    private const TYPE = 'delivery_charge';
+    private const string TYPE = 'delivery_charge';
 
     public function __construct(protected CustomizationService $service) {}
 

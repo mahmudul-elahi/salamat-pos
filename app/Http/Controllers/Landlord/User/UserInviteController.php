@@ -3,46 +3,43 @@
 namespace App\Http\Controllers\Landlord\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Services\Landlord\User\UserService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Mailer\Exception\TransportException;
 
 class UserInviteController extends Controller
 {
+    public function __construct(protected UserService $service) {}
 
-    public function __construct(protected UserService $service)
-    {
-    }
-
-
-    public function invite(UserInviteRequest $request): \Illuminate\Http\JsonResponse
+    public function invite(UserInviteRequest $request): JsonResponse
     {
         $email = $request->get('email');
-
 
         try {
             $existingUser = $this->checkExistingUser($email);
 
             if ($existingUser) {
-                return errorResponse("User already exists");
+                return errorResponse('User already exists');
             }
 
             return $this->handleUserInvitation($email, $request->get('role'));
 
-        } catch (TransportException $exception) {
+        } catch (TransportException) {
             DB::rollBack();
-            return errorResponse("Email setup is not correct");
+
+            return errorResponse('Email setup is not correct');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                return errorResponse("User invitation has been failed", null, 500);
+                return errorResponse('User invitation has been failed', null, 500);
             }
+
             return errorResponse($exception->getMessage(), null, 500);
         }
     }
 
-    private function checkExistingUser(string $email): null|object
+    private function checkExistingUser(string $email): ?object
     {
         return $this->service
             ->where('email', $email)
@@ -50,7 +47,7 @@ class UserInviteController extends Controller
 
     }
 
-    private function handleUserInvitation(string $email, ?string $role): \Illuminate\Http\JsonResponse
+    private function handleUserInvitation(string $email, ?string $role): JsonResponse
     {
         $user = $this->service->where('email', $email)->first();
 
@@ -59,6 +56,7 @@ class UserInviteController extends Controller
         } else {
             $this->createAndInviteNewUser($role);
         }
+
         return successResponse('User invited successfully');
 
     }
@@ -80,7 +78,7 @@ class UserInviteController extends Controller
             $this->service
                 ->createUser()
                 ->createUserProfile()
-                ->when($role, fn(UserService $service) => $service->assignRole())
+                ->when($role, fn (UserService $service) => $service->assignRole())
                 ->sendInvitationMail();
         });
     }

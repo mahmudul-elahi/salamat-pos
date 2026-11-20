@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Ecommerce\MediaFolder;
 
 use Illuminate\Database\Eloquent\Model;
@@ -11,8 +13,9 @@ class MediaFolder extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $fillable = ['name', 'parent_id',
-        'id'
+        'id',
     ];
+
     public $casts = [
         'parent_id' => 'integer',
     ];

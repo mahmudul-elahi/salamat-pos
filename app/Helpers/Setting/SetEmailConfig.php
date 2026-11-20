@@ -23,16 +23,14 @@ class SetEmailConfig
         Artisan::call('config:cache');
     }
 
-
-
     private function getMailSettings()
     {
         return resolve(SettingRepository::class)
             ->getDeliverySettings([
-                    optional(resolve(EmailSettingService::class)
-                        ->getDefaultSettings('default_mail'))->value,
-                    'default_mail_email_name'
-                ]
+                optional(resolve(EmailSettingService::class)
+                    ->getDefaultSettings('default_mail'))->value,
+                'default_mail_email_name',
+            ]
             );
     }
 

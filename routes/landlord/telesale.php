@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Telesale\TelesaleController;
 use App\Http\Controllers\Pos\Telesale\TelesaleResultController;
 use Illuminate\Routing\Router;

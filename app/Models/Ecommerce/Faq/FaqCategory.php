@@ -22,13 +22,13 @@ class FaqCategory extends BaseModel
     protected static function booted(): void
     {
         static::creating(function (FaqCategory $category) {
-            if (!$category->slug) {
+            if (! $category->slug) {
                 $category->slug = static::generateSlug($category->name);
             }
         });
 
         static::updating(function (FaqCategory $category) {
-            if ($category->isDirty('name') && !$category->isDirty('slug')) {
+            if ($category->isDirty('name') && ! $category->isDirty('slug')) {
                 $category->slug = static::generateSlug($category->name, $category->id);
             }
         });
@@ -44,10 +44,10 @@ class FaqCategory extends BaseModel
         while (
             static::query()
                 ->where('slug', $candidate)
-                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
                 ->exists()
         ) {
-            $candidate = $baseSlug . '-' . $count++;
+            $candidate = $baseSlug.'-'.$count++;
         }
 
         return $candidate;

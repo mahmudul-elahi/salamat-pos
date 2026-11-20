@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\CustomerReportDownloadController;
-use App\Http\Controllers\Pos\Report\CustomerReportController;
-use App\Http\Controllers\Pos\Report\ExpenseReportController;
-use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Pos\Report\StockReportController;
-use App\Http\Controllers\SupplierReportDownloadController;
 use App\Http\Controllers\Pos\ProfitLoss\ProfitLossController;
-use App\Http\Controllers\Pos\Report\SupplierReportController;
-use App\Http\Controllers\Pos\Report\DepositReportController;
 use App\Http\Controllers\Pos\Report\BrandSaleReportController;
+use App\Http\Controllers\Pos\Report\CashTransferReportController;
 use App\Http\Controllers\Pos\Report\CategorySaleReportController;
-use App\Http\Controllers\Pos\Report\SalesReportController;
-use App\Http\Controllers\Pos\Report\SaleReturnReportController;
+use App\Http\Controllers\Pos\Report\CustomerReportController;
+use App\Http\Controllers\Pos\Report\DamageProductReportController;
+use App\Http\Controllers\Pos\Report\DepositReportController;
+use App\Http\Controllers\Pos\Report\ExpenseReportController;
 use App\Http\Controllers\Pos\Report\PurchaseReportController;
 use App\Http\Controllers\Pos\Report\PurchaseReturnReportController;
-use App\Http\Controllers\Pos\Report\WithdrawalReportController;
+use App\Http\Controllers\Pos\Report\SaleReturnReportController;
+use App\Http\Controllers\Pos\Report\SalesReportController;
+use App\Http\Controllers\Pos\Report\StockReportController;
 use App\Http\Controllers\Pos\Report\StockTransferReportController;
-use App\Http\Controllers\Pos\Report\CashTransferReportController;
-use App\Http\Controllers\Pos\Report\DamageProductReportController;
+use App\Http\Controllers\Pos\Report\SupplierReportController;
+use App\Http\Controllers\Pos\Report\WithdrawalReportController;
+use App\Http\Controllers\SupplierReportDownloadController;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (Router $router) {
 
@@ -108,8 +110,6 @@ Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (R
 
     $router->delete('ledger-reports/{ledgerId}', [CustomerReportController::class, 'delete'])
         ->name('ledger_reports.delete');
-
-
 
     $router->get('deposit-reports', [DepositReportController::class, 'index'])
         ->name('deposit_reports.view');

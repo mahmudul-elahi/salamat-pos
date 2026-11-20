@@ -17,8 +17,8 @@ class EventNotification extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title'    => 'New Event: ' . $this->event->title,
-            'message'  => implode(' | ', array_filter([
+            'title' => 'New Event: '.$this->event->title,
+            'message' => implode(' | ', array_filter([
                 $this->event->start_datetime?->format('d M Y, h:i A'),
                 $this->event->location,
             ])),

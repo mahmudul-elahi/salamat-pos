@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Ecommerce\Order\OrderController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-
 
 Route::group(['prefix' => 'ecommerce', 'middleware' => 'auth.permission'], function (Router $router) {
 

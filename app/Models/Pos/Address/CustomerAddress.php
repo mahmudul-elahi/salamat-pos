@@ -4,6 +4,7 @@ namespace App\Models\Pos\Address;
 
 use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CustomerAddress extends Model
 {
@@ -18,19 +19,20 @@ class CustomerAddress extends Model
         'new_district_id',
         'is_default',
     ];
+
     protected $guarded = [];
 
-    public function customer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function district(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id');
     }
 
-    public function area(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class);
     }
@@ -40,10 +42,9 @@ class CustomerAddress extends Model
         $street = $this->street;
         $area = $this->area->name ?? '';
         $district = $this->area?->district?->name ?? '';
-        //$thana = $this->area?->thana ?? '';
+        // $thana = $this->area?->thana ?? '';
         $postcode = $this->area?->postcode ?? '';
 
-        return trim("$street, $area, $district, $postcode", " ,");
+        return trim("$street, $area, $district, $postcode", ' ,');
     }
 }
-

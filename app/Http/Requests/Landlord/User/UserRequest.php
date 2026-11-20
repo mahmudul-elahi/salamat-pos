@@ -7,12 +7,10 @@ use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
     }
-
 
     public function rules(): array
     {

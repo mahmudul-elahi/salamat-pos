@@ -9,16 +9,16 @@ class AttendanceFilter extends BaseFilter
 {
     public function userId($userId = null): void
     {
-        $this->builder->when($userId, fn($q) => $q->where('user_id', $userId));
+        $this->builder->when($userId, fn ($q) => $q->where('user_id', $userId));
     }
 
     public function search($search = null): void
     {
-        $this->builder->when($search, fn($q) => $q->whereHas('user', fn($uq) => $uq
+        $this->builder->when($search, fn ($q) => $q->whereHas('user', fn ($uq) => $uq
             ->withTrashed()
             ->where('name', 'LIKE', "%{$search}%")
             ->orWhere('email', 'LIKE', "%{$search}%")
-            ->orWhereHas('employeeProfile', fn($eq) => $eq->where('employee_id', 'LIKE', "%{$search}%"))
+            ->orWhereHas('employeeProfile', fn ($eq) => $eq->where('employee_id', 'LIKE', "%{$search}%"))
         ));
     }
 
@@ -52,11 +52,11 @@ class AttendanceFilter extends BaseFilter
 
     public function month($month = null): void
     {
-        $this->builder->when($month, fn($q) => $q->whereMonth('in_date', $month));
+        $this->builder->when($month, fn ($q) => $q->whereMonth('in_date', $month));
     }
 
     public function year($year = null): void
     {
-        $this->builder->when($year, fn($q) => $q->whereYear('in_date', $year));
+        $this->builder->when($year, fn ($q) => $q->whereYear('in_date', $year));
     }
 }

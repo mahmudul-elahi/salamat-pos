@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Landlord\User;
 
-use Throwable;
-use App\Models\User;
-use Illuminate\Http\Request;
 use App\Exceptions\GeneralException;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 use App\Filters\Common\User\UserFilter;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\User\UserRequest;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -22,16 +23,14 @@ class UserController extends Controller
             ->filters($this->filter)
             ->where('is_employee', false)
             ->with(['tenants'])
-            ->withWhereHas('roles', fn($query) => $query->whereNull('alias'))
+            ->withWhereHas('roles', fn ($query) => $query->whereNull('alias'))
             ->latest()
             ->paginate(request('per_page', 10));
     }
 
-    public function store(UserRequest $request): \Illuminate\Http\JsonResponse
+    public function store(UserRequest $request): JsonResponse
     {
         $data = $request->validated();
-
-
 
         try {
             DB::beginTransaction();
@@ -43,7 +42,7 @@ class UserController extends Controller
                 'password' => Hash::make($data['password']),
             ]);
 
-            if (!empty($data['role'])) {
+            if (! empty($data['role'])) {
                 $user->roles()->sync($data['role']);
             }
 
@@ -52,13 +51,14 @@ class UserController extends Controller
             }
 
             DB::commit();
+
             return successResponse('User created successfully');
         } catch (Throwable $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException("Failed to create user", 500);
+                throw new GeneralException('Failed to create user', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -71,6 +71,7 @@ class UserController extends Controller
     {
         if ($request->has('roles')) {
             $user->roles()->sync($request->get('roles', []));
+
             return successResponse('User role updated successfully');
         }
 
@@ -78,6 +79,7 @@ class UserController extends Controller
             $tenantId = $request->get('tenant_id');
             $user->tenants()->sync($tenantId ? [$tenantId] : []);
             $user->tokens()->delete();
+
             return successResponse('User shop updated successfully');
         }
 
@@ -85,7 +87,8 @@ class UserController extends Controller
             $status = $request->get('status');
             $user->update(['status' => $status]);
             $user->tokens()->delete();
-            return successResponse("User status updated successfully");
+
+            return successResponse('User status updated successfully');
         }
 
         return successResponse('User updated successfully');
@@ -93,13 +96,13 @@ class UserController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws Throwable
      */
-
-    public function destroy(User $user): \Illuminate\Http\JsonResponse
+    public function destroy(User $user): JsonResponse
     {
         if ($user->is_admin) {
-            throw new GeneralException("Action not allowed");
+            throw new GeneralException('Action not allowed');
         }
 
         if ($user->id == auth()->id()) {

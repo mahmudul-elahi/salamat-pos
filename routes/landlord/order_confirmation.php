@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\OrderConfirmation\OrderConfirmationController;
 use App\Http\Controllers\Pos\OrderConfirmation\OrderConfirmationOptionController;
 use Illuminate\Routing\Router;

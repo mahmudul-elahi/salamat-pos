@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Pos\Contact;
 
 use App\Models\Pos\Contact\Contact;
 use App\Services\BaseService;
-use Illuminate\Validation\Rule;
 
 class ContactService extends BaseService
 {
@@ -28,7 +29,6 @@ class ContactService extends BaseService
 
         return $this;
     }
-
 
     public function updateCustomer(): static
     {

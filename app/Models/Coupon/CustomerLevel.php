@@ -14,7 +14,7 @@ class CustomerLevel extends BaseModel
     protected $fillable = [
         'name',         // bronze, silver, gold, platinum
         'min_points',
-        'max_points'
+        'max_points',
     ];
 
     public function couponScopes(): HasMany

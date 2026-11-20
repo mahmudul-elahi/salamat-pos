@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class GiftProductVariant extends Model
 {
     use SoftDeletes;
-    
+
     protected $fillable = [
         'gift_product_id',
         'product_id',

@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Landlord\Setting\General;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Tenant;
 use App\Services\Setting\SettingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class SettingController extends Controller
 {
-
     public function __construct(protected SettingService $service) {}
 
     public function index($tenant = null)
@@ -19,12 +19,12 @@ class SettingController extends Controller
         $tenant = Tenant::query()->find($tenant);
         if ($tenant) {
             return $this->service->getFormattedSettings('tenant', $tenant->id);
-        } else {
-            return $this->service->getFormattedSettings();
         }
+
+        return $this->service->getFormattedSettings();
     }
 
-    public function update(Request $request, $tenant = null): \Illuminate\Http\JsonResponse
+    public function update(Request $request, $tenant = null): JsonResponse
     {
         $tenant = Tenant::query()->find($tenant);
 
@@ -49,7 +49,6 @@ class SettingController extends Controller
                 'instagram_link' => ['nullable', 'url', 'max:190'],
                 'tiktok_link' => ['nullable', 'url', 'max:190'],
                 'location_link' => ['nullable', 'url', 'max:500'],
-
 
             ]);
             $this->tenantLogoValidation($request);
@@ -77,19 +76,18 @@ class SettingController extends Controller
     {
         if ($request->file('company_logo')) {
             $request->validate([
-                'company_logo' => 'required|mimes:jpeg,png,jpg,svg|max:2048'
+                'company_logo' => 'required|mimes:jpeg,png,jpg,svg|max:2048',
             ], [
-                'company_logo.max' => 'Sorry! Maximum allowed size for an image is 2MB'
+                'company_logo.max' => 'Sorry! Maximum allowed size for an image is 2MB',
             ]);
         }
-
 
         if ($request->file('company_icon')) {
             $request->validate(
                 ['company_icon' => 'nullable|mimes:png,svg,ico|max:2048'],
                 [
                     'favicon_icon.mimes' => 'Only PNG, SVG Or Ico files are allowed.',
-                    'company_icon.max' => 'Sorry! Maximum allowed size for an image is 2MB'
+                    'company_icon.max' => 'Sorry! Maximum allowed size for an image is 2MB',
                 ]
             );
         }
@@ -98,29 +96,27 @@ class SettingController extends Controller
                 ['share_icon' => 'nullable|mimes:jpeg,png,jpg|max:2048'],
                 [
                     'favicon_icon.mimes' => 'Only JPEG, PNG, JPG files are allowed.',
-                    'share_icon.max' => 'Sorry! Maximum allowed size for an image is 2MB'
+                    'share_icon.max' => 'Sorry! Maximum allowed size for an image is 2MB',
                 ]
             );
         }
     }
 
-
     public function ImageValidation(Request $request): void
     {
         if ($request->file('company_logo')) {
             $request->validate([
-                'company_logo' => 'nullable|mimes:jpeg,png,jpg,svg|max:2048'
+                'company_logo' => 'nullable|mimes:jpeg,png,jpg,svg|max:2048',
             ], [
-                'company_logo.max' => 'Sorry! Maximum allowed size for an image is 2MB'
+                'company_logo.max' => 'Sorry! Maximum allowed size for an image is 2MB',
             ]);
         }
-
 
         if ($request->file('company_icon')) {
             $request->validate(
                 ['company_icon' => 'nullable|mimes:jpeg,png,jpg,svg|max:2048'],
                 [
-                    'company_icon.max' => 'Sorry! Maximum allowed size for an image is 2MB'
+                    'company_icon.max' => 'Sorry! Maximum allowed size for an image is 2MB',
                 ]
             );
         }
@@ -128,7 +124,7 @@ class SettingController extends Controller
             $request->validate(
                 ['company_banner' => 'nullable|mimes:jpeg,png,jpg,svg|max:2048'],
                 [
-                    'company_banner.max' => 'Sorry! Maximum allowed size for an image is 2MB'
+                    'company_banner.max' => 'Sorry! Maximum allowed size for an image is 2MB',
                 ]
             );
         }

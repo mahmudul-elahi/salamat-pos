@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -24,7 +25,7 @@ return new class extends Migration {
                 'payment_received',
                 'payment_sent',
                 'return_payment_sent',
-                'return_payment_received'
+                'return_payment_received',
             ]);
             $table->text('note')->nullable();
             $table->timestamps();

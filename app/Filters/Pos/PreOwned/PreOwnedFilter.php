@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filters\Pos\PreOwned;
 
 use App\Filters\BaseFilter;
@@ -9,9 +11,9 @@ class PreOwnedFilter extends BaseFilter
     public function search($search = null)
     {
         $this->builder->when($search, function ($query) use ($search) {
-            $query->where('serial_number', 'like', '%' . $search . '%')
+            $query->where('serial_number', 'like', '%'.$search.'%')
                 ->orWhereHas('product', function ($query) use ($search) {
-                    $query->where('product_name', 'like', '%' . $search . '%');
+                    $query->where('product_name', 'like', '%'.$search.'%');
                 });
         });
     }

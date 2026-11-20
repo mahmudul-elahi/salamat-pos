@@ -18,8 +18,8 @@ class EmployeeStatusController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-            'color'       => ['nullable', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:255'],
+            'color' => ['nullable', 'string', 'max:20'],
             'description' => ['nullable', 'string'],
         ]);
 
@@ -36,8 +36,8 @@ class EmployeeStatusController extends Controller
     public function update(Request $request, EmployeeStatus $employeeStatus)
     {
         $validated = $request->validate([
-            'name'        => ['sometimes', 'string', 'max:255'],
-            'color'       => ['nullable', 'string', 'max:20'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'color' => ['nullable', 'string', 'max:20'],
             'description' => ['nullable', 'string'],
         ]);
 

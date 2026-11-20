@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Pos\Page;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class TekzoPageRequest extends FormRequest
 {
@@ -28,7 +29,7 @@ class TekzoPageRequest extends FormRequest
             'slug' => [
                 'required',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'description' => ['nullable', 'string'],
             'meta_title' => ['nullable', 'string', 'max:255'],

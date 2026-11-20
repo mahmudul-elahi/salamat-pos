@@ -4,7 +4,6 @@ namespace Database\Seeders\Contact;
 
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Sale\Sale;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class SaleCustomerToContactSeeder extends Seeder
@@ -19,14 +18,14 @@ class SaleCustomerToContactSeeder extends Seeder
             ->get();
 
         $sales->each(function (Sale $sale) {
-            if ($sale->customer && $sale->customer->phone){
+            if ($sale->customer && $sale->customer->phone) {
                 $contact = Contact::query()
                     ->where('phone', $sale->customer->phone)
                     ->first();
 
-                if ($contact){
+                if ($contact) {
                     $sale->update([
-                        'contact_id' => $contact->id
+                        'contact_id' => $contact->id,
                     ]);
                 }
             }

@@ -9,9 +9,9 @@ use Illuminate\Http\Request;
 
 class LeaveSettingController extends Controller
 {
-    private const CONTEXT = 'leave';
+    private const string CONTEXT = 'leave';
 
-    private const ARRAY_KEYS = ['statuses_for_paid_leave', 'statuses_for_unpaid_leave'];
+    private const array ARRAY_KEYS = ['statuses_for_paid_leave', 'statuses_for_unpaid_leave'];
 
     public function __construct(protected SettingService $service) {}
 
@@ -24,8 +24,8 @@ class LeaveSettingController extends Controller
         }
 
         return [
-            'start_month'               => $settings['start_month'] ?? '1',
-            'statuses_for_paid_leave'   => $settings['statuses_for_paid_leave'],
+            'start_month' => $settings['start_month'] ?? '1',
+            'statuses_for_paid_leave' => $settings['statuses_for_paid_leave'],
             'statuses_for_unpaid_leave' => $settings['statuses_for_unpaid_leave'],
         ];
     }
@@ -33,10 +33,10 @@ class LeaveSettingController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'start_month'                 => ['required', 'integer', 'between:1,12'],
-            'statuses_for_paid_leave'     => ['nullable', 'array'],
-            'statuses_for_paid_leave.*'   => ['exists:employee_statuses,id'],
-            'statuses_for_unpaid_leave'   => ['nullable', 'array'],
+            'start_month' => ['required', 'integer', 'between:1,12'],
+            'statuses_for_paid_leave' => ['nullable', 'array'],
+            'statuses_for_paid_leave.*' => ['exists:employee_statuses,id'],
+            'statuses_for_unpaid_leave' => ['nullable', 'array'],
             'statuses_for_unpaid_leave.*' => ['exists:employee_statuses,id'],
         ]);
 

@@ -4,10 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Filters\BaseFilter;
-use App\Models\Common\User\UserProfile;
 use App\Models\Hrm\Attendance;
-use App\Models\Hrm\EmployeeDepartment;
 use App\Models\Hrm\EmployeeContact;
+use App\Models\Hrm\EmployeeDepartment;
 use App\Models\Hrm\EmployeeDesignation;
 use App\Models\Hrm\EmployeeDocument;
 use App\Models\Hrm\EmployeeProfile;
@@ -15,18 +14,20 @@ use App\Models\Hrm\EmployeeSalary;
 use App\Models\Hrm\EmployeeStatusHistory;
 use App\Models\Hrm\LeaveRequest;
 use App\Models\Hrm\Payslip;
+use App\Models\Hrm\WorkShift;
 use App\Models\Role\Role;
 use App\Models\Tenant\Tenant;
 use App\Models\Traits\User\UserMethodTrait;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
+// use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-// use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -34,12 +35,12 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory,
-        HasApiTokens,
-        UserMethodTrait,
+    use HasApiTokens,
+        HasFactory,
         InteractsWithMedia,
         Notifiable,
-        SoftDeletes;
+        SoftDeletes,
+        UserMethodTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -85,7 +86,7 @@ class User extends Authenticatable implements HasMedia
         ];
     }
 
-    public function roles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
     }
@@ -173,7 +174,7 @@ class User extends Authenticatable implements HasMedia
         return $this->hasMany(EmployeeDocument::class, 'employee_id');
     }
 
-    public function tenants(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function tenants(): BelongsToMany
     {
         return $this->belongsToMany(
             Tenant::class,
@@ -188,19 +189,20 @@ class User extends Authenticatable implements HasMedia
         return $this->tenants()->toOne();
     }
 
-    public function workShifts(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function workShifts(): BelongsToMany
     {
-        return $this->belongsToMany(\App\Models\Hrm\WorkShift::class, 'work_shift_user');
+        return $this->belongsToMany(WorkShift::class, 'work_shift_user');
     }
 
-    public function scopeFilters(Builder $query, BaseFilter $filter): \Illuminate\Database\Eloquent\Builder
+    public function scopeFilters(Builder $query, BaseFilter $filter): Builder
     {
         return $filter->apply($query);
     }
 
     public function getProfilePictureAttribute(): ?string
     {
-        $profilePicture = $this->getFirstMedia("profile_picture");
+        $profilePicture = $this->getFirstMedia('profile_picture');
+
         return $profilePicture?->getFullUrl();
     }
 

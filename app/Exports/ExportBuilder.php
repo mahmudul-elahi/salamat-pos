@@ -12,6 +12,7 @@ class ExportBuilder implements FromCollection, WithHeadings, WithTitle
     protected Collection $collection;
 
     protected string $title = '';
+
     protected array $headings = [];
 
     public function title(): string
@@ -22,6 +23,7 @@ class ExportBuilder implements FromCollection, WithHeadings, WithTitle
     public function setTitle(string $title): ExportBuilder
     {
         $this->title = $title;
+
         return $this;
     }
 
@@ -33,6 +35,7 @@ class ExportBuilder implements FromCollection, WithHeadings, WithTitle
     public function setCollection($collection): ExportBuilder
     {
         $this->collection = $collection;
+
         return $this;
     }
 
@@ -59,6 +62,7 @@ class ExportBuilder implements FromCollection, WithHeadings, WithTitle
     public function setHeadings(array $headings): ExportBuilder
     {
         $this->headings = $headings;
+
         return $this;
     }
 

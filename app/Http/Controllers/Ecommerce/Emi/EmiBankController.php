@@ -13,8 +13,8 @@ class EmiBankController extends Controller
     {
         return EmiBank::query()
             ->with('tenures')
-            ->when($request->search, fn($q) => $q->where('bank_name', 'like', '%' . $request->search . '%'))
-            ->when(isset($request->gw_key), fn($q) => $q->where('gw_key', $request->gw_key))
+            ->when($request->search, fn ($q) => $q->where('bank_name', 'like', '%'.$request->search.'%'))
+            ->when(isset($request->gw_key), fn ($q) => $q->where('gw_key', $request->gw_key))
             ->orderBy('bank_name')
             ->paginate(request('per_page', 10));
     }

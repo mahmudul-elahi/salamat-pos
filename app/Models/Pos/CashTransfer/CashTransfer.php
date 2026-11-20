@@ -52,6 +52,7 @@ class CashTransfer extends BaseModel
     public static function generateReferenceNo(): string
     {
         $last = static::withTrashed()->max('id') ?? 0;
-        return 'CT-' . str_pad($last + 1, 6, '0', STR_PAD_LEFT);
+
+        return 'CT-'.str_pad($last + 1, 6, '0', STR_PAD_LEFT);
     }
 }

@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Pos\Purchase;
 
-use App\Models\Pos\Product\TenantProductSerial;
-use Throwable;
-use Illuminate\Support\Facades\DB;
 use App\Exceptions\GeneralException;
-use App\Http\Controllers\Controller;
-use App\Models\Pos\Purchase\Purchase;
 use App\Filters\Pos\Purchase\PurchaseFilter;
-use App\Services\Pos\Purchase\PurchaseService;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Pos\Purchase\PurchaseRequest;
+use App\Models\Pos\Product\TenantProductSerial;
+use App\Models\Pos\Purchase\Purchase;
+use App\Services\Pos\Purchase\PurchaseService;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class PurchaseController extends Controller
 {
@@ -107,6 +107,7 @@ class PurchaseController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function store(PurchaseRequest $request)
@@ -136,7 +137,7 @@ class PurchaseController extends Controller
             // creation failed" error.
             try {
                 $this->service->recalculateProfitLossForFulfilledSales();
-            } catch (\Throwable $plException) {
+            } catch (Throwable $plException) {
                 report($plException);
             }
 
@@ -144,12 +145,12 @@ class PurchaseController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if ($exception->getCode() === 400) {
-                throw new GeneralException($exception->getMessage(), 500);
+                throw new GeneralException($exception->getMessage(), 500, $exception);
             }
             if (app()->environment('production')) {
-                throw new GeneralException('Purchase creation failed', 500);
+                throw new GeneralException('Purchase creation failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
@@ -159,6 +160,7 @@ class PurchaseController extends Controller
     public function show(Purchase $purchase): array
     {
         $isAdmin = auth()->user()->isAppAdmin();
+
         return [
             ...$purchase->load('contact:id,name')->toArray(),
             'invoice_bill' => $purchase->getPurchaseBillAttachmentAttribute(),
@@ -170,7 +172,7 @@ class PurchaseController extends Controller
                         ->firstWhere('serial_number', $item->serial_number);
 
                     $productSerialStatus = TenantProductSerial::query()
-                        ->when($isAdmin, fn($query) => $query->where('tenant_id', $purchase->tenant_id))
+                        ->when($isAdmin, fn ($query) => $query->where('tenant_id', $purchase->tenant_id))
                         ->where('product_serial_id', $matchedSerial?->id)
                         ->first();
 
@@ -193,6 +195,7 @@ class PurchaseController extends Controller
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function update(PurchaseRequest $request, Purchase $purchase)
@@ -215,18 +218,18 @@ class PurchaseController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if ($exception->getCode() === 400) {
-                throw new GeneralException($exception->getMessage(), 500);
+                throw new GeneralException($exception->getMessage(), 500, $exception);
             }
             if (app()->environment('production')) {
-                throw new GeneralException('Purchase update failed', 500);
+                throw new GeneralException('Purchase update failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
-
     /**
      * Remove the specified resource from storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function destroy(Purchase $purchase)
@@ -249,9 +252,9 @@ class PurchaseController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Purchase deletion failed', 500);
+                throw new GeneralException('Purchase deletion failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 }

@@ -22,12 +22,12 @@ class AssetController extends Controller
     {
         $validated = $request->validate([
             'asset_category_id' => ['required', 'exists:asset_categories,id'],
-            'asset_name'        => ['required', 'string', 'max:255'],
-            'asset_code'        => ['required', 'string', 'max:255', 'unique:assets,asset_code'],
-            'serial_number'     => ['nullable', 'string', 'max:255'],
-            'purchase_date'     => ['nullable', 'date'],
-            'purchase_cost'     => ['nullable', 'numeric', 'min:0'],
-            'note'              => ['nullable', 'string'],
+            'asset_name' => ['required', 'string', 'max:255'],
+            'asset_code' => ['required', 'string', 'max:255', 'unique:assets,asset_code'],
+            'serial_number' => ['nullable', 'string', 'max:255'],
+            'purchase_date' => ['nullable', 'date'],
+            'purchase_cost' => ['nullable', 'numeric', 'min:0'],
+            'note' => ['nullable', 'string'],
         ]);
 
         Asset::query()->create($validated);
@@ -44,12 +44,12 @@ class AssetController extends Controller
     {
         $validated = $request->validate([
             'asset_category_id' => ['sometimes', 'exists:asset_categories,id'],
-            'asset_name'        => ['sometimes', 'string', 'max:255'],
-            'asset_code'        => ['sometimes', 'string', 'max:255', Rule::unique('assets', 'asset_code')->ignore($asset->id)],
-            'serial_number'     => ['nullable', 'string', 'max:255'],
-            'purchase_date'     => ['nullable', 'date'],
-            'purchase_cost'     => ['nullable', 'numeric', 'min:0'],
-            'note'              => ['nullable', 'string'],
+            'asset_name' => ['sometimes', 'string', 'max:255'],
+            'asset_code' => ['sometimes', 'string', 'max:255', Rule::unique('assets', 'asset_code')->ignore($asset->id)],
+            'serial_number' => ['nullable', 'string', 'max:255'],
+            'purchase_date' => ['nullable', 'date'],
+            'purchase_cost' => ['nullable', 'numeric', 'min:0'],
+            'note' => ['nullable', 'string'],
         ]);
 
         $asset->update($validated);
@@ -67,9 +67,9 @@ class AssetController extends Controller
     public function assign(Request $request, Asset $asset)
     {
         $validated = $request->validate([
-            'employee_id'   => ['required', 'exists:users,id'],
+            'employee_id' => ['required', 'exists:users,id'],
             'assigned_date' => ['required', 'date'],
-            'note'          => ['nullable', 'string'],
+            'note' => ['nullable', 'string'],
         ]);
 
         // Reassigning to someone else implicitly returns the asset from
@@ -92,8 +92,8 @@ class AssetController extends Controller
     {
         $validated = $request->validate([
             'returned_date' => ['required', 'date'],
-            'condition'     => ['required', Rule::in(['good', 'needs_repair', 'damaged', 'lost'])],
-            'return_note'   => ['nullable', 'string'],
+            'condition' => ['required', Rule::in(['good', 'needs_repair', 'damaged', 'lost'])],
+            'return_note' => ['nullable', 'string'],
         ]);
 
         // Same bypassed-cast issue as assign() above - the relation query
@@ -111,7 +111,7 @@ class AssetController extends Controller
         return $asset->load([
             'category:id,name',
             'currentAssignment.employee:id,name',
-            'assignments' => fn($query) => $query
+            'assignments' => fn ($query) => $query
                 ->with('employee:id,name')
                 ->orderByDesc('assigned_date')
                 ->orderByDesc('id'),

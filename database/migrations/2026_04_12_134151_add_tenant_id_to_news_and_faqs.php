@@ -5,7 +5,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -14,7 +15,7 @@ return new class extends Migration {
         Schema::table('news_and_faqs', function (Blueprint $table) {
             if (Schema::hasTable('news')) {
                 Schema::table('news', function (Blueprint $table) {
-                    if (!Schema::hasColumn('news', 'tenant_id')) {
+                    if (! Schema::hasColumn('news', 'tenant_id')) {
                         $table->foreignIdFor(Tenant::class)
                             ->nullable()
                             ->after('id')
@@ -26,7 +27,7 @@ return new class extends Migration {
 
             if (Schema::hasTable('faqs')) {
                 Schema::table('faqs', function (Blueprint $table) {
-                    if (!Schema::hasColumn('faqs', 'tenant_id')) {
+                    if (! Schema::hasColumn('faqs', 'tenant_id')) {
                         $table->foreignIdFor(Tenant::class)
                             ->nullable()
                             ->after('id')

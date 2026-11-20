@@ -7,20 +7,22 @@ use App\Filters\Landlord\Common\NameFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\Category\CategoryRequest;
 use App\Models\Landlord\Category\Category;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-
     public function __construct(protected NameFilter $filter) {}
 
     /**
      * Display a listing of the resource.
+     *
      * @throws AuthorizeException
      */
-
     public function index()
     {
         return Category::query()
@@ -34,8 +36,7 @@ class CategoryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-
-    public function store(CategoryRequest $request): \Illuminate\Http\JsonResponse
+    public function store(CategoryRequest $request): JsonResponse
     {
         $data = $request->validated();
         $data['slug'] = Str::slug($data['name']);
@@ -43,20 +44,17 @@ class CategoryController extends Controller
         // a valid value for the parent_id foreign key column, so normalize it to null.
         $data['parent_id'] = $data['parent_id'] ?: null;
         $data['order'] = (int) Category::query()
-            ->when(empty($data['parent_id']), fn($q) => $q->whereNull('parent_id'), fn($q) => $q->where('parent_id', $data['parent_id']))
+            ->when(empty($data['parent_id']), fn ($q) => $q->whereNull('parent_id'), fn ($q) => $q->where('parent_id', $data['parent_id']))
             ->max('order') + 1;
 
-    Category::query()->create($data);
-
+        Category::query()->create($data);
 
         return successResponse('Category created successfully');
     }
 
-
     /**
      * Display the specified resource.
      */
-
     public function show(Category $category)
     {
         return $category;
@@ -65,10 +63,9 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-
-    public function update(CategoryRequest $request, Category $category): \Illuminate\Http\JsonResponse
+    public function update(CategoryRequest $request, Category $category): JsonResponse
     {
-    
+
         $data = $request->validated();
         $data['parent_id'] = $data['parent_id'] ?: null;
 
@@ -80,14 +77,14 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(Category $category): \Illuminate\Http\JsonResponse
+    public function destroy(Category $category): JsonResponse
     {
         $category->delete();
+
         return successResponse('Category deleted successfully');
     }
 
-    public function toggleStatus(Category $category): \Illuminate\Http\JsonResponse
+    public function toggleStatus(Category $category): JsonResponse
     {
         $category->update([
             'status' => $category->status == '1' ? '0' : '1',
@@ -96,18 +93,18 @@ class CategoryController extends Controller
         return successResponse('Category visibility updated successfully');
     }
 
-    public function parentCategory(): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public function parentCategory(): LengthAwarePaginator
     {
         return Category::query()
-            ->filter(new NameFilter())
+            ->filter(new NameFilter)
             ->orderByDesc('id')
             ->paginate(request('per_page', 10));
     }
 
-    public function categories(): \Illuminate\Database\Eloquent\Collection|array
+    public function categories(): Collection|array
     {
         return Category::query()
-            ->filter(new NameFilter())
+            ->filter(new NameFilter)
             ->whereNull('parent_id')
             ->with('subCategories')
             ->orderByDesc('id')
@@ -123,13 +120,14 @@ class CategoryController extends Controller
             $this->applyCategoryOrder($categories);
 
             DB::commit();
+
             return response()->json(['success' => true]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             DB::rollBack();
+
             return response()->json(['error' => 'Failed to update order'], 500);
         }
     }
-
 
     /**
      * Recurses through the tree so reordering at any depth — children,
@@ -144,10 +142,9 @@ class CategoryController extends Controller
                 $cat->save();
             }
 
-            if (!empty($category['sub_categories'])) {
+            if (! empty($category['sub_categories'])) {
                 $this->applyCategoryOrder($category['sub_categories']);
             }
         }
     }
-
 }

@@ -18,10 +18,10 @@ class ProductSpecificationController extends Controller
             ->with(['parent:id,name', 'sub:id,name'])
             ->orderBy('parent_id')
             ->get()
-            ->map(fn($spec) => [
-                'id'      => $spec->id,
-                'parent'  => $spec->parent ? ['id' => $spec->parent->id, 'name' => $spec->parent->name] : null,
-                'sub'     => $spec->sub    ? ['id' => $spec->sub->id,    'name' => $spec->sub->name]    : null,
+            ->map(fn ($spec) => [
+                'id' => $spec->id,
+                'parent' => $spec->parent ? ['id' => $spec->parent->id, 'name' => $spec->parent->name] : null,
+                'sub' => $spec->sub ? ['id' => $spec->sub->id,    'name' => $spec->sub->name] : null,
                 'details' => $spec->details,
             ]);
 
@@ -32,7 +32,7 @@ class ProductSpecificationController extends Controller
             ->get(['id', 'name']);
 
         return response()->json([
-            'specs'  => $specs,
+            'specs' => $specs,
             'groups' => $groups,
         ]);
     }
@@ -41,25 +41,25 @@ class ProductSpecificationController extends Controller
     {
         $request->validate([
             'parent_id' => 'required|integer|exists:specification_groups,id',
-            'sub_id'    => 'nullable|integer|exists:specification_groups,id',
-            'details'   => 'required|string|max:1000',
+            'sub_id' => 'nullable|integer|exists:specification_groups,id',
+            'details' => 'required|string|max:1000',
         ]);
 
         $spec = ProductSpecification::create([
             'product_id' => $product->id,
-            'parent_id'  => $request->parent_id,
-            'sub_id'     => $request->sub_id,
-            'details'    => $request->details,
+            'parent_id' => $request->parent_id,
+            'sub_id' => $request->sub_id,
+            'details' => $request->details,
         ]);
 
         $spec->load(['parent:id,name', 'sub:id,name']);
 
         return response()->json([
             'message' => 'Specification added successfully',
-            'spec'    => [
-                'id'      => $spec->id,
-                'parent'  => $spec->parent ? ['id' => $spec->parent->id, 'name' => $spec->parent->name] : null,
-                'sub'     => $spec->sub    ? ['id' => $spec->sub->id,    'name' => $spec->sub->name]    : null,
+            'spec' => [
+                'id' => $spec->id,
+                'parent' => $spec->parent ? ['id' => $spec->parent->id, 'name' => $spec->parent->name] : null,
+                'sub' => $spec->sub ? ['id' => $spec->sub->id,    'name' => $spec->sub->name] : null,
                 'details' => $spec->details,
             ],
         ], 201);
@@ -73,24 +73,24 @@ class ProductSpecificationController extends Controller
 
         $request->validate([
             'parent_id' => 'required|integer|exists:specification_groups,id',
-            'sub_id'    => 'nullable|integer|exists:specification_groups,id',
-            'details'   => 'required|string|max:1000',
+            'sub_id' => 'nullable|integer|exists:specification_groups,id',
+            'details' => 'required|string|max:1000',
         ]);
 
         $specification->update([
             'parent_id' => $request->parent_id,
-            'sub_id'    => $request->sub_id,
-            'details'   => $request->details,
+            'sub_id' => $request->sub_id,
+            'details' => $request->details,
         ]);
 
         $specification->load(['parent:id,name', 'sub:id,name']);
 
         return response()->json([
             'message' => 'Specification updated successfully',
-            'spec'    => [
-                'id'      => $specification->id,
-                'parent'  => $specification->parent ? ['id' => $specification->parent->id, 'name' => $specification->parent->name] : null,
-                'sub'     => $specification->sub    ? ['id' => $specification->sub->id,    'name' => $specification->sub->name]    : null,
+            'spec' => [
+                'id' => $specification->id,
+                'parent' => $specification->parent ? ['id' => $specification->parent->id, 'name' => $specification->parent->name] : null,
+                'sub' => $specification->sub ? ['id' => $specification->sub->id,    'name' => $specification->sub->name] : null,
                 'details' => $specification->details,
             ],
         ]);

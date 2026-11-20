@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Contact\ContactHistoryController;
 use App\Http\Controllers\Pos\Customer\CustomerController;
 use App\Http\Controllers\Pos\Customer\CustomerPaymentController;
@@ -55,28 +57,28 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
 
     $router->apiResource('online-contacts', OnlineContactController::class);
 
-    $router->get('online-contacts/{onlineContact}/orders',          [OnlineContactController::class, 'orders'])
+    $router->get('online-contacts/{onlineContact}/orders', [OnlineContactController::class, 'orders'])
         ->name('customer_orders.index');
 
     $router->get('online-contacts/{onlineContact}/elite-histories', [OnlineContactController::class, 'eliteHistories'])
         ->name('customer_elite_histories.index');
 
-    $router->get('online-contacts/{onlineContact}/addresses',       [OnlineContactController::class, 'addresses'])
+    $router->get('online-contacts/{onlineContact}/addresses', [OnlineContactController::class, 'addresses'])
         ->name('customer_addresses.index');
 
-    $router->get('online-contacts/{onlineContact}/reviews',         [OnlineContactController::class, 'reviews'])
+    $router->get('online-contacts/{onlineContact}/reviews', [OnlineContactController::class, 'reviews'])
         ->name('customer_reviews.index');
 
-    $router->get('online-contacts/{onlineContact}/cart',            [OnlineContactController::class, 'cart'])
+    $router->get('online-contacts/{onlineContact}/cart', [OnlineContactController::class, 'cart'])
         ->name('customer_shopping_carts.index');
 
-    $router->get('online-contacts/{onlineContact}/wishlist',        [OnlineContactController::class, 'wishlist'])
+    $router->get('online-contacts/{onlineContact}/wishlist', [OnlineContactController::class, 'wishlist'])
         ->name('customer_wishlists.index');
 
     $router->get('online-contacts/{onlineContact}/sell-device-requests', [OnlineContactController::class, 'sellDeviceRequests'])
         ->name('customer_sell_device_requests.index');
 
-    $router->get('payments', [App\Http\Controllers\Pos\Customer\CustomerPaymentController::class, 'index'])
+    $router->get('payments', [CustomerPaymentController::class, 'index'])
         ->name('payments.view');
 
     $router->get('payment-history', [PaymentHistoryController::class, 'index'])
@@ -91,7 +93,7 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
     $router->get('credit-vouchers/{ledger}', [PaymentHistoryController::class, 'creditVoucher'])
         ->name('credit_voucher.view');
 
-    //$router->get('customers-due/{customer}', [App\Http\Controllers\Pos\Customer\CustomerPaymentController::class, 'getDue'])->name('customers.due');
+    // $router->get('customers-due/{customer}', [App\Http\Controllers\Pos\Customer\CustomerPaymentController::class, 'getDue'])->name('customers.due');
 
     $router->post('customers-payment', [CustomerPaymentController::class, 'store'])
         ->name('customer_payment.receive');
@@ -101,7 +103,6 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
 
     $router->post('advance-credit/store', [AdvanceCreditController::class, 'store'])
         ->name('advance_credit.store');
-
 
     $router->apiResource('directors', DirectorController::class);
 

@@ -20,7 +20,7 @@ class BdCourierController extends Controller
      * bdcourier.com's own aggregator API keys its response — so both
      * endpoints return interchangeable shapes for the frontend.
      */
-    private const COURIER_META = [
+    private const array COURIER_META = [
         'pathao' => ['name' => 'Pathao', 'logo' => '/assets/images/couriers/pathao-logo.png'],
         'steadfast' => ['name' => 'SteadFast', 'logo' => '/assets/images/couriers/steadfast-logo.png'],
         'redx' => ['name' => 'Redx', 'logo' => '/assets/images/couriers/redx-logo.png'],
@@ -34,7 +34,7 @@ class BdCourierController extends Controller
      * no such integration, so it only ever falls back to our own order
      * history.
      */
-    private const LIVE_SERVICES = [
+    private const array LIVE_SERVICES = [
         'pathao' => PathaoService::class,
         'steadfast' => SteadfastService::class,
         'redx' => RedxService::class,
@@ -64,8 +64,8 @@ class BdCourierController extends Controller
             $liveServiceClass = self::LIVE_SERVICES[$provider] ?? null;
 
             $stats = $this->statsFor($phone, $provider, $liveServiceClass
-                ? fn() => (new $liveServiceClass())->getDeliveryStats($phone)
-                : fn() => ['error' => 'Not integrated']);
+                ? fn () => (new $liveServiceClass)->getDeliveryStats($phone)
+                : fn () => ['error' => 'Not integrated']);
 
             $couriers[$provider] = [
                 'logo' => asset($meta['logo']),

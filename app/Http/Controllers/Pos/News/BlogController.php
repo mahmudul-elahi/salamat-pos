@@ -11,11 +11,9 @@ use Illuminate\Http\JsonResponse;
 
 class BlogController extends Controller
 {
-    private const BLOG_TENANT_ID = 4;
+    private const int BLOG_TENANT_ID = 4;
 
-    public function __construct(protected NameFilter $filter, protected SeoService $seoService)
-    {
-    }
+    public function __construct(protected NameFilter $filter, protected SeoService $seoService) {}
 
     public function index()
     {
@@ -71,4 +69,3 @@ class BlogController extends Controller
             ->findOrFail($id);
     }
 }
-

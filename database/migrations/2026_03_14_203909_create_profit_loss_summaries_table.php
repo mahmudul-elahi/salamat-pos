@@ -1,10 +1,15 @@
 <?php
 
+use App\Models\Pos\Product\Product;
+use App\Models\Pos\Product\ProductVariant;
+use App\Models\Pos\Sale\Sale;
+use App\Models\Tenant\Tenant;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -12,10 +17,10 @@ return new class extends Migration {
     {
         Schema::create('profit_loss_summaries', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(App\Models\Pos\Sale\Sale::class)->index()->constrained('sales');
-            $table->foreignIdFor(App\Models\Tenant\Tenant::class)->index()->constrained('tenants');
-            $table->foreignIdFor(\App\Models\Pos\Product\Product::class)->index()->constrained('products');
-            $table->foreignIdFor(\App\Models\Pos\Product\ProductVariant::class)->nullable()->index()->constrained('product_variants');
+            $table->foreignIdFor(Sale::class)->index()->constrained('sales');
+            $table->foreignIdFor(Tenant::class)->index()->constrained('tenants');
+            $table->foreignIdFor(Product::class)->index()->constrained('products');
+            $table->foreignIdFor(ProductVariant::class)->nullable()->index()->constrained('product_variants');
             $table->date('sale_date')->index();
             $table->string('full_invoice_number')->nullable();
             $table->decimal('quantity', 15, 2)->default(0);

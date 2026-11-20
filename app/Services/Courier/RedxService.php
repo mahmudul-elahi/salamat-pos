@@ -17,14 +17,14 @@ class RedxService
     {
         return Http::timeout(20)
             ->withHeaders([
-                'API-ACCESS-TOKEN' => 'Bearer ' . config('services.redx.access_token'),
+                'API-ACCESS-TOKEN' => 'Bearer '.config('services.redx.access_token'),
             ])
             ->acceptJson();
     }
 
     private function url(string $path): string
     {
-        return rtrim(config('services.redx.base_url'), '/') . '/' . ltrim($path, '/');
+        return rtrim(config('services.redx.base_url'), '/').'/'.ltrim($path, '/');
     }
 
     /**
@@ -32,7 +32,7 @@ class RedxService
      */
     private function handle($response, string $fallbackMessage): array
     {
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new GeneralException($response->json('message') ?? $fallbackMessage, 422);
         }
 
@@ -99,6 +99,6 @@ class RedxService
      */
     public function trackingUrl(string $trackingId): string
     {
-        return 'https://redx.com.bd/track-parcel/?trackingId=' . $trackingId;
+        return 'https://redx.com.bd/track-parcel/?trackingId='.$trackingId;
     }
 }

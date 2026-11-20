@@ -11,17 +11,16 @@ class AdvanceCreditController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tenant_id'  => 'required|exists:tenants,id',
+            'tenant_id' => 'required|exists:tenants,id',
             'contact_id' => 'required|exists:contacts,id',
-            'date'       => 'required|date',
-            'note'       => 'nullable|string|max:500',
-            'amount'     => 'required|numeric|min:0.01',
-            'type'       => 'required|in:receivable,payable',
+            'date' => 'required|date',
+            'note' => 'nullable|string|max:500',
+            'amount' => 'required|numeric|min:0.01',
+            'type' => 'required|in:receivable,payable',
         ]);
 
         AdvanceCredit::create($request->all());
 
         return successResponse('Advance credit recorded successfully.');
     }
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands\Customer;
 
 use App\Models\Pos\Contact\Contact;
@@ -27,7 +29,7 @@ class OnlineCustomerCommand extends Command
     public function handle()
     {
         $this->info('Start processing...');
-        $contacts = Contact::query()
+        Contact::query()
             ->where('online', false)
             ->where('type', 'consumer')
             ->whereNotNull('email')

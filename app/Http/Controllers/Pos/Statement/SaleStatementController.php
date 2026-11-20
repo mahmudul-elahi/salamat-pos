@@ -2,22 +2,21 @@
 
 namespace App\Http\Controllers\Pos\Statement;
 
+use App\Filters\Pos\Report\SalesReportFilter;
 use App\Http\Controllers\Controller;
 use App\Models\Pos\Sale\Sale;
-use App\Filters\Pos\Report\SalesReportFilter;
-use Illuminate\Http\Request;
+use App\Services\Setting\SettingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\Setting\SettingService;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class SaleStatementController extends Controller
 {
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $filter = new SalesReportFilter();
+        $filter = new SalesReportFilter;
 
         $baseQuery = Sale::query()
             ->filters($filter)
@@ -84,17 +83,17 @@ class SaleStatementController extends Controller
         return response()->json([
             ...$paginated->toArray(),
             'grand_total' => [
-                'total_sales' => (float)$grandTotal,
+                'total_sales' => (float) $grandTotal,
                 'total_returns' => 0,
-                'total_items' => (float)$totalItems,
-                'paid_amount' => (float)$paidAmount,
-                'due_amount' => (float)$totalDue,
-                'grand_total' => (float)$grandTotal,
+                'total_items' => (float) $totalItems,
+                'paid_amount' => (float) $paidAmount,
+                'due_amount' => (float) $totalDue,
+                'grand_total' => (float) $grandTotal,
             ],
         ]);
     }
 
-    private const PDF_TOGGLEABLE_COLUMNS = ['transaction_mode', 'narration', 'total_item', 'total_amount', 'due_amount', 'received_amount'];
+    private const array PDF_TOGGLEABLE_COLUMNS = ['transaction_mode', 'narration', 'total_item', 'total_amount', 'due_amount', 'received_amount'];
 
     public function saleStatementPdf(Request $request)
     {
@@ -105,52 +104,52 @@ class SaleStatementController extends Controller
             ? array_intersect(explode(',', $request->input('columns')), self::PDF_TOGGLEABLE_COLUMNS)
             : self::PDF_TOGGLEABLE_COLUMNS;
 
-        $filter = new SalesReportFilter();
+        $filter = new SalesReportFilter;
 
         $salesQuery = Sale::query()
             ->with(['contact:id,name', 'payments.paymentMethod', 'items'])
             ->filters($filter)
             ->whereDate('date', Carbon::today());
 
-        if (!$isAppAdmin && tenant()) {
+        if (! $isAppAdmin && tenant()) {
             $salesQuery->where('tenant_id', tenant()->id);
         }
 
         $sales = $salesQuery->get();
 
-        $combined = $sales->map(function($sale) {
+        $combined = $sales->map(function ($sale) {
             $received = $sale->payments->sum('amount');
             $due = $sale->grand_total - $received;
+
             return [
                 'date_obj' => Carbon::parse($sale->date),
                 'id' => $sale->id,
                 'date' => Carbon::parse($sale->date)->format('d.m.y'),
                 'customer_name' => $sale->contact->name ?? '-',
                 'transaction_mode' => 'Sales',
-                'narration' => $sale->payments->map(fn($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
+                'narration' => $sale->payments->map(fn ($p) => optional($p->paymentMethod)->name)->unique()->implode(', '),
                 'invoice' => $sale->full_invoice_number,
                 'total_item' => $sale->items->sum('quantity'),
-                'total_amount' => (float)$sale->grand_total,
-                'due_amount' => (float)$due,
-                'received_amount' => (float)$received,
+                'total_amount' => (float) $sale->grand_total,
+                'due_amount' => (float) $due,
+                'received_amount' => (float) $received,
             ];
-        })->sortByDesc(function($item) {
-            return $item['date_obj']->format('Y-m-d') . $item['id'];
-        })->values();
+        })->sortByDesc(fn ($item) => $item['date_obj']->format('Y-m-d').$item['id'])->values();
 
         // Add SL after sorting
-        $combined = $combined->map(function($item, $index) {
+        $combined = $combined->map(function ($item, $index) {
             $item['sl'] = $index + 1;
+
             return $item;
         });
 
         $totalSales = $sales->sum('grand_total');
-        $totalItems = $sales->sum(fn($s) => $s->items->sum('quantity'));
-        $totalReceived = $sales->sum(fn($s) => $s->payments->sum('amount'));
+        $totalItems = $sales->sum(fn ($s) => $s->items->sum('quantity'));
+        $totalReceived = $sales->sum(fn ($s) => $s->payments->sum('amount'));
         $totalDue = $totalSales - $totalReceived;
 
         $wareHouse = $request->input('warehouse');
-        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (strpos($wareHouse, ',') !== false ? explode(',', $wareHouse)[0] : $wareHouse);
+        $firstWarehouseId = is_array($wareHouse) ? ($wareHouse[0] ?? null) : (str_contains($wareHouse, ',') ? explode(',', $wareHouse)[0] : $wareHouse);
         $tenantId = $isAppAdmin ? $firstWarehouseId : (tenant() ? tenant()->id : null);
 
         $appSettings = resolve(SettingService::class)->getFormattedSettings('app');

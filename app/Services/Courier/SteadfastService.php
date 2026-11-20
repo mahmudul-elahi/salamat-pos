@@ -23,9 +23,9 @@ class SteadfastService
      */
     public function createOrder(array $payload): array
     {
-        $response = $this->client()->post(config('services.steadfast.base_url') . '/create_order', $payload);
+        $response = $this->client()->post(config('services.steadfast.base_url').'/create_order', $payload);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $message = $response->json('message') ?? 'Failed to create Steadfast order';
             throw new GeneralException($message, 422);
         }
@@ -38,9 +38,9 @@ class SteadfastService
      */
     public function getStatusByConsignmentId(string $consignmentId): array
     {
-        $response = $this->client()->get(config('services.steadfast.base_url') . "/status_by_cid/{$consignmentId}");
+        $response = $this->client()->get(config('services.steadfast.base_url')."/status_by_cid/{$consignmentId}");
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new GeneralException($response->json('message') ?? 'Failed to fetch order status', 422);
         }
 
@@ -55,9 +55,9 @@ class SteadfastService
      */
     public function getStatusByTrackingCode(string $trackingCode): array
     {
-        $response = $this->client()->get(config('services.steadfast.base_url') . "/status_by_trackingcode/{$trackingCode}");
+        $response = $this->client()->get(config('services.steadfast.base_url')."/status_by_trackingcode/{$trackingCode}");
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new GeneralException($response->json('message') ?? 'Failed to fetch order status', 422);
         }
 
@@ -86,9 +86,9 @@ class SteadfastService
      */
     public function getBalance(): array
     {
-        $response = $this->client()->get(config('services.steadfast.base_url') . '/get_balance');
+        $response = $this->client()->get(config('services.steadfast.base_url').'/get_balance');
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new GeneralException($response->json('message') ?? 'Failed to fetch balance', 422);
         }
 
@@ -105,9 +105,9 @@ class SteadfastService
     public function getPoliceStations(): array
     {
         return Cache::remember('steadfast_police_stations', now()->addDay(), function () {
-            $response = $this->client()->get(config('services.steadfast.base_url') . '/police_stations');
+            $response = $this->client()->get(config('services.steadfast.base_url').'/police_stations');
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new GeneralException($response->json('message') ?? 'Failed to fetch districts', 422);
             }
 

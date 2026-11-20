@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Models\Pos\Contact\Contact;
 use App\Services\Upload\ChunkedUploadService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -29,10 +30,10 @@ trait StoresPriceDocument
         Contact $contact,
         string $folder,
         ChunkedUploadService $chunks
-    ): \Illuminate\Http\JsonResponse {
+    ): JsonResponse {
         $mergedPath = $chunks->receive($request, $this->priceDocumentExtensions, $this->priceDocumentMaxKilobytes);
 
-        if (!$mergedPath) {
+        if (! $mergedPath) {
             return response()->json(['message' => 'Chunk received', 'done' => false]);
         }
 
@@ -63,9 +64,9 @@ trait StoresPriceDocument
         // while the modal never closed and the table never reloaded.
         return response()->json([
             'message' => 'Price document uploaded successfully',
-            'done'    => true,
-            'result'  => [
-                'price_document'     => $path,
+            'done' => true,
+            'result' => [
+                'price_document' => $path,
                 'price_document_url' => $contact->fresh()->price_document_url,
             ],
         ]);

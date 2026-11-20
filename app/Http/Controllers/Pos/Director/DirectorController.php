@@ -43,19 +43,21 @@ class DirectorController extends Controller
             ->pluck('total', 'user_id');
 
         return $directors->map(function ($director) use ($deposits, $withdraws) {
-            $totalDeposit  = (float) ($deposits[$director->id]  ?? 0);
+            $totalDeposit = (float) ($deposits[$director->id] ?? 0);
             $totalWithdraw = (float) ($withdraws[$director->id] ?? 0);
+
             return [
                 ...$director->toArray(),
-                'total_deposit'  => $totalDeposit,
+                'total_deposit' => $totalDeposit,
                 'total_withdraw' => $totalWithdraw,
-                'total_balance'  => $totalDeposit - $totalWithdraw,
+                'total_balance' => $totalDeposit - $totalWithdraw,
             ];
         });
     }
 
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function store(DirectorRequest $request)
@@ -64,19 +66,20 @@ class DirectorController extends Controller
             DB::beginTransaction();
 
             $user = User::query()->create(array_merge($request->validated(), [
-                'role' => 'director'
+                'role' => 'director',
             ]));
 
             $user->tenants()->sync($request->tenant_id);
 
             DB::commit();
+
             return successResponse('Director created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Director created failed', 500);
+                throw new GeneralException('Director created failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -86,14 +89,16 @@ class DirectorController extends Controller
     public function show(User $director)
     {
         $director->load('tenant');
+
         return [
             ...$director->toArray(),
-            'tenant_id' => $director->tenant?->id
+            'tenant_id' => $director->tenant?->id,
         ];
     }
 
     /**
      * Update the specified resource in storage.
+     *
      * @throws Throwable
      */
     public function update(DirectorRequest $request, User $director)
@@ -102,24 +107,26 @@ class DirectorController extends Controller
             DB::beginTransaction();
 
             $director->update(array_merge($request->validated(), [
-                'role' => 'director'
+                'role' => 'director',
             ]));
 
             $director->tenants()->sync($request->tenant_id);
 
             DB::commit();
+
             return successResponse('Director created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Director created failed', 500);
+                throw new GeneralException('Director created failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
     /**
      * Remove the specified resource from storage.
+     *
      * @throws GeneralException|Throwable
      */
     public function destroy(User $director)
@@ -129,13 +136,14 @@ class DirectorController extends Controller
             $director->tenants()->detach();
             $director->delete();
             DB::commit();
+
             return successResponse('Director deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Director deleted failed', 500);
+                throw new GeneralException('Director deleted failed', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -156,11 +164,10 @@ class DirectorController extends Controller
         ];
     }
 
-
     public function deposit(User $director)
     {
         $deposits = Investment::query()
-            ->filters(new DepositReportFilter())
+            ->filters(new DepositReportFilter)
             ->where('user_id', $director->id)
             ->with('tenant')
             ->latest()
@@ -169,15 +176,15 @@ class DirectorController extends Controller
         return [
             ...$deposits->toArray(),
             'grand_total' => [
-                'amount' => $deposits->sum('amount')
-            ]
+                'amount' => $deposits->sum('amount'),
+            ],
         ];
     }
 
     public function withdrawals(User $director)
     {
         $withdrawals = Income::query()
-            ->filters(new IncomeFilter())
+            ->filters(new IncomeFilter)
             ->where('user_id', $director->id)
             ->with('tenant')
             ->latest()
@@ -186,10 +193,11 @@ class DirectorController extends Controller
         return [
             ...$withdrawals->toArray(),
             'grand_total' => [
-                'amount' => $withdrawals->sum('amount')
-            ]
+                'amount' => $withdrawals->sum('amount'),
+            ],
         ];
     }
+
     public function shopBalances(User $director)
     {
         $shops = $director->tenants()->pluck('name', 'id');
@@ -211,15 +219,15 @@ class DirectorController extends Controller
             ->pluck('total', 'tenant_id');
 
         return $shops->map(function ($name, $shopId) use ($deposits, $withdraws) {
-            $deposit  = $deposits->get($shopId, 0);
+            $deposit = $deposits->get($shopId, 0);
             $withdraw = $withdraws->get($shopId, 0);
 
             return [
-                'shop_id'        => $shopId,
-                'shop_name'      => $name,
-                'total_deposit'  => $deposit,
+                'shop_id' => $shopId,
+                'shop_name' => $name,
+                'total_deposit' => $deposit,
                 'total_withdraw' => $withdraw,
-                'balance'        => $deposit - $withdraw,
+                'balance' => $deposit - $withdraw,
             ];
         })->values()->all();
     }
@@ -252,7 +260,7 @@ class DirectorController extends Controller
     {
         $status = Cache::get(GenerateDirectorProfilePdfJob::cacheKey($token));
 
-        if (!$status) {
+        if (! $status) {
             return response()->json(['status' => 'not_found'], 404);
         }
 

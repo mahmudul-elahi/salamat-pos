@@ -17,7 +17,6 @@ class ProfitLossFilter extends BaseFilter
         });
     }
 
-
     public function product($productId = null): void
     {
         $productId = explode(',', $productId);
@@ -97,6 +96,7 @@ class ProfitLossFilter extends BaseFilter
             // If no date is provided, default to today's date
             if (empty($range)) {
                 $this->builder->whereDate('sale_date', Carbon::today());
+
                 return;
             }
 
@@ -105,9 +105,10 @@ class ProfitLossFilter extends BaseFilter
                 $range = json_decode($range, true);
             }
 
-            if (!is_array($range) || count($range) < 2) {
+            if (! is_array($range) || count($range) < 2) {
                 // Fallback to today if invalid structure
                 $this->builder->whereDate('sale_date', Carbon::today());
+
                 return;
             }
 
@@ -117,7 +118,7 @@ class ProfitLossFilter extends BaseFilter
             $end = Carbon::parse($endDate)->endOfDay();
 
             $this->builder->whereBetween('sale_date', [$start, $end]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range format.');
         }
     }

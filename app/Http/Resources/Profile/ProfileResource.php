@@ -33,12 +33,12 @@ class ProfileResource extends JsonResource
     private function formatTenant(): ?array
     {
         $tenant = tenant();
-        if (!$tenant) {
+        if (! $tenant) {
             return null;
         }
 
         return [
-            'id'   => $tenant->id,
+            'id' => $tenant->id,
             'name' => $tenant->name,
         ];
     }
@@ -48,12 +48,13 @@ class ProfileResource extends JsonResource
         $permissions = resolve(UserRepository::class)->getPermissionsForFrontEnd();
         /** @var User $user */
         $user = Auth::user();
+
         return array_merge(
             $permissions,
             [
-                'is_app_admin'  => $user->isAppAdmin(),
-                'is_employee'   => (bool) $user->is_employee,
-                'tenant_ids'    => $user->is_employee
+                'is_app_admin' => $user->isAppAdmin(),
+                'is_employee' => (bool) $user->is_employee,
+                'tenant_ids' => $user->is_employee
                     ? $user->tenants->pluck('id')->toArray()
                     : [],
             ]

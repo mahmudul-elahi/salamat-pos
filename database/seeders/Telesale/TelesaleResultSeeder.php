@@ -39,6 +39,6 @@ class TelesaleResultSeeder extends Seeder
             }
         }
 
-        $this->command?->info($added ? 'Results added: ' . implode(', ', $added) : 'No new results to add.');
+        $this->command?->info($added ? 'Results added: '.implode(', ', $added) : 'No new results to add.');
     }
 }

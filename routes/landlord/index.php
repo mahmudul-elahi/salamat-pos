@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Landlord\Role\DetachUserRoleController;
 use App\Http\Controllers\Landlord\Role\RoleController;
 use App\Http\Controllers\Landlord\Template\TemplateController;
@@ -7,7 +9,6 @@ use App\Http\Controllers\Landlord\User\UserController;
 use App\Http\Controllers\Landlord\User\UserInviteController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-
 
 Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], function (Router $router) {
 

@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Ecommerce\PreOwned\PreOwnedProductController;
+declare(strict_types=1);
+
 use App\Http\Controllers\Ecommerce\PreOwned\PreOwnedProductSeoController;
 use App\Http\Controllers\Ecommerce\Slider\SliderController;
 use App\Http\Controllers\Pos\News\BlogController;

@@ -7,10 +7,10 @@ use Illuminate\Http\Request;
 
 class DomainTenantFinder extends TenantFinder
 {
-
     public function findForRequest(Request $request): ?Tenant
     {
         $domain = $request->header('X-domain');
+
         return Tenant::findByDomain($domain);
     }
 }

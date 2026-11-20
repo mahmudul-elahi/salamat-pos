@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Coupon\CouponController;
+use App\Http\Controllers\GiftProduct\GiftProductController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GiftProduct\GiftProductController;
-
 
 Route::group(['prefix' => 'ecommerce'], function (Router $router) {
 

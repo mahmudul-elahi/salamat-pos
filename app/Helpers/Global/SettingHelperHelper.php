@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
 
 use App\Helpers\General\SettingHelper;
 
-if (!function_exists('number_with_currency_symbol')) {
+if (! function_exists('number_with_currency_symbol')) {
     function number_with_currency_symbol($number)
     {
         return resolve(SettingHelper::class)->numberWithCurrencySymbol($number);
     }
 }
 
-if (!function_exists('app_date_format')) {
+if (! function_exists('app_date_format')) {
     function app_date_format($date)
     {
         return resolve(SettingHelper::class)->appDateFormat($date);

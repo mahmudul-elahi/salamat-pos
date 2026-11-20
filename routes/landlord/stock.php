@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\CashTransfer\CashTransferController;
+use App\Http\Controllers\Pos\DamageProduct\DamageProductController;
 use App\Http\Controllers\Pos\Stock\PurchasesStockController;
 use App\Http\Controllers\Pos\StockTransfer\StockTransferController;
-use App\Http\Controllers\Pos\DamageProduct\DamageProductController;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
-
 
 Route::group(['prefix' => 'pos'], function (Router $router) {
 

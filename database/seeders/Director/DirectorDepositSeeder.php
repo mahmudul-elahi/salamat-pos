@@ -4,7 +4,6 @@ namespace Database\Seeders\Director;
 
 use App\Models\Pos\Investment\Investment;
 use App\Models\Pos\Investment\InvestmentCategory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DirectorDepositSeeder extends Seeder
@@ -19,14 +18,14 @@ class DirectorDepositSeeder extends Seeder
             ->get();
 
         foreach ($deposits as $deposit) {
-           $investmentCategory = InvestmentCategory::query()
-               ->where('tenant_id', $deposit->tenant_id)
-               ->first();
+            $investmentCategory = InvestmentCategory::query()
+                ->where('tenant_id', $deposit->tenant_id)
+                ->first();
 
-           $deposit->update([
-               'user_id' => $investmentCategory->director_id,
-               'investment_category_id' => $investmentCategory->id
-           ]);
+            $deposit->update([
+                'user_id' => $investmentCategory->director_id,
+                'investment_category_id' => $investmentCategory->id,
+            ]);
         }
     }
 }

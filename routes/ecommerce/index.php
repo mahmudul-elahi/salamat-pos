@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Controllers\Ecommerce\Career\CareerController;
 use App\Http\Controllers\Ecommerce\Elite\EliteController;
 use App\Http\Controllers\Ecommerce\Emi\EmiBankController;
@@ -27,8 +29,6 @@ Route::group(['prefix' => 'ecommerce', 'middleware' => 'auth.permission'], funct
 
     $router->get('applicants/{applicant}', [CareerController::class, 'showApplicant'])
         ->name('career_applicants.show');
-
-
 
     $router->apiResource('emi-banks', EmiBankController::class);
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filters\Ecommerce\Order;
 
 use App\Filters\BaseFilter;
@@ -31,7 +33,7 @@ class OrderFilter extends BaseFilter
         $warehouseIds = is_array($ids) ? $ids : explode(',', (string) $ids);
 
         $this->builder->when($ids, function (Builder $query) use ($warehouseIds) {
-            $query->whereIn($query->getModel()->getTable() . '.tenant_id', $warehouseIds);
+            $query->whereIn($query->getModel()->getTable().'.tenant_id', $warehouseIds);
         });
     }
 }

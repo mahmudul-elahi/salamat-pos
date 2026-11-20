@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Pos\Page;
 
 use App\Exceptions\GeneralException;
-use App\Models\Tenant\Tenant;
-use App\Models\Pos\Page\Page;
+use App\Filters\Landlord\Common\TitleFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Pos\Page\PageRequest;
-use App\Filters\Landlord\Common\TitleFilter;
+use App\Models\Pos\Page\Page;
+use App\Models\Tenant\Tenant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -16,9 +17,7 @@ use Throwable;
 
 class PageController extends Controller
 {
-    public function __construct(protected TitleFilter $filter)
-    {
-    }
+    public function __construct(protected TitleFilter $filter) {}
 
     /**
      * @throws GeneralException
@@ -30,7 +29,7 @@ class PageController extends Controller
             ->where('slug', 'salamat-innovation')
             ->first();
 
-        if (!$salamatInnovation) {
+        if (! $salamatInnovation) {
             throw new GeneralException('Salamat Innovation is E-commerce not found');
         }
 
@@ -39,40 +38,39 @@ class PageController extends Controller
 
     /**
      * Display a listing of the resource.
+     *
      * @throws GeneralException
      */
-
     public function index()
     {
         $salamatInnovation = $this->checkSalamatInnovation();
+
         return Page::query()
             ->filters($this->filter)
             ->with('seo:id,model_id,model_type,tags')
             ->where('tenant_id', $salamatInnovation->id)
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(function ($item) {
-                return [
-                    ...$item->toArray(),
-                    'tags' => $item->seo?->tags
-                ];
-            });
+            ->through(fn ($item) => [
+                ...$item->toArray(),
+                'tags' => $item->seo?->tags,
+            ]);
     }
 
     /**
      * Store a newly created resource in storage.
+     *
      * @throws GeneralException
      * @throws Throwable
      */
-
-    public function store(PageRequest $request): \Illuminate\Http\JsonResponse
+    public function store(PageRequest $request): JsonResponse
     {
 
         $salamatInnovation = $this->checkSalamatInnovation();
 
         $request->validate([
             'slug' => Rule::unique('pages', 'slug')
-                ->where('tenant_id', $salamatInnovation->id)->where('deleted_at', null)
+                ->where('tenant_id', $salamatInnovation->id)->where('deleted_at'),
         ]);
 
         try {
@@ -93,14 +91,15 @@ class PageController extends Controller
             ]);
 
             DB::commit();
+
             return successResponse('Page created successfully');
 
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Page created has been failed', 500);
+                throw new GeneralException('Page created has been failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
 
     }
@@ -108,7 +107,6 @@ class PageController extends Controller
     /**
      * Display the specified resource.
      */
-
     public function show(Page $page)
     {
 
@@ -116,58 +114,57 @@ class PageController extends Controller
             ...$page->toArray(),
             'meta_title' => $page->seo?->title,
             'meta_description' => $page->seo?->description,
-            'tags' => $page->seo?->tags
+            'tags' => $page->seo?->tags,
         ];
     }
 
-
     /**
      * Update the specified resource in storage.
+     *
      * @throws GeneralException
      * @throws Throwable
      */
-    public function update(PageRequest $request, Page $page): \Illuminate\Http\JsonResponse
+    public function update(PageRequest $request, Page $page): JsonResponse
     {
 
         $request->validate([
             'slug' => Rule::unique('pages', 'slug')
                 ->where('tenant_id', $page->tenant_id)
-                ->where('deleted_at', null)
-                ->ignore($page->id)
+                ->where('deleted_at')
+                ->ignore($page->id),
         ]);
         try {
             DB::beginTransaction();
             $page->update($request->validated());
             $page->seo()->updateOrCreate([
-                'tenant_id' => $page->tenant_id
+                'tenant_id' => $page->tenant_id,
             ], [
                 'title' => $request->meta_title,
                 'description' => $request->meta_description,
-                'tags' => $request->tags
+                'tags' => $request->tags,
             ]);
             DB::commit();
+
             return successResponse('Page updated successfully');
         } catch (\Exception $exception) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Page updated has been failed', 500);
+                throw new GeneralException('Page updated has been failed', 500, $exception);
             }
-            throw new GeneralException($exception->getMessage(), 500);
+            throw new GeneralException($exception->getMessage(), 500, $exception);
         }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-
-    public function destroy(Page $page): \Illuminate\Http\JsonResponse
+    public function destroy(Page $page): JsonResponse
     {
         $page->delete();
+
         return successResponse('Page deleted successfully');
     }
 
-    /**
-     */
     public function allPageUpdate(Request $request, Page $page)
     {
 
@@ -186,8 +183,8 @@ class PageController extends Controller
             'shop_banner' => $request->shop_banner,
             'info_banner' => $request->info_banner,
         ]);
-        
-        if (!$page->isDirty()) {
+
+        if (! $page->isDirty()) {
             return successResponse('No changes detected');
         }
 

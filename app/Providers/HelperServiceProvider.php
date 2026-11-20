@@ -26,12 +26,10 @@ class HelperServiceProvider extends ServiceProvider
 
     /**
      * Load all global helper files from the Helpers/Global directory.
-     *
-     * @return void
      */
     private function loadGlobalHelpers(): void
     {
-        $helpersDirectory = app_path('Helpers' . DIRECTORY_SEPARATOR . 'Global');
+        $helpersDirectory = app_path('Helpers'.DIRECTORY_SEPARATOR.'Global');
         $directoryIterator = new RecursiveDirectoryIterator($helpersDirectory);
         $iterator = new RecursiveIteratorIterator($directoryIterator);
 
@@ -40,7 +38,7 @@ class HelperServiceProvider extends ServiceProvider
 
             if (
                 $iterator->isFile() &&
-                !$iterator->isDot() &&
+                ! $iterator->isDot() &&
                 $iterator->isReadable() &&
                 $currentFile->getExtension() === 'php' &&
                 str_contains($currentFile->getFilename(), 'Helper')

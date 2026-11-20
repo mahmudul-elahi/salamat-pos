@@ -5,6 +5,7 @@ namespace App\Models\Tenant\Balance;
 use App\Models\Pos\Contact\Contact;
 use App\Models\Tenant\Tenant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdvanceCredit extends Model
 {
@@ -14,11 +15,11 @@ class AdvanceCredit extends Model
         'amount',
         'note',
         'date',
-        'type'
+        'type',
     ];
 
     protected $casts = [
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
     public function tenant()
@@ -26,7 +27,7 @@ class AdvanceCredit extends Model
         return $this->belongsTo(Tenant::class);
     }
 
-    public function contact(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class);
     }

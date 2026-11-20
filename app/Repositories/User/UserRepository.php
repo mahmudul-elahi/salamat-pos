@@ -23,19 +23,15 @@ class UserRepository extends BaseRepository
     {
         $authUser = auth()->user();
 
-
         return $authUser->load('roles.permissions');
     }
 
-    /**
-     * @return Collection
-     */
     public function getAuthUserPermissions(): Collection
     {
         $user = $this->getCachedAuthUserWithRoleAndPermissions();
 
         return collect($user?->roles)
-            ->flatMap(fn(Role $role) => $role->permissions ?? [])
+            ->flatMap(fn (Role $role) => $role->permissions ?? [])
             ->values();
     }
 
@@ -52,8 +48,6 @@ class UserRepository extends BaseRepository
 
         $permissions = $this->getAuthUserPermissions();
 
-        return $permissions->mapWithKeys(function ($permission) {
-            return [$permission['name'] => true];
-        })->toArray();
+        return $permissions->mapWithKeys(fn ($permission) => [$permission['name'] => true])->toArray();
     }
 }

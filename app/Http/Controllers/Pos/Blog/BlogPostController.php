@@ -16,9 +16,9 @@ class BlogPostController extends Controller
         return BlogPost::query()
             ->with(['category:id,name', 'author:id,name'])
             ->withCount('tags')
-            ->when($request->search, fn($q) => $q->where('title', 'like', '%' . $request->search . '%'))
-            ->when($request->category_id, fn($q) => $q->where('category_id', $request->category_id))
-            ->when($request->status !== null && $request->status !== '', fn($q) => $q->where('is_published', $request->status))
+            ->when($request->search, fn ($q) => $q->where('title', 'like', '%'.$request->search.'%'))
+            ->when($request->category_id, fn ($q) => $q->where('category_id', $request->category_id))
+            ->when($request->status !== null && $request->status !== '', fn ($q) => $q->where('is_published', $request->status))
             ->orderByDesc('id')
             ->paginate($request->input('per_page', 10));
     }
@@ -56,16 +56,16 @@ class BlogPostController extends Controller
         return successResponse('Blog post deleted successfully');
     }
 
-    private const TOGGLEABLE_FIELDS = ['is_published', 'is_featured', 'is_trending', 'is_popular', 'is_pinned'];
+    private const array TOGGLEABLE_FIELDS = ['is_published', 'is_featured', 'is_trending', 'is_popular', 'is_pinned'];
 
     public function toggle(BlogPost $blogPost, string $field): JsonResponse
     {
         abort_unless(in_array($field, self::TOGGLEABLE_FIELDS, true), 404);
 
-        $value = !$blogPost->{$field};
+        $value = ! $blogPost->{$field};
         $data = [$field => $value];
 
-        if ($field === 'is_published' && $value && !$blogPost->published_at) {
+        if ($field === 'is_published' && $value && ! $blogPost->published_at) {
             $data['published_at'] = now();
         }
 
@@ -110,8 +110,8 @@ class BlogPostController extends Controller
     public function updatePinnedOrder(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'posts'            => ['required', 'array'],
-            'posts.*.id'       => ['required', 'integer', 'exists:blog_posts,id'],
+            'posts' => ['required', 'array'],
+            'posts.*.id' => ['required', 'integer', 'exists:blog_posts,id'],
             'posts.*.position' => ['required', 'integer', 'min:1'],
         ]);
 

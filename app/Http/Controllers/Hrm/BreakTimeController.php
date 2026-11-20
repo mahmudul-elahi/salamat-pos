@@ -16,7 +16,7 @@ class BreakTimeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'duration' => ['required', 'string', 'max:20'],
         ]);
 
@@ -33,7 +33,7 @@ class BreakTimeController extends Controller
     public function update(Request $request, BreakTime $breakTime)
     {
         $request->validate([
-            'name'     => ['sometimes', 'string', 'max:255'],
+            'name' => ['sometimes', 'string', 'max:255'],
             'duration' => ['sometimes', 'string', 'max:20'],
         ]);
 

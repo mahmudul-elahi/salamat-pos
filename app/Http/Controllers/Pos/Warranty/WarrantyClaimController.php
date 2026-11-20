@@ -31,11 +31,11 @@ class WarrantyClaimController extends Controller
                 'productVariant.attributeValues:id,attribute_id,value',
                 'sale:id,full_invoice_number',
             ])
-            ->when($statusEnum, fn($query) => $query->where('status', $statusEnum->value))
-            ->when($search, fn($query) => $query->where('serial_number', 'like', "%{$search}%"))
+            ->when($statusEnum, fn ($query) => $query->where('status', $statusEnum->value))
+            ->when($search, fn ($query) => $query->where('serial_number', 'like', "%{$search}%"))
             ->orderByDesc('id')
             ->paginate($perPage)
-            ->through(fn($claim) => $this->transformWarrantyClaim($claim));
+            ->through(fn ($claim) => $this->transformWarrantyClaim($claim));
     }
 
     /**
@@ -52,7 +52,7 @@ class WarrantyClaimController extends Controller
             ->with('product')
             ->first();
 
-        if (!$productSerial) {
+        if (! $productSerial) {
             return errorResponse('Invalid IMEI/SL number. Please check and try again.', null, 404);
         }
 
@@ -115,7 +115,7 @@ class WarrantyClaimController extends Controller
             'approved' => StatusEnum::Approved->value,
         ];
 
-        if (!isset($statusMap[$action])) {
+        if (! isset($statusMap[$action])) {
             return response()->json(['message' => 'Invalid status action'], 400);
         }
 

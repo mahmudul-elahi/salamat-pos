@@ -10,6 +10,6 @@ class ShopFilter extends BaseFilter
     {
         $ids = explode(',', $ids);
 
-        $this->builder->when($ids, fn($query) => $query->whereIn('tenant_id', $ids));
+        $this->builder->when($ids, fn ($query) => $query->whereIn('tenant_id', $ids));
     }
 }

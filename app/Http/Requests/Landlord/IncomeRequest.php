@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Landlord;
 
 use App\Http\Requests\CustomRule\MaxDigitsPrecision;
-use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IncomeRequest extends FormRequest
@@ -17,7 +18,7 @@ class IncomeRequest extends FormRequest
     {
         return [
             'tenant_id' => ['required', 'numeric', 'exists:tenants,id'],
-//            'user_id' => ['required', 'exists:users,id'],
+            //            'user_id' => ['required', 'exists:users,id'],
             'title' => ['required', 'string', 'max:191'],
             'date' => ['required', 'date'],
             'income_category_id' => ['required', 'numeric', 'exists:income_categories,id'],

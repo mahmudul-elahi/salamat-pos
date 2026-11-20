@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\PreOwned;
 
 use App\Helpers\Traits\RevalidatesFrontendTrait;
@@ -10,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PreOwned extends BaseModel
 {
-    use SoftDeletes, RevalidatesFrontendTrait;
+    use RevalidatesFrontendTrait, SoftDeletes;
 
     protected $revalidationType = 'used-device';
 
@@ -38,7 +40,6 @@ class PreOwned extends BaseModel
         'is_sold' => 'boolean',
         'box' => 'boolean',
     ];
-
 
     public function product()
     {

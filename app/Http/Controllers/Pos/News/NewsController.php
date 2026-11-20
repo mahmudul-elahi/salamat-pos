@@ -2,20 +2,17 @@
 
 namespace App\Http\Controllers\Pos\News;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use App\Models\Pos\News\News;
-use App\Http\Controllers\Controller;
 use App\Filters\Landlord\Common\NameFilter;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Landlord\News\NewsRequest;
+use App\Models\Pos\News\News;
+use Illuminate\Http\JsonResponse;
 
 class NewsController extends Controller
 {
-    private const BLOG_TENANT_ID = 3;
+    private const int BLOG_TENANT_ID = 3;
 
-    public function __construct(protected NameFilter $filter)
-    {
-    }
+    public function __construct(protected NameFilter $filter) {}
 
     public function index()
     {
@@ -52,7 +49,6 @@ class NewsController extends Controller
         $data['image'] = $request->input('image');
 
         $blog->update($data);
-
 
         return successResponse('News updated successfully');
     }

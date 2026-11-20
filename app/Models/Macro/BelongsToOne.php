@@ -24,5 +24,4 @@ class BelongsToOne extends BelongsToMany
 
         return $models;
     }
-
 }

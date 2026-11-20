@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands\ProfitLossSummary;
 
 use App\Models\Pos\ProfitLoss\ProfitLossSummary;
@@ -13,7 +15,7 @@ class RebuildProfitLossSummary extends Command
      *
      * @var string
      */
-    protected $signature   = 'profit-loss:rebuild {--full : Full rebuild from scratch}';
+    protected $signature = 'profit-loss:rebuild {--full : Full rebuild from scratch}';
 
     /**
      * The console command description.
@@ -21,7 +23,6 @@ class RebuildProfitLossSummary extends Command
      * @var string
      */
     protected $description = 'Rebuild profit loss summary table from scratch';
-
 
     /**
      * Execute the console command.

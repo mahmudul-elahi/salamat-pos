@@ -17,8 +17,8 @@ class AnnouncementNotification extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title'           => 'Announcement: ' . $this->announcement->title,
-            'message'         => implode(' – ', array_filter([
+            'title' => 'Announcement: '.$this->announcement->title,
+            'message' => implode(' – ', array_filter([
                 $this->announcement->start_date?->format('d M Y'),
                 $this->announcement->end_date?->format('d M Y'),
             ])),

@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Landlord\Shop;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class ShopRequest extends FormRequest
 {
@@ -24,11 +25,10 @@ class ShopRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'  => ['required', 'string'],
+            'name' => ['required', 'string'],
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:100'],
-            'logo'  => ['nullable', 'string'],
+            'logo' => ['nullable', 'string'],
         ];
     }
-
 }

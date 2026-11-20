@@ -27,7 +27,7 @@ class PayslipMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Payslip — ' . $this->payslip->start_date->format('M Y'),
+            subject: 'Your Payslip — '.$this->payslip->start_date->format('M Y'),
         );
     }
 

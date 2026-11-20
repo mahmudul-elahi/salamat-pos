@@ -9,8 +9,8 @@ trait RevalidatesFrontendTrait
 {
     public static function bootRevalidatesFrontendTrait(): void
     {
-        static::saved(fn($model) => $model->revalidateFrontendCache());
-        static::deleted(fn($model) => $model->revalidateFrontendCache());
+        static::saved(fn ($model) => $model->revalidateFrontendCache());
+        static::deleted(fn ($model) => $model->revalidateFrontendCache());
     }
 
     public function revalidateFrontendCache(): void
@@ -64,7 +64,7 @@ trait RevalidatesFrontendTrait
             $response = Http::timeout(5)
                 ->retry(2, 200)
                 ->post(
-                    config('app.frontend_url') . '/api/revalidate',
+                    config('app.frontend_url').'/api/revalidate',
                     array_merge($payload, [
                         'secret' => config('app.revalidation_secret'),
                     ])

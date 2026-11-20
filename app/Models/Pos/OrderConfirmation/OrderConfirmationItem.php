@@ -19,7 +19,7 @@ class OrderConfirmationItem extends BaseModel
     ];
 
     protected $casts = [
-        'quantity'   => 'decimal:2',
+        'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
     ];
 
@@ -33,8 +33,8 @@ class OrderConfirmationItem extends BaseModel
     public function getVariantAttributesAttribute(): ?string
     {
         return $this->variant?->attributeValues
-            ->sortBy(fn($attrValue) => $attrValue->attribute->name)
-            ->map(fn($attrValue) => $attrValue->value)
+            ->sortBy(fn ($attrValue) => $attrValue->attribute->name)
+            ->map(fn ($attrValue) => $attrValue->value)
             ->join(' / ') ?: null;
     }
 

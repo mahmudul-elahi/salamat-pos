@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Common\User;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class UserProfile extends Model
@@ -32,6 +33,6 @@ class UserProfile extends Model
 
     public function getFullNameAttribute()
     {
-        return $this->last_name ? $this->first_name . ' ' . $this->last_name : $this->first_name;
+        return $this->last_name ? $this->first_name.' '.$this->last_name : $this->first_name;
     }
 }

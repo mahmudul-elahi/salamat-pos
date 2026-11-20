@@ -20,7 +20,6 @@ class ExpireCouponsJob implements ShouldQueue
 
         NewCoupon::where('status', 1)
             ->whereDate('end_date', '<', $today)
-            ->update(['status' => 0]); 
+            ->update(['status' => 0]);
     }
 }
-

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Pos\DamageProduct;
 
 use App\Models\Common\BaseModel;

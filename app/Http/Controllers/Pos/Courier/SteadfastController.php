@@ -22,7 +22,7 @@ class SteadfastController extends Controller
     public function districts()
     {
         $districts = collect($this->steadfastService->getPoliceStations())
-            ->map(fn($district) => ['id' => $district['id'], 'name' => $district['name']])
+            ->map(fn ($district) => ['id' => $district['id'], 'name' => $district['name']])
             ->values();
 
         return response()->json(['data' => $districts]);
@@ -34,7 +34,7 @@ class SteadfastController extends Controller
             ->firstWhere('id', $districtId);
 
         $thanas = collect($district['policestations'] ?? [])
-            ->map(fn($thana) => ['id' => $thana['id'], 'name' => $thana['name']])
+            ->map(fn ($thana) => ['id' => $thana['id'], 'name' => $thana['name']])
             ->values();
 
         return response()->json(['data' => $thanas]);
@@ -54,34 +54,32 @@ class SteadfastController extends Controller
             ->with(['sale:id,full_invoice_number', 'createdBy:id,name'])
             ->orderByRaw('COALESCE(courier_created_at, created_at) DESC')
             ->paginate($perPage)
-            ->through(function ($order) {
-                return [
-                    'id' => $order->id,
-                    'invoice_number' => $order->sale?->full_invoice_number ?? '-',
-                    'sale_id' => $order->sale_id,
-                    'consignment_id' => $order->consignment_id,
-                    'tracking_code' => $order->tracking_code,
-                    'track_url' => $order->track_url,
-                    'recipient_name' => $order->recipient_name,
-                    'recipient_phone' => $order->recipient_phone,
-                    'recipient_alternative_phone' => $order->recipient_alternative_phone,
-                    'recipient_email' => $order->recipient_email,
-                    'address' => collect([$order->recipient_address, $order->recipient_thana, $order->recipient_district])->filter()->implode(', '),
-                    'recipient_district' => $order->recipient_district,
-                    'recipient_thana' => $order->recipient_thana,
-                    'amount_to_collect' => $order->amount_to_collect,
-                    'delivery_fee' => $order->delivery_fee,
-                    'delivery_type' => $order->delivery_type == 1 ? 'Point Delivery' : 'Home Delivery',
-                    'item_description' => $order->item_description,
-                    'item_weight' => $order->item_weight,
-                    'is_exchange' => (bool) $order->is_exchange,
-                    'status' => $order->status,
-                    'payment_status' => $order->payment_status,
-                    'special_instruction' => $order->special_instruction,
-                    'created_by_name' => $order->createdBy?->name ?? '-',
-                    'created_at' => ($order->courier_created_at ?? $order->created_at)?->format('Y-m-d h:i A'),
-                ];
-            });
+            ->through(fn ($order) => [
+                'id' => $order->id,
+                'invoice_number' => $order->sale?->full_invoice_number ?? '-',
+                'sale_id' => $order->sale_id,
+                'consignment_id' => $order->consignment_id,
+                'tracking_code' => $order->tracking_code,
+                'track_url' => $order->track_url,
+                'recipient_name' => $order->recipient_name,
+                'recipient_phone' => $order->recipient_phone,
+                'recipient_alternative_phone' => $order->recipient_alternative_phone,
+                'recipient_email' => $order->recipient_email,
+                'address' => collect([$order->recipient_address, $order->recipient_thana, $order->recipient_district])->filter()->implode(', '),
+                'recipient_district' => $order->recipient_district,
+                'recipient_thana' => $order->recipient_thana,
+                'amount_to_collect' => $order->amount_to_collect,
+                'delivery_fee' => $order->delivery_fee,
+                'delivery_type' => $order->delivery_type == 1 ? 'Point Delivery' : 'Home Delivery',
+                'item_description' => $order->item_description,
+                'item_weight' => $order->item_weight,
+                'is_exchange' => (bool) $order->is_exchange,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'special_instruction' => $order->special_instruction,
+                'created_by_name' => $order->createdBy?->name ?? '-',
+                'created_at' => ($order->courier_created_at ?? $order->created_at)?->format('Y-m-d h:i A'),
+            ]);
 
         return [
             ...$paginated->toArray(),
@@ -109,15 +107,15 @@ class SteadfastController extends Controller
     {
         $courierOrder = CourierOrder::query()
             ->where('provider', 'steadfast')
-            ->where(fn($query) => $query->where('consignment_id', $consignmentId)->orWhere('tracking_code', $consignmentId))
+            ->where(fn ($query) => $query->where('consignment_id', $consignmentId)->orWhere('tracking_code', $consignmentId))
             ->first();
 
         $events = collect($courierOrder?->raw_response['webhook_events'] ?? [])
-            ->map(fn($event) => [
+            ->map(fn ($event) => [
                 'message' => $event['payload']['status'] ?? null,
-                'time'    => $event['received_at'] ?? null,
+                'time' => $event['received_at'] ?? null,
             ])
-            ->filter(fn($event) => $event['message']);
+            ->filter(fn ($event) => $event['message']);
 
         // A live read, so the timeline is current even before any webhook lands.
         try {
@@ -132,11 +130,11 @@ class SteadfastController extends Controller
             }
         } catch (Throwable $exception) {
             // A courier being unreachable shouldn't blank the stored history.
-            Log::warning('Steadfast live status lookup failed: ' . $exception->getMessage());
+            Log::warning('Steadfast live status lookup failed: '.$exception->getMessage());
         }
 
         return response()->json([
-            'data'      => $events->values(),
+            'data' => $events->values(),
             'track_url' => $this->steadfastService->trackingUrlFrom($courierOrder?->raw_response),
         ]);
     }
@@ -146,7 +144,7 @@ class SteadfastController extends Controller
         $token = $request->header('Authorization');
         $expectedToken = config('services.steadfast.webhook_bearer_token');
 
-        if (!$expectedToken || !$token || !hash_equals('Bearer ' . $expectedToken, $token)) {
+        if (! $expectedToken || ! $token || ! hash_equals('Bearer '.$expectedToken, $token)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -163,18 +161,19 @@ class SteadfastController extends Controller
         $invoice = $payload['invoice'] ?? null;
         $status = $payload['status'] ?? null;
 
-        if (!$consignmentId && !$invoice) {
+        if (! $consignmentId && ! $invoice) {
             Log::warning('Steadfast webhook: missing consignment_id/invoice, cannot identify order', ['payload' => $payload]);
+
             return response()->json(['error' => 'Missing consignment_id or invoice'], 400);
         }
 
         $courierOrder = CourierOrder::query()
             ->where('provider', 'steadfast')
-            ->when($consignmentId, fn($query) => $query->where('consignment_id', $consignmentId))
-            ->when(!$consignmentId && $invoice, fn($query) => $query->where('merchant_order_id', $invoice))
+            ->when($consignmentId, fn ($query) => $query->where('consignment_id', $consignmentId))
+            ->when(! $consignmentId && $invoice, fn ($query) => $query->where('merchant_order_id', $invoice))
             ->first();
 
-        if (!$courierOrder) {
+        if (! $courierOrder) {
             return response()->json(['message' => 'Order not found, ignored'], 202);
         }
 
@@ -218,6 +217,7 @@ class SteadfastController extends Controller
 
         $field = function (array $row, string $heading) use ($columnMap) {
             $letter = $columnMap[$heading] ?? null;
+
             return $letter ? trim((string) ($row[$letter] ?? '')) : null;
         };
 
@@ -228,8 +228,9 @@ class SteadfastController extends Controller
         foreach ($rows as $row) {
             $consignmentId = $field($row, 'Order ID');
 
-            if (!$consignmentId) {
+            if (! $consignmentId) {
                 $skipped++;
+
                 continue;
             }
 
@@ -264,7 +265,7 @@ class SteadfastController extends Controller
                     'raw_response' => [
                         ...($existing->raw_response ?? []),
                         'imported_from_excel' => array_combine(array_keys($columnMap), array_map(
-                            fn($letter) => $row[$letter] ?? null,
+                            fn ($letter) => $row[$letter] ?? null,
                             $columnMap
                         )),
                     ],
@@ -320,7 +321,7 @@ class SteadfastController extends Controller
                 'item_description' => $data['item_description'] ?? null,
                 'delivery_type' => $data['delivery_type'] ?? 0,
                 'weight' => $data['item_weight'] ?? null,
-                'exchange' => !empty($data['is_exchange']),
+                'exchange' => ! empty($data['is_exchange']),
             ]);
 
             $consignment = $response['consignment'] ?? [];
@@ -344,7 +345,7 @@ class SteadfastController extends Controller
                     'delivery_type' => $data['delivery_type'] ?? 0,
                     'item_description' => $data['item_description'] ?? null,
                     'item_weight' => $data['item_weight'] ?? 0.5,
-                    'is_exchange' => !empty($data['is_exchange']),
+                    'is_exchange' => ! empty($data['is_exchange']),
                     'special_instruction' => $data['special_instruction'] ?? null,
                     'status' => $consignment['status'] ?? 'in_review',
                     'courier_created_at' => now(),
@@ -360,7 +361,7 @@ class SteadfastController extends Controller
             throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 }

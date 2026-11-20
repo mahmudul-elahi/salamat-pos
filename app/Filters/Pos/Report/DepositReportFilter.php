@@ -9,11 +9,10 @@ use Illuminate\Support\Carbon;
 
 class DepositReportFilter extends BaseFilter
 {
-
     public function search($search = null): void
     {
         $this->builder->when($search, function ($query, $search) {
-            $query->where('title', 'like', '%' . $search . '%');
+            $query->where('title', 'like', '%'.$search.'%');
 
             // The invoice number shown on screen ("INV-{id}") is synthetic
             // (built in the controller, not a real column), so searching
@@ -28,7 +27,9 @@ class DepositReportFilter extends BaseFilter
 
     public function warehouse($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
 
         $this->builder->whereIn('tenant_id', $ids);
@@ -36,28 +37,36 @@ class DepositReportFilter extends BaseFilter
 
     public function category($categoryIds = null): void
     {
-        if (!$categoryIds) return;
+        if (! $categoryIds) {
+            return;
+        }
         $categoryIds = explode(',', $categoryIds);
         $this->builder->whereIn('investment_category_id', $categoryIds);
     }
 
     public function director($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('user_id', $ids);
     }
 
     public function party($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('contact_id', $ids);
     }
 
     public function createdBy($ids = null): void
     {
-        if (!$ids) return;
+        if (! $ids) {
+            return;
+        }
         $ids = explode(',', $ids);
         $this->builder->whereIn('created_by', $ids);
     }
@@ -75,7 +84,7 @@ class DepositReportFilter extends BaseFilter
             $range = json_decode($range, true);
         }
 
-        if (!is_array($range) || count($range) < 2) {
+        if (! is_array($range) || count($range) < 2) {
             return $this;
         }
 
@@ -84,8 +93,9 @@ class DepositReportFilter extends BaseFilter
         try {
             $start = Carbon::parse($startDate)->startOfDay();
             $end = Carbon::parse($endDate)->endOfDay();
+
             return $this->builder->whereBetween('date', [$start, $end]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             throw new GeneralException('Invalid date range');
         }
     }

@@ -2,11 +2,15 @@
 
 namespace App\Models\Tenant;
 
-use App\Models\Setting\Setting;
 use App\Models\Common\BaseModel;
-use Illuminate\Support\Facades\Schema;
 use App\Models\Common\User\UserProfile;
+use App\Models\Setting\Setting;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class Tenant extends BaseModel
@@ -22,29 +26,27 @@ class Tenant extends BaseModel
         'is_ecommerce' => 'boolean',
     ];
 
-    public static function findByDomain($param): Model|\Illuminate\Database\Eloquent\Builder|null
+    public static function findByDomain($param): Model|Builder|null
     {
         // Replace 'your_table_name' with the actual table name
-        if (!Schema::hasTable((new static)->getTable())) {
+        if (! Schema::hasTable((new static)->getTable())) {
             return null;
         }
 
         return self::query()->where('slug', $param)->first();
     }
 
-
-    public function userProfiles(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function userProfiles(): HasMany
     {
         return $this->hasMany(UserProfile::class, 'tenant_id', 'id');
     }
 
-
-    public function settings(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function settings(): MorphMany
     {
         return $this->morphMany(Setting::class, 'settingable');
     }
 
-    public function setting(): \Illuminate\Database\Eloquent\Relations\MorphOne
+    public function setting(): MorphOne
     {
         return $this->morphOne(Setting::class, 'settingable');
     }
@@ -65,7 +67,7 @@ class Tenant extends BaseModel
 
     public static function getCurrent()
     {
-        if (!app()->has('currentTenant')) {
+        if (! app()->has('currentTenant')) {
             return null;
         }
 
@@ -101,7 +103,7 @@ class Tenant extends BaseModel
 
         $count = 1;
         while (static::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $count;
+            $slug = $originalSlug.'-'.$count;
             $count++;
         }
 

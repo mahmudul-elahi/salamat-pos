@@ -16,23 +16,21 @@ class CashTransferReportController extends Controller
         $perPage = $request->input('per_page', 10);
 
         $transfersQuery = CashTransfer::query()
-            ->filters(new CashTransferReportFilter())
+            ->filters(new CashTransferReportFilter)
             ->with(['fromTenant:id,name', 'toTenant:id,name', 'createdBy:id,name', 'approvedBy:id,name'])
             ->orderByDesc('id');
 
-        $paginated = (clone $transfersQuery)->paginate($perPage)->through(function ($row) {
-            return [
-                'id' => $row->id,
-                'reference_no' => $row->reference_no,
-                'transfer_date' => $row->transfer_date,
-                'from_warehouse_name' => $row->fromTenant?->name ?? '-',
-                'to_warehouse_name' => $row->toTenant?->name ?? '-',
-                'amount' => $row->amount,
-                'status' => $row->status,
-                'created_by_name' => $row->createdBy?->name ?? '-',
-                'received_by_name' => $row->approvedBy?->name ?? '-',
-            ];
-        });
+        $paginated = (clone $transfersQuery)->paginate($perPage)->through(fn ($row) => [
+            'id' => $row->id,
+            'reference_no' => $row->reference_no,
+            'transfer_date' => $row->transfer_date,
+            'from_warehouse_name' => $row->fromTenant?->name ?? '-',
+            'to_warehouse_name' => $row->toTenant?->name ?? '-',
+            'amount' => $row->amount,
+            'status' => $row->status,
+            'created_by_name' => $row->createdBy?->name ?? '-',
+            'received_by_name' => $row->approvedBy?->name ?? '-',
+        ]);
 
         $totalTransfers = (clone $transfersQuery)->count();
         $totalAmount = (clone $transfersQuery)->sum('amount');
@@ -53,22 +51,20 @@ class CashTransferReportController extends Controller
         $tenantId = $isAppAdmin ? $warehouse : tenant()->id;
 
         $transfersQuery = CashTransfer::query()
-            ->filters(new CashTransferReportFilter())
+            ->filters(new CashTransferReportFilter)
             ->with(['fromTenant:id,name', 'toTenant:id,name', 'createdBy:id,name', 'approvedBy:id,name'])
             ->orderByDesc('id');
 
-        $transfers = (clone $transfersQuery)->get()->map(function ($row) {
-            return [
-                'reference_no' => $row->reference_no,
-                'transfer_date' => $row->transfer_date,
-                'from_warehouse_name' => $row->fromTenant?->name ?? '-',
-                'to_warehouse_name' => $row->toTenant?->name ?? '-',
-                'amount' => $row->amount,
-                'status' => $row->status,
-                'created_by_name' => $row->createdBy?->name ?? '-',
-                'received_by_name' => $row->approvedBy?->name ?? '-',
-            ];
-        });
+        $transfers = (clone $transfersQuery)->get()->map(fn ($row) => [
+            'reference_no' => $row->reference_no,
+            'transfer_date' => $row->transfer_date,
+            'from_warehouse_name' => $row->fromTenant?->name ?? '-',
+            'to_warehouse_name' => $row->toTenant?->name ?? '-',
+            'amount' => $row->amount,
+            'status' => $row->status,
+            'created_by_name' => $row->createdBy?->name ?? '-',
+            'received_by_name' => $row->approvedBy?->name ?? '-',
+        ]);
 
         $totalTransfers = (clone $transfersQuery)->count();
         $totalAmount = (clone $transfersQuery)->sum('amount');

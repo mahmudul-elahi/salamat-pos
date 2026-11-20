@@ -20,12 +20,12 @@ class SupplierReportFilter extends BaseFilter
 
     public function supplier($supplierIds = null): void
     {
-        if (!$supplierIds) return;
+        if (! $supplierIds) {
+            return;
+        }
 
         $ids = explode(',', $supplierIds);
 
         $this->builder->whereIn('contacts.id', $ids);
     }
-
-
 }

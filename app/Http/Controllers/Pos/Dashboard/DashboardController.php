@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Pos\Dashboard;
 
 use App\Http\Controllers\Controller;
@@ -8,7 +10,6 @@ use App\Services\Pos\Dashboard\DashboardService;
 class DashboardController extends Controller
 {
     public function __construct(protected DashboardService $service) {}
-
 
     public function statistic(): array
     {
@@ -71,7 +72,7 @@ class DashboardController extends Controller
             'purchases' => $purchase,
             'purchase_returns' => $purchaseReturn,
             'sales' => $sale,
-            'sale_returns' => $saleReturn
+            'sale_returns' => $saleReturn,
         ];
     }
 }

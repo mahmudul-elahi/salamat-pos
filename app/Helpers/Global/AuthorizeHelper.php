@@ -1,15 +1,13 @@
 <?php
 
-
 use App\Exceptions\AuthorizeException;
 use App\Helpers\General\AuthorizeHelper;
 
-if (!function_exists('authorize')) {
+if (! function_exists('authorize')) {
 
     /**
      * @param  $actions  array|string
      *
-     * @return bool
      * @throws AuthorizeException
      */
     function authorize(array|string $actions): bool
@@ -18,11 +16,12 @@ if (!function_exists('authorize')) {
     }
 }
 
-if (!function_exists('get_authorized')) {
+if (! function_exists('get_authorized')) {
 
     /**
      * @return mixed
      *               get authorized list if empty that mean whole list
+     *
      * @throws AuthorizeException
      */
     function get_authorized(string $action): mixed
@@ -31,13 +30,13 @@ if (!function_exists('get_authorized')) {
     }
 }
 
-if (!function_exists('is_authorized_specific')) {
+if (! function_exists('is_authorized_specific')) {
 
     /**
-     * @param string $action
      * @param  $payload  integer|string
      * @return mixed
      *               is a specific model is authorized
+     *
      * @throws AuthorizeException
      */
     function is_authorized_specific(string $action, int|string $payload): mixed
@@ -46,7 +45,7 @@ if (!function_exists('is_authorized_specific')) {
     }
 }
 
-if (!function_exists('authorize_any')) {
+if (! function_exists('authorize_any')) {
 
     function authorize_any(array $actions): bool
     {
@@ -54,7 +53,7 @@ if (!function_exists('authorize_any')) {
     }
 }
 
-if (!function_exists('authorize_multiple')) {
+if (! function_exists('authorize_multiple')) {
 
     function authorize_multiple(array $actions): bool
     {

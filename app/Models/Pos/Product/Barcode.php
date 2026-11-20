@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Pos\Product;
 
-use App\Models\Pos\Product\Product;
 use Illuminate\Database\Eloquent\Model;
 
 class Barcode extends Model
@@ -14,6 +15,7 @@ class Barcode extends Model
         'serial_number',
         'number',
     ];
+
     public function product()
     {
         return $this->belongsTo(Product::class);

@@ -1,17 +1,17 @@
 <?php
 
-use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Route;
+declare(strict_types=1);
+
 use App\Http\Controllers\Pos\Purchase\PurchaseController;
-use App\Http\Controllers\Pos\Purchase\PurchasePaymentController;
 use App\Http\Controllers\Pos\Purchase\PurchaseDownloadController;
+use App\Http\Controllers\Pos\Purchase\PurchasePaymentController;
+use App\Http\Controllers\Pos\Purchase\PurchaseTransactionController;
 use App\Http\Controllers\Pos\PurchaseReturn\PurchaseReturnController;
 use App\Http\Controllers\Pos\PurchaseReturn\PurchaseReturnDownloadController;
-use App\Http\Controllers\Pos\Purchase\PurchaseTransactionController;
-
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'pos', 'middleware' => 'auth.permission'], function (Router $router) {
-
 
     $router->apiResource('purchases', PurchaseController::class);
 
