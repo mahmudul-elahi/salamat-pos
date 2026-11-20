@@ -2,15 +2,13 @@
 
 namespace App\Services\Auth;
 
-use App\Models\Permission\Permission;
 use App\Models\Role\Role;
-use App\Models\Setting\Setting;
 use App\Models\User;
+use App\Services\BaseService;
 use Illuminate\Support\Str;
 
-class RegisterService extends AppService
+class RegisterService extends BaseService
 {
-
     protected object $user;
 
     protected string $password;
@@ -25,28 +23,29 @@ class RegisterService extends AppService
         return $this->getSubscriber($request->email);
     }
 
-
     public function register($request): static
     {
-        $this->password = $this->randomPassword(8);
+        $this->password = Str::random(8);
 
         $this->user = $this->model->query()->create([
             'email' => $request->email,
             'password' => $this->password,
             'is_admin' => 0,
         ]);
+
         return $this;
     }
 
     public function generatePassword($request): static
     {
-        $this->password = $this->randomPassword(8);
+        $this->password = Str::random(8);
         $this->user = $this->model->query()->updateOrCreate([
-            'email' => $request->email
+            'email' => $request->email,
         ], [
             'password' => $this->password,
             'is_admin' => 0,
         ]);
+
         return $this;
     }
 
@@ -61,17 +60,15 @@ class RegisterService extends AppService
         return $this;
     }
 
-
-
     public function assignUserRole(): static
     {
         $role = $this->getRole();
         if ($role) {
             $this->user->roles()->attach($role->id);
         }
+
         return $this;
     }
-
 
     private function getRole(): ?object
     {
@@ -79,6 +76,4 @@ class RegisterService extends AppService
             ->where('alias', 'subscriber_admin')
             ->first();
     }
-
-
 }

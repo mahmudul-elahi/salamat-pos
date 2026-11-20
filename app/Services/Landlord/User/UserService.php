@@ -5,9 +5,10 @@ namespace App\Services\Landlord\User;
 use App\Jobs\Landlord\User\InviteUserJob;
 use App\Models\Common\User\UserProfile;
 use App\Models\User;
+use App\Services\BaseService;
 use App\Services\Traits\HasWhen;
 
-class UserService extends AppService
+class UserService extends BaseService
 {
     use HasWhen;
 
@@ -28,15 +29,17 @@ class UserService extends AppService
     public function createUserProfile(): static
     {
         $this->model->userProfile()->create([
-            'invitation_token' => base64_encode(request('email') . '-invitation-from-token'),
+            'invitation_token' => base64_encode(request('email').'-invitation-from-token'),
             'status' => 'invited',
         ]);
+
         return $this;
     }
 
     public function assignRole(): static
     {
         $this->model->roles()->attach(request('role'));
+
         return $this;
     }
 
