@@ -20,34 +20,31 @@ class StockTransferController extends Controller
         return StockTransfer::query()
             ->with(['fromTenant:id,name', 'toTenant:id,name'])
             ->withCount('items')
-            ->when(request('status'), fn($q, $s) => $q->where('status', $s))
+            ->when(request('status'), fn ($q, $s) => $q->where('status', $s))
             ->when(
                 request('search'),
-                fn($q, $search) =>
-                $q->where('reference_no', 'LIKE', "%{$search}%")
+                fn ($q, $search) => $q->where('reference_no', 'LIKE', "%{$search}%")
             )
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
-            ->through(function ($item) {
-                return [
-                    ...$item->toArray(),
-                    'created_at' => Carbon::parse($item->created_at)
-                        ->timezone('Asia/Dhaka')
-                        ->format('d-M-Y h:i A'),
-                ];
-            });
+            ->through(fn ($item) => [
+                ...$item->toArray(),
+                'created_at' => Carbon::parse($item->created_at)
+                    ->timezone('Asia/Dhaka')
+                    ->format('d-M-Y h:i A'),
+            ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'from_tenant_id' => 'required|integer|exists:tenants,id',
-            'to_tenant_id'   => 'required|integer|exists:tenants,id|different:from_tenant_id',
-            'transfer_date'  => 'required|date',
-            'note'           => 'nullable|string|max:1000',
-            'items'          => 'required|array|min:1',
-            'items.*.product_serial_id'  => 'required|integer|exists:product_serials,id',
-            'items.*.product_id'         => 'required|integer|exists:products,id',
+            'to_tenant_id' => 'required|integer|exists:tenants,id|different:from_tenant_id',
+            'transfer_date' => 'required|date',
+            'note' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.product_serial_id' => 'required|integer|exists:product_serials,id',
+            'items.*.product_id' => 'required|integer|exists:products,id',
             'items.*.product_variant_id' => 'required|integer|exists:product_variants,id',
         ]);
 
@@ -59,9 +56,9 @@ class StockTransferController extends Controller
                 ->whereIn('status', ['purchase', 'sale_return'])
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 throw new GeneralException(
-                    "Serial #" . ($index + 1) . " is not available in the source shop.",
+                    'Serial #'.($index + 1).' is not available in the source shop.',
                     400
                 );
             }
@@ -72,21 +69,21 @@ class StockTransferController extends Controller
 
             $transfer = StockTransfer::create([
                 'from_tenant_id' => $request->from_tenant_id,
-                'to_tenant_id'   => $request->to_tenant_id,
-                'reference_no'   => StockTransfer::generateReferenceNo(),
-                'transfer_date'  => $request->transfer_date,
-                'status'         => 'draft',
-                'note'           => $request->note,
-                'created_by'     => auth()->id(),
+                'to_tenant_id' => $request->to_tenant_id,
+                'reference_no' => StockTransfer::generateReferenceNo(),
+                'transfer_date' => $request->transfer_date,
+                'status' => 'draft',
+                'note' => $request->note,
+                'created_by' => auth()->id(),
             ]);
 
             foreach ($request->items as $item) {
                 StockTransferItem::create([
-                    'stock_transfer_id'  => $transfer->id,
-                    'product_id'         => $item['product_id'],
+                    'stock_transfer_id' => $transfer->id,
+                    'product_id' => $item['product_id'],
                     'product_variant_id' => $item['product_variant_id'],
-                    'product_serial_id'  => $item['product_serial_id'],
-                    'quantity'           => 1,
+                    'product_serial_id' => $item['product_serial_id'],
+                    'quantity' => 1,
                 ]);
             }
 
@@ -95,7 +92,7 @@ class StockTransferController extends Controller
             return successResponse('Stock transfer created successfully', ['id' => $transfer->id]);
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -133,52 +130,54 @@ class StockTransferController extends Controller
                 }
 
                 return [
-                    'id'                 => $item->id,
-                    'product_id'         => $item->product_id,
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
                     'product_variant_id' => $item->product_variant_id,
-                    'product_serial_id'  => $item->product_serial_id,
-                    'serial_number'      => $item->productSerial?->serial_number,
-                    'product_name'       => $item->product?->product_name,
-                    'sku'                => $item->productVariant?->sku,
-                    'attributes'         => $attributes,
-                    'is_available'       => $isAvailable,
+                    'product_serial_id' => $item->product_serial_id,
+                    'serial_number' => $item->productSerial?->serial_number,
+                    'product_name' => $item->product?->product_name,
+                    'sku' => $item->productVariant?->sku,
+                    'attributes' => $attributes,
+                    'is_available' => $isAvailable,
                 ];
             });
 
         return [
-            'id'            => $stockTransfer->id,
-            'reference_no'  => $stockTransfer->reference_no,
-            'from_tenant'   => $stockTransfer->fromTenant,
-            'to_tenant'     => $stockTransfer->toTenant,
+            'id' => $stockTransfer->id,
+            'reference_no' => $stockTransfer->reference_no,
+            'from_tenant' => $stockTransfer->fromTenant,
+            'to_tenant' => $stockTransfer->toTenant,
             'transfer_date' => $stockTransfer->transfer_date,
-            'status'        => $stockTransfer->status,
-            'note'          => $stockTransfer->note,
-            'created_by'    => $stockTransfer->createdBy?->name,
-            'approved_by'   => $stockTransfer->approvedBy?->name,
-            'cancelled_by'  => $stockTransfer->cancelledBy?->name,
-            'items'         => $items,
+            'status' => $stockTransfer->status,
+            'note' => $stockTransfer->note,
+            'created_by' => $stockTransfer->createdBy?->name,
+            'approved_by' => $stockTransfer->approvedBy?->name,
+            'cancelled_by' => $stockTransfer->cancelledBy?->name,
+            'items' => $items,
         ];
     }
 
     public function approve(StockTransfer $stockTransfer)
     {
-        if ($stockTransfer->status !== 'draft') {
-            throw new GeneralException('Only draft transfers can be approved.', 400);
-        }
-
-        $items = StockTransferItem::where('stock_transfer_id', $stockTransfer->id)->get();
-
         try {
             DB::beginTransaction();
 
+            $transfer = StockTransfer::whereKey($stockTransfer->id)->lockForUpdate()->first();
+            if (! $transfer || $transfer->status !== 'draft') {
+                throw new GeneralException('Only draft transfers can be approved.', 400);
+            }
+
+            $items = StockTransferItem::where('stock_transfer_id', $transfer->id)->get();
+
             foreach ($items as $item) {
                 $fromSerial = TenantProductSerial::withoutGlobalScope(TenantScope::class)
-                    ->where('tenant_id', $stockTransfer->from_tenant_id)
+                    ->where('tenant_id', $transfer->from_tenant_id)
                     ->where('product_serial_id', $item->product_serial_id)
                     ->whereIn('status', ['purchase', 'sale_return'])
+                    ->lockForUpdate()
                     ->first();
 
-                if (!$fromSerial) {
+                if (! $fromSerial) {
                     throw new GeneralException(
                         "Serial {$item->productSerial?->serial_number} is no longer available in the source shop.",
                         400
@@ -189,23 +188,24 @@ class StockTransferController extends Controller
                 $fromSerial->status = 'transfer';
                 $fromSerial->saveQuietly();
 
-                // 2. Create new serial record for TO tenant
-                TenantProductSerial::withoutGlobalScope(TenantScope::class)->create([
-                    'tenant_id'         => $stockTransfer->to_tenant_id,
+                // 2. Create or update serial record for TO tenant
+                TenantProductSerial::withoutGlobalScope(TenantScope::class)->updateOrCreate([
+                    'tenant_id' => $transfer->to_tenant_id,
                     'product_serial_id' => $item->product_serial_id,
-                    'status'            => 'purchase',
+                ], [
+                    'status' => 'purchase',
                 ]);
 
                 // 3. Decrement stock for FROM tenant
                 Stock::withoutGlobalScope(TenantScope::class)
-                    ->where('tenant_id', $stockTransfer->from_tenant_id)
+                    ->where('tenant_id', $transfer->from_tenant_id)
                     ->where('product_id', $item->product_id)
                     ->where('product_variant_id', $item->product_variant_id)
                     ->decrement('quantity');
 
                 // 4. Increment stock for TO tenant (create row if not exists)
                 $toStock = Stock::withoutGlobalScope(TenantScope::class)
-                    ->where('tenant_id', $stockTransfer->to_tenant_id)
+                    ->where('tenant_id', $transfer->to_tenant_id)
                     ->where('product_id', $item->product_id)
                     ->where('product_variant_id', $item->product_variant_id)
                     ->first();
@@ -214,18 +214,18 @@ class StockTransferController extends Controller
                     $toStock->increment('quantity');
                 } else {
                     DB::table('stocks')->insert([
-                        'tenant_id'          => $stockTransfer->to_tenant_id,
-                        'product_id'         => $item->product_id,
+                        'tenant_id' => $transfer->to_tenant_id,
+                        'product_id' => $item->product_id,
                         'product_variant_id' => $item->product_variant_id,
-                        'quantity'           => 1,
-                        'created_at'         => now(),
-                        'updated_at'         => now(),
+                        'quantity' => 1,
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
             }
 
-            $stockTransfer->update([
-                'status'      => 'approved',
+            $transfer->update([
+                'status' => 'approved',
                 'approved_by' => auth()->id(),
             ]);
 
@@ -234,7 +234,7 @@ class StockTransferController extends Controller
             return successResponse('Stock transfer approved. Serials moved to destination shop.');
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 400);
+            throw new GeneralException($e->getMessage(), 400, $e);
         }
     }
 

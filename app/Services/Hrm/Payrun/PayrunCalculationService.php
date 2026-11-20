@@ -36,11 +36,12 @@ use Illuminate\Support\Collection;
  */
 class PayrunCalculationService
 {
-    private const DEFAULT_BENEFICIARY_MODEL = 'default';
-    private const DEFAULT_BENEFICIARY_MODEL_ID = 0;
+    private const string DEFAULT_BENEFICIARY_MODEL = 'default';
+
+    private const int DEFAULT_BENEFICIARY_MODEL_ID = 0;
 
     /** Overtime is paid at this multiple of the employee's normal hourly rate. */
-    private const OVERTIME_MULTIPLIER = 1.5;
+    private const float OVERTIME_MULTIPLIER = 1.5;
 
     public function __construct(
         protected SettingService $settingService,
@@ -93,9 +94,9 @@ class PayrunCalculationService
             ->whereHas('employeeProfile')
             ->where('status', 'active')
             ->whereNotIn('id', $restrictedEmployees)
-            ->when(!empty($restrictedDepartments), fn($query) => $query->whereDoesntHave(
+            ->when(! empty($restrictedDepartments), fn ($query) => $query->whereDoesntHave(
                 'currentDepartment',
-                fn($q) => $q->whereIn('department_id', $restrictedDepartments)
+                fn ($q) => $q->whereIn('department_id', $restrictedDepartments)
             ))
             ->with(['employeeProfile', 'currentDepartment.department.workShifts.schedules', 'workShifts.schedules', 'currentSalary'])
             ->get();
@@ -115,11 +116,11 @@ class PayrunCalculationService
             ->whereHas('employeeProfile')
             ->where('status', 'active')
             ->when(
-                !empty($employeeIds),
-                fn($q) => $q->whereIn('id', $employeeIds),
-                fn($q) => $q->when(!empty($departmentIds), fn($inner) => $inner->whereHas(
+                $employeeIds !== [],
+                fn ($q) => $q->whereIn('id', $employeeIds),
+                fn ($q) => $q->when($departmentIds !== [], fn ($inner) => $inner->whereHas(
                     'currentDepartment',
-                    fn($d) => $d->whereIn('department_id', $departmentIds)
+                    fn ($d) => $d->whereIn('department_id', $departmentIds)
                 ))
             )
             ->with(['employeeProfile', 'currentDepartment.department.workShifts.schedules', 'workShifts.schedules', 'currentSalary'])
@@ -135,7 +136,7 @@ class PayrunCalculationService
         return BeneficiaryValue::query()
             ->where('model_name', self::DEFAULT_BENEFICIARY_MODEL)
             ->where('model_id', self::DEFAULT_BENEFICIARY_MODEL_ID)
-            ->whereHas('beneficiary', fn($q) => $q->where('is_active', true))
+            ->whereHas('beneficiary', fn ($q) => $q->where('is_active', true))
             ->with('beneficiary:id,name,type')
             ->get();
     }
@@ -171,7 +172,7 @@ class PayrunCalculationService
             ->whereNotIn('status', ['rejected', 'cancel'])
             ->exists();
 
-        if (!$hasAttendance) {
+        if (! $hasAttendance) {
             return null;
         }
 
@@ -221,11 +222,11 @@ class PayrunCalculationService
      */
     private function calculateAttendanceBasedEarning(User $employee, Carbon $start, Carbon $end, float $basicSalary, PayrunType $payrunType): array
     {
-        $department  = $employee->currentDepartment?->department;
-        $shift       = $employee->workShifts->first() ?? $department?->workShifts?->first();
+        $department = $employee->currentDepartment?->department;
+        $shift = $employee->workShifts->first() ?? $department?->workShifts?->first();
         $weekendDays = $shift?->weekend_days ?? [];
 
-        $holidayDates   = $this->holidayDates($start, $end, $department?->id);
+        $holidayDates = $this->holidayDates($start, $end, $department?->id);
         $paidLeaveDates = $this->paidLeaveDates($employee->id, $start, $end);
 
         $attendanceByDate = Attendance::query()
@@ -234,7 +235,7 @@ class PayrunCalculationService
             ->whereNotIn('status', ['rejected', 'cancel'])
             ->with('details')
             ->get()
-            ->keyBy(fn(Attendance $a) => $a->in_date->toDateString());
+            ->keyBy(fn (Attendance $a) => $a->in_date->toDateString());
 
         $considerHours = $payrunType->consider_type === 'hour';
 
@@ -253,15 +254,15 @@ class PayrunCalculationService
         // Working days are paid only when the employee punched in.
         // Overtime = actual minutes worked beyond the scheduled shift on a
         //            working day (when consider_overtime is enabled).
-        $totalDays = $start->diffInDays($end) + 1;
-        $dayRate   = $totalDays > 0 ? $basicSalary / $totalDays : 0;
+        $totalDays = $start->copy()->startOfDay()->diffInDays($end->copy()->startOfDay()) + 1;
+        $dayRate = $totalDays > 0 ? $basicSalary / $totalDays : 0;
 
-        $earned          = 0.0;
-        $overtime        = 0.0;
+        $earned = 0.0;
+        $overtime = 0.0;
         $overtimeMinutes = 0;
 
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            $dateKey      = $date->toDateString();
+            $dateKey = $date->toDateString();
             $isNonWorking = $holidayDates->contains($dateKey)
                 || $paidLeaveDates->contains($dateKey)
                 || in_array($date->format('l'), $weekendDays, true);
@@ -269,12 +270,13 @@ class PayrunCalculationService
             if ($isNonWorking) {
                 // Weekend / holiday / leave → always paid regardless of attendance.
                 $earned += $dayRate;
+
                 continue;
             }
 
             // Working day → paid only if punched in.
             $attendance = $attendanceByDate->get($dateKey);
-            if (!$attendance) {
+            if (! $attendance) {
                 continue;
             }
 
@@ -282,7 +284,7 @@ class PayrunCalculationService
 
             if ($payrunType->consider_overtime) {
                 $scheduledMinutes = $this->scheduledMinutesFor($shift, $date);
-                $workedMinutes    = $this->workedMinutesFor($attendance);
+                $workedMinutes = $this->workedMinutesFor($attendance);
                 if ($scheduledMinutes > 0 && $workedMinutes > $scheduledMinutes) {
                     $overtimeMinutes += $workedMinutes - $scheduledMinutes;
                 }
@@ -291,8 +293,8 @@ class PayrunCalculationService
 
         if ($payrunType->consider_overtime && $overtimeMinutes > 0 && $dayRate > 0) {
             $shiftMinutes = $this->scheduledMinutesFor($shift, $start);
-            $hourlyRate   = $shiftMinutes > 0 ? ($dayRate / $shiftMinutes) * 60 : 0;
-            $overtime     = ($overtimeMinutes / 60) * $hourlyRate * self::OVERTIME_MULTIPLIER;
+            $hourlyRate = $shiftMinutes > 0 ? ($dayRate / $shiftMinutes) * 60 : 0;
+            $overtime = ($overtimeMinutes / 60) * $hourlyRate * self::OVERTIME_MULTIPLIER;
         }
 
         return [$earned, $overtime];
@@ -311,10 +313,10 @@ class PayrunCalculationService
     private function calculateHourMode(Carbon $start, Carbon $end, float $basicSalary, ?WorkShift $shift, array $weekendDays, Collection $holidayDates, Collection $paidLeaveDates, Collection $attendanceByDate, PayrunType $payrunType): array
     {
         $totalScheduledMinutes = 0;
-        $totalWorkedMinutes    = 0;
+        $totalWorkedMinutes = 0;
 
         for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-            $dateKey      = $date->toDateString();
+            $dateKey = $date->toDateString();
             $scheduledMin = $this->scheduledMinutesFor($shift, $date);
             $isNonWorking = $holidayDates->contains($dateKey)
                 || $paidLeaveDates->contains($dateKey)
@@ -335,16 +337,16 @@ class PayrunCalculationService
         }
 
         $workingEarning = 0.0;
-        $overtime       = 0.0;
+        $overtime = 0.0;
 
         if ($totalScheduledMinutes > 0) {
-            $cappedWorked   = min($totalWorkedMinutes, $totalScheduledMinutes);
+            $cappedWorked = min($totalWorkedMinutes, $totalScheduledMinutes);
             $workingEarning = ($cappedWorked / $totalScheduledMinutes) * $basicSalary;
 
             if ($payrunType->consider_overtime && $totalWorkedMinutes > $totalScheduledMinutes) {
-                $hourlyRate    = ($basicSalary / $totalScheduledMinutes) * 60;
+                $hourlyRate = ($basicSalary / $totalScheduledMinutes) * 60;
                 $overtimeHours = ($totalWorkedMinutes - $totalScheduledMinutes) / 60;
-                $overtime      = $overtimeHours * $hourlyRate * self::OVERTIME_MULTIPLIER;
+                $overtime = $overtimeHours * $hourlyRate * self::OVERTIME_MULTIPLIER;
             }
         }
 
@@ -354,7 +356,7 @@ class PayrunCalculationService
     private function workedMinutesFor(Attendance $attendance): int
     {
         return $attendance->details->sum(function ($detail) {
-            if (!$detail->in_time || !$detail->out_time) {
+            if (! $detail->in_time || ! $detail->out_time) {
                 return 0;
             }
 
@@ -381,7 +383,7 @@ class PayrunCalculationService
         Holiday::query()
             ->where('start_date', '<=', $end)
             ->where('end_date', '>=', $start)
-            ->where(fn($q) => $q->whereNull('department_id')->orWhere('department_id', $departmentId))
+            ->where(fn ($q) => $q->whereNull('department_id')->orWhere('department_id', $departmentId))
             ->get()
             ->each(function (Holiday $holiday) use ($start, $end, &$dates) {
                 $from = $holiday->start_date->max($start);
@@ -406,7 +408,7 @@ class PayrunCalculationService
         LeaveRequest::query()
             ->where('user_id', $employeeId)
             ->where('status', 'approved')
-            ->whereHas('leaveType', fn($q) => $q->where('type', 'paid'))
+            ->whereHas('leaveType', fn ($q) => $q->where('type', 'paid'))
             ->get()
             ->each(function (LeaveRequest $leave) use ($start, $end, &$dates) {
                 if ($leave->leave_duration === 'multi_day' && $leave->start_date && $leave->end_date) {

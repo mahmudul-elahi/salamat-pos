@@ -6,9 +6,7 @@ use App\Exceptions\GeneralException;
 use App\Models\Pos\Product\Product;
 use App\Models\Pos\Product\ProductSerial;
 use App\Models\Pos\Product\TenantProductSerial;
-use App\Models\Pos\Product\VariantInventory;
 use App\Models\Pos\Purchase\Purchase;
-use App\Models\Pos\Purchase\PurchaseItem;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\PurchaseReturn\PurchaseReturnItem;
 use App\Models\Pos\Stock\Stock;
@@ -19,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 
 class PurchaseReturnService extends BaseService
 {
-
     public function __construct(PurchaseReturn $model)
     {
         $this->model = $model;
@@ -34,7 +31,7 @@ class PurchaseReturnService extends BaseService
             ->where('id', $request['purchase_id'])
             ->first();
 
-        if (!$purchase) {
+        if (! $purchase) {
             throw new GeneralException('Purchase not found');
         }
         if ($purchase->status == 'return') {
@@ -53,7 +50,7 @@ class PurchaseReturnService extends BaseService
             ->where('tenant_id', $tenantId)
             ->exists();
 
-        if (!$tenantExist) {
+        if (! $tenantExist) {
             DB::table('supplier_tenant')
                 ->insert([
                     'supplier_id' => $request['supplier_id'],
@@ -77,26 +74,23 @@ class PurchaseReturnService extends BaseService
                 ->where('product_variant_id', $item['variant_id'])
                 ->first();
 
-
             $tenantSerial = TenantProductSerial::query()
-                ->when($isAppAdmin, fn($query) => $query->where('tenant_id', $request['tenant_id']))
+                ->when($isAppAdmin, fn ($query) => $query->where('tenant_id', $request['tenant_id']))
                 ->where('product_serial_id', $productSerial->id)
                 ->whereIn('status', ['purchase', 'sale_return'])
                 ->lockForUpdate()
                 ->first();
 
-
-            if (!$tenantSerial) {
+            if (! $tenantSerial) {
                 throw new GeneralException(
                     "Serial {$productSerial->serial_number} is not for purchases"
                 );
             }
 
             $tenantSerial->update([
-                'status' => 'purchase_return'
+                'status' => 'purchase_return',
             ]);
         }
-
 
         return $this;
     }
@@ -110,29 +104,26 @@ class PurchaseReturnService extends BaseService
                 ->where('serial_number', $item)
                 ->first();
 
-
             $alreadyPurchased = TenantProductSerial::query()
-                ->when($isAppAdmin, fn($query) => $query->where('tenant_id', $request['tenant_id']))
+                ->when($isAppAdmin, fn ($query) => $query->where('tenant_id', $request['tenant_id']))
                 ->where('product_serial_id', $productSerial->id)
                 ->where('status', 'purchase')
                 ->lockForUpdate()
                 ->first();
 
-            if (!$alreadyPurchased) {
+            if (! $alreadyPurchased) {
                 throw new GeneralException(
                     "Serial {$productSerial->serial_number} is not for purchases"
                 );
             }
 
             $alreadyPurchased->update([
-                'status' => 'purchase_return'
+                'status' => 'purchase_return',
             ]);
         }
 
-
         return $this;
     }
-
 
     public function create($request): static
     {
@@ -168,7 +159,7 @@ class PurchaseReturnService extends BaseService
         $now = now();
 
         // Build purchase items in one go
-        $items = array_map(fn($item) => [
+        $items = array_map(fn ($item) => [
             'purchase_return_id' => $this->model->id,
             'product_id' => $item['product_id'],
             'product_variant_id' => $item['variant_id'],
@@ -203,12 +194,13 @@ class PurchaseReturnService extends BaseService
         $tenantId = $isAppAdmin ? $request['tenant_id'] : null;
         foreach ($request['items'] as $item) {
             Stock::query()
-                ->when($isAppAdmin, fn($query) => $query->where('tenant_id', $tenantId))
+                ->when($isAppAdmin, fn ($query) => $query->where('tenant_id', $tenantId))
                 ->where('product_id', $item['product_id'])
                 ->where('product_variant_id', $item['variant_id'])
                 ->decrement('quantity', $item['quantity']);
 
         }
+
         return $this;
     }
 
@@ -226,7 +218,6 @@ class PurchaseReturnService extends BaseService
             'grand_total' => $data['grand_total'],
         ]);
 
-
         return $this;
     }
 
@@ -236,7 +227,7 @@ class PurchaseReturnService extends BaseService
     public function updatePurchaseReturnItem(array $request, $isAppAdmin): static
     {
 
-        if (empty($request['items']) || !is_array($request['items'])) {
+        if (empty($request['items']) || ! is_array($request['items'])) {
             return $this;
         }
 
@@ -250,7 +241,6 @@ class PurchaseReturnService extends BaseService
         $existingSerials = $this->model->items()
             ->pluck('serial_number');
 
-
         // 🔹 Fetch existing purchase items once
         $existingItems = PurchaseReturnItem::query()
             ->where('purchase_return_id', $this->model->id)
@@ -258,6 +248,10 @@ class PurchaseReturnService extends BaseService
             ->get()
             ->keyBy('serial_number');
 
+        $newSerials = $incomingSerials->diff($existingSerials);
+        if ($newSerials->isNotEmpty()) {
+            $this->tenantNewPurchaseReturnProductSerialLog($newSerials, $request, $isAppAdmin);
+        }
 
         foreach ($incomingItems as $item) {
 
@@ -272,9 +266,6 @@ class PurchaseReturnService extends BaseService
                     'note' => $item['note'] ?? null,
                 ]);
             } else {
-                $newSerials = $incomingSerials->diff($existingSerials);
-
-                $this->tenantNewPurchaseReturnProductSerialLog($newSerials, $request, $isAppAdmin);
                 // ➕ Create new purchase item
                 PurchaseReturnItem::query()->create([
                     'purchase_return_id' => $this->model->id,
@@ -288,7 +279,7 @@ class PurchaseReturnService extends BaseService
                 ]);
 
                 // 📦 Decrement stock safely
-                Stock::query()
+                Stock::withoutGlobalScope(TenantScope::class)
                     ->where('tenant_id', $tenantId)
                     ->where('product_id', $item['product_id'])
                     ->where('product_variant_id', $item['variant_id'])
@@ -345,7 +336,7 @@ class PurchaseReturnService extends BaseService
                     ->whereIn('product_serial_id', $serials)
                     ->where('status', 'purchase_return')
                     ->update([
-                        'status' => 'purchase'
+                        'status' => 'purchase',
                     ]);
 
                 // 🗑 Delete purchase item
@@ -356,56 +347,52 @@ class PurchaseReturnService extends BaseService
         return $this;
     }
 
-
     public function stockDecrementAndStatusUpdate($isAppAdmin): static
     {
-
         $items = $this->model->items;
-        $tenantId = $isAppAdmin ? $this->model->tenant_id : null;
+        $tenantId = $this->model->tenant_id;
 
         if ($items->isEmpty()) {
             return $this;
         }
 
         foreach ($items as $item) {
-            Stock::query()
-                ->when($isAppAdmin, fn($query) => $query->where('tenant_id', $tenantId))
+            Stock::withoutGlobalScope(TenantScope::class)
+                ->where('tenant_id', $tenantId)
                 ->where('product_id', $item->product_id)
                 ->where('product_variant_id', $item->product_variant_id)
                 ->increment('quantity', $item->quantity);
+        }
 
-            // 2️⃣ Get related product serials (locked)
+        $serialNumbers = $items->pluck('serial_number')->filter()->values();
+        if ($serialNumbers->isNotEmpty()) {
             $serials = ProductSerial::query()
-                ->whereIn('serial_number', $items->pluck('serial_number'))
+                ->whereIn('serial_number', $serialNumbers)
                 ->whereIn('product_variant_id', $items->pluck('product_variant_id'))
-                ->whereHas('tenantProductSerials', function ($query) use ($isAppAdmin, $tenantId) {
-                    $query->when($isAppAdmin, fn($query) => $query->where('tenant_id', $tenantId))
+                ->whereHas('tenantProductSerials', function ($query) use ($tenantId) {
+                    $query->withoutGlobalScope(TenantScope::class)
+                        ->where('tenant_id', $tenantId)
                         ->where('status', 'purchase_return');
                 })
                 ->lockForUpdate()
                 ->get();
 
-            if ($serials->isEmpty()) {
-                return $this;
+            if ($serials->isNotEmpty()) {
+                ProductSerial::query()
+                    ->whereIn('id', $serials->pluck('id'))
+                    ->update([
+                        'status' => 'purchase',
+                        'updated_at' => now(),
+                    ]);
+
+                TenantProductSerial::withoutGlobalScope(TenantScope::class)
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('product_serial_id', $serials->pluck('id'))
+                    ->update([
+                        'status' => 'purchase',
+                        'updated_at' => now(),
+                    ]);
             }
-
-            // 3️⃣ Restore product serial status
-            ProductSerial::query()
-                ->whereIn('id', $serials->pluck('id'))
-
-                ->update([
-                    'status' => 'purchase',
-                    'updated_at' => now()
-                ]);
-
-            // 4️⃣ Restore tenant product serial status
-            TenantProductSerial::query()
-                ->when($isAppAdmin, fn($query) => $query->where('tenant_id', $tenantId))
-                ->whereIn('product_serial_id', $serials->pluck('id'))
-                ->update([
-                    'status' => 'purchase',
-                    'updated_at' => now()
-                ]);
         }
 
         return $this;

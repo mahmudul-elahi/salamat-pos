@@ -1,11 +1,14 @@
 <?php
 
+use App\Models\Pos\Product\Product;
+use App\Models\Pos\Product\ProductVariant;
 use App\Models\Pos\Purchase\Purchase;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -14,13 +17,12 @@ return new class extends Migration {
         Schema::create('purchase_items', function (Blueprint $table) {
             $table->bigIncrements('id');
 
-
-            $table->foreignIdFor(\App\Models\Pos\Product\Product::class)
+            $table->foreignIdFor(Product::class)
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
-            $table->foreignIdFor(\App\Models\Pos\Product\ProductVariant::class)
+            $table->foreignIdFor(ProductVariant::class)
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
@@ -39,7 +41,7 @@ return new class extends Migration {
             $table->softDeletes();
 
             $table->index(['purchase_id', 'product_id'], 'purchase_product_index');
-            $table->index(['product_variant_id'], 'variant_index');
+            $table->index(['product_variant_id'], 'purchase_items_variant_index');
         });
     }
 

@@ -32,37 +32,35 @@ class PathaoController extends Controller
             ->with(['sale:id,full_invoice_number', 'createdBy:id,name'])
             ->orderByRaw('COALESCE(courier_created_at, created_at) DESC')
             ->paginate($perPage)
-            ->through(function ($order) {
-                return [
-                    'id' => $order->id,
-                    'invoice_number' => $order->sale?->full_invoice_number ?? '-',
-                    'sale_id' => $order->sale_id,
-                    'store_name' => $order->store_name,
-                    'consignment_id' => $order->consignment_id,
-                    'track_url' => $order->track_url,
-                    'recipient_name' => $order->recipient_name,
-                    'recipient_phone' => $order->recipient_phone,
-                    'recipient_address' => $order->recipient_address,
-                    'address' => collect([
-                        $order->recipient_address,
-                        $order->recipient_area_name,
-                        $order->recipient_zone_name,
-                        $order->recipient_city_name,
-                    ])->filter()->implode(', '),
-                    'city' => $order->recipient_city_name,
-                    'zone' => $order->recipient_zone_name,
-                    'area' => $order->recipient_area_name,
-                    'item_type' => $order->item_type == 1 ? 'Document' : 'Parcel',
-                    'delivery_type' => $order->delivery_type == 12 ? 'On Demand' : 'Normal',
-                    'amount_to_collect' => $order->amount_to_collect,
-                    'delivery_fee' => $order->delivery_fee,
-                    'discount' => $order->discount,
-                    'status' => $order->status,
-                    'payment_status' => $order->payment_status,
-                    'created_by_name' => $order->createdBy?->name ?? '-',
-                    'created_at' => ($order->courier_created_at ?? $order->created_at)?->format('Y-m-d h:i A'),
-                ];
-            });
+            ->through(fn ($order) => [
+                'id' => $order->id,
+                'invoice_number' => $order->sale?->full_invoice_number ?? '-',
+                'sale_id' => $order->sale_id,
+                'store_name' => $order->store_name,
+                'consignment_id' => $order->consignment_id,
+                'track_url' => $order->track_url,
+                'recipient_name' => $order->recipient_name,
+                'recipient_phone' => $order->recipient_phone,
+                'recipient_address' => $order->recipient_address,
+                'address' => collect([
+                    $order->recipient_address,
+                    $order->recipient_area_name,
+                    $order->recipient_zone_name,
+                    $order->recipient_city_name,
+                ])->filter()->implode(', '),
+                'city' => $order->recipient_city_name,
+                'zone' => $order->recipient_zone_name,
+                'area' => $order->recipient_area_name,
+                'item_type' => $order->item_type == 1 ? 'Document' : 'Parcel',
+                'delivery_type' => $order->delivery_type == 12 ? 'On Demand' : 'Normal',
+                'amount_to_collect' => $order->amount_to_collect,
+                'delivery_fee' => $order->delivery_fee,
+                'discount' => $order->discount,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'created_by_name' => $order->createdBy?->name ?? '-',
+                'created_at' => ($order->courier_created_at ?? $order->created_at)?->format('Y-m-d h:i A'),
+            ]);
 
         return [
             ...$paginated->toArray(),
@@ -95,11 +93,11 @@ class PathaoController extends Controller
             ->first();
 
         $events = collect($courierOrder?->raw_response['webhook_events'] ?? [])
-            ->map(fn($event) => [
+            ->map(fn ($event) => [
                 'message' => $event['payload']['order_status'] ?? $event['payload']['status'] ?? null,
-                'time'    => $event['payload']['updated_at'] ?? $event['received_at'] ?? null,
+                'time' => $event['payload']['updated_at'] ?? $event['received_at'] ?? null,
             ])
-            ->filter(fn($event) => $event['message']);
+            ->filter(fn ($event) => $event['message']);
 
         // A live read, so the timeline is current even before any webhook lands.
         try {
@@ -112,11 +110,11 @@ class PathaoController extends Controller
             }
         } catch (Throwable $exception) {
             // A courier being unreachable shouldn't blank the stored history.
-            Log::warning('Pathao live status lookup failed: ' . $exception->getMessage());
+            Log::warning('Pathao live status lookup failed: '.$exception->getMessage());
         }
 
         return response()->json([
-            'data'      => $events->values(),
+            'data' => $events->values(),
             'track_url' => $this->pathaoService->trackingUrl($consignmentId),
         ]);
     }
@@ -125,15 +123,16 @@ class PathaoController extends Controller
     {
         $payload = $request->all();
 
-        $secret    = config('services.pathao.webhook_secret');
+        $secret = config('services.pathao.webhook_secret');
         $signature = $request->header('x-pathao-signature');
 
-        if (!$secret || !$signature) {
+        if (! $secret || ! $signature) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        if (!hash_equals((string) $secret, (string) $signature)) {
+        if (! hash_equals((string) $secret, (string) $signature)) {
             Log::warning('Pathao webhook: invalid signature');
+
             return response()->json(['error' => 'Invalid signature'], 403);
         }
 
@@ -144,16 +143,17 @@ class PathaoController extends Controller
         $discount = $payload['discount'] ?? null;
         $promoDiscount = $payload['promo_discount'] ?? null;
 
-        if (!$consignmentId && !$merchantOrderId) {
+        if (! $consignmentId && ! $merchantOrderId) {
             return $this->webhookResponse(['message' => 'Order not found, ignored']);
         }
 
         $courierOrder = CourierOrder::query()
-            ->when($consignmentId, fn($query) => $query->where('consignment_id', $consignmentId))
-            ->when(!$consignmentId && $merchantOrderId, fn($query) => $query->where('merchant_order_id', $merchantOrderId))
+            ->where('provider', 'pathao')
+            ->when($consignmentId, fn ($query) => $query->where('consignment_id', $consignmentId))
+            ->when(! $consignmentId && $merchantOrderId, fn ($query) => $query->where('merchant_order_id', $merchantOrderId))
             ->first();
 
-        if (!$courierOrder) {
+        if (! $courierOrder) {
             return $this->webhookResponse(['message' => 'Order not found, ignored']);
         }
 
@@ -214,7 +214,7 @@ class PathaoController extends Controller
 
             foreach ($orders as $order) {
                 $consignmentId = $order['order_consignment_id'] ?? null;
-                if (!$consignmentId) {
+                if (! $consignmentId) {
                     continue;
                 }
 
@@ -310,8 +310,6 @@ class PathaoController extends Controller
             'special_instruction' => ['nullable', 'string'],
         ]);
 
-
-      
         try {
             DB::beginTransaction();
 
@@ -371,7 +369,7 @@ class PathaoController extends Controller
             throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 }

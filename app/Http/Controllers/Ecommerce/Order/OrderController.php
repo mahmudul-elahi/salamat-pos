@@ -10,7 +10,6 @@ use App\Filters\Ecommerce\Order\OrderFilter;
 use App\Helpers\Traits\S3ToLocalPathTrait;
 use App\Http\Controllers\Controller;
 use App\Models\Ecommerce\Order\Order;
-use App\Models\Pos\Care\Care;
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Product\ProductSerial;
 use App\Models\Pos\Product\ProductVariant;
@@ -24,8 +23,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Milon\Barcode\DNS1D;
-
 
 class OrderController extends Controller
 {
@@ -48,20 +47,20 @@ class OrderController extends Controller
                 'items' => function ($query) {
                     $query->select('id', 'order_id', 'product_price', 'discount_amount', 'discount_type', 'product_variant_id', 'gift_product_variant_id', 'quantity')
                         ->with([
-                            'variant' => fn($q) => $q->select('id', 'product_id', 'sku'),
-                            'variant.product' => fn($q) => $q->select('id', 'product_name'),
-                            'giftProductVariant' => fn($q) => $q->select('id', 'product_id', 'product_variant_id', 'qty')
+                            'variant' => fn ($q) => $q->select('id', 'product_id', 'sku'),
+                            'variant.product' => fn ($q) => $q->select('id', 'product_name'),
+                            'giftProductVariant' => fn ($q) => $q->select('id', 'product_id', 'product_variant_id', 'qty')
                                 ->with([
                                     'product:id,product_name',
                                     'productVariant:id,sku',
                                 ]),
                         ]);
-                }
+                },
             ])
-            ->when($statusEnum, fn($query) => $query->where('status', $statusEnum->value))
+            ->when($statusEnum, fn ($query) => $query->where('status', $statusEnum->value))
             ->orderByDesc('id')
             ->paginate($perPage)
-            ->through(fn($order) => $this->transformOrder($order));
+            ->through(fn ($order) => $this->transformOrder($order));
     }
 
     public function orderDetail(Order $order)
@@ -71,7 +70,7 @@ class OrderController extends Controller
         if (request()->has('preview')) {
             return response()->make($pdf->stream(), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="' . $order->invoice_number . '.pdf"',
+                'Content-Disposition' => 'inline; filename="'.$order->invoice_number.'.pdf"',
             ]);
         }
 
@@ -106,18 +105,20 @@ class OrderController extends Controller
             },
         ]);
 
-        $totalDiscount = $order->items->sum(fn($item) => (float) $item->discount_amount * $item->quantity);
-        $totalUnitPrice = $order->items->sum(fn($item) => $item->product_price * $item->quantity);
+        $totalDiscount = $order->items->sum(fn ($item) => (float) $item->discount_amount * $item->quantity);
+        $totalUnitPrice = $order->items->sum(fn ($item) => $item->product_price * $item->quantity);
         $totalCareCharge = $order->items->sum(function ($item) {
             $chargeValue = $item->productCare ? ($item->productCare->care?->value ?? 0) : 0;
+
             return ($item->product_price * $item->quantity) * ($chargeValue / 100);
         });
         $totalPreOwnedCharge = $order->items->sum(function ($item) {
             $chargeValue = $item->preOwnedCare ? ($item->preOwnedCare->care?->value ?? 0) : 0;
+
             return ($item->product_price * $item->quantity) * ($chargeValue / 100);
         });
-        $totalPurchasePoint = $order->items->sum(fn($item) => ($item->product?->purchase_point ?? 0) * $item->quantity);
-        $totalPreOwnedPoint = $order->items->sum(fn($item) => ($item->preOwned?->purchase_point ?? 0) * $item->quantity);
+        $totalPurchasePoint = $order->items->sum(fn ($item) => ($item->product?->purchase_point ?? 0) * $item->quantity);
+        $totalPreOwnedPoint = $order->items->sum(fn ($item) => ($item->preOwned?->purchase_point ?? 0) * $item->quantity);
         $totalQuantity = $order->items->sum('quantity');
         $totalGiftQuantity = $order->items->sum('total_gift_quantity');
 
@@ -125,7 +126,7 @@ class OrderController extends Controller
             $attributes = [];
             if ($item->preOwned) {
                 if ($item->preOwned->battery_health) {
-                    $attributes[] = $item->preOwned->battery_health . ' %';
+                    $attributes[] = $item->preOwned->battery_health.' %';
                 }
                 foreach ($item->preOwned->attribute as $preAttr) {
                     $attributes[] = $preAttr->attributeValue->value;
@@ -151,7 +152,7 @@ class OrderController extends Controller
             }
 
             return [
-                'product_name' => \Illuminate\Support\Str::limit($item->product?->product_name, 50),
+                'product_name' => Str::limit($item->product?->product_name, 50),
                 'product_image' => to_cdn_url($item->product?->product_image),
                 'warranty_day' => $item->product?->warranty_day,
                 'attributes' => $attributes,
@@ -175,7 +176,7 @@ class OrderController extends Controller
             ])));
 
         return [
-            'barcode' => 'data:image/png;base64,' . (new DNS1D)->getBarcodePNG($order->invoice_number, 'C128'),
+            'barcode' => 'data:image/png;base64,'.(new DNS1D)->getBarcodePNG($order->invoice_number, 'C128'),
             'logo' => to_cdn_url('https://salamat-innovation.s3.ap-south-1.amazonaws.com/575/TEKZO-Logo-1000x500.png'),
             'order' => [
                 'invoice_number' => $order->invoice_number,
@@ -227,52 +228,48 @@ class OrderController extends Controller
                         $query->with('care:id,name,value');
                     },
                 ])->withCount('giftProductVariant as total_gift_quantity');
-            }
+            },
         ]);
 
-        $totalDiscount = $order->items->sum(function ($item) {
-            return (float)$item->discount_amount * $item->quantity ?? 0;
-        });
+        $totalDiscount = $order->items->sum(fn ($item) => (float) $item->discount_amount * $item->quantity ?? 0);
 
-        $totalUnitPrice = $order->items->sum(function ($item) {
-            return $item->product_price * $item->quantity;
-        });
+        $totalUnitPrice = $order->items->sum(fn ($item) => $item->product_price * $item->quantity);
 
         $totalCareCharge = $order->items->sum(function ($item) {
             $chargeValue = $item->productCare ? ($item->productCare->care?->value ?? 0) : 0;
+
             return ($item->product_price * $item->quantity) * ($chargeValue / 100);
         });
 
         $totalPreOwnedCharge = $order->items->sum(function ($item) {
             $chargeValue = $item->preOwnedCare ? ($item->preOwnedCare->care?->value ?? 0) : 0;
+
             return ($item->product_price * $item->quantity) * ($chargeValue / 100);
         });
 
         $totalPurchasePoint = $order->items->sum(function ($item) {
             $point = $item->product ? ($item->product->purchase_point ?? 0) : 0;
-            return ($point * $item->quantity);
+
+            return $point * $item->quantity;
         });
 
         $totalPreOwnedPoint = $order->items->sum(function ($item) {
             $point = $item->preOwned ? ($item->preOwned->purchase_point ?? 0) : 0;
-            return ($point * $item->quantity);
+
+            return $point * $item->quantity;
         });
 
-
-
-
-
         $data = [
-            'taka'               => public_path('assets/images/taka.png'),
-            'barcode'            => 'data:image/png;base64,' . (new DNS1D)->getBarcodePNG($order->invoice_number, "C128"),
-            'totalUnitPrice'     => $totalUnitPrice,
-            'totalDiscount'      => $totalDiscount + $order->discount_total,
-            'totalCareCharge'    => $totalCareCharge + $totalPreOwnedCharge,
+            'taka' => public_path('assets/images/taka.png'),
+            'barcode' => 'data:image/png;base64,'.(new DNS1D)->getBarcodePNG($order->invoice_number, 'C128'),
+            'totalUnitPrice' => $totalUnitPrice,
+            'totalDiscount' => $totalDiscount + $order->discount_total,
+            'totalCareCharge' => $totalCareCharge + $totalPreOwnedCharge,
             'totalPurchasePoint' => $totalPurchasePoint + $totalPreOwnedPoint,
             'order' => $order,
             'customer' => $order->customer,
             'items' => $order->items,
-            'logo' => to_cdn_url("https://salamat-innovation.s3.ap-south-1.amazonaws.com/575/TEKZO-Logo-1000x500.png"),
+            'logo' => to_cdn_url('https://salamat-innovation.s3.ap-south-1.amazonaws.com/575/TEKZO-Logo-1000x500.png'),
         ];
 
         return Pdf::loadView('ecommerce.pdf.order_invoice', $data)
@@ -281,11 +278,11 @@ class OrderController extends Controller
             ->setOption('isRemoteEnabled', true);
     }
 
-
     // do edit and update methods here
     public function edit(Order $order)
     {
         $order->load('customer:id,name,phone,email', 'items.product', 'items.variant.attributeValues.attribute');
+
         return response()->json([
             'order' => $order,
         ]);
@@ -318,7 +315,7 @@ class OrderController extends Controller
         foreach ($itemsData as $itemData) {
             $query = $order->items()->where('product_id', $itemData['product_id']);
 
-            if (!empty($itemData['variant_id'])) {
+            if (! empty($itemData['variant_id'])) {
                 $query->where('product_variant_id', $itemData['variant_id']);
             }
 
@@ -358,7 +355,7 @@ class OrderController extends Controller
         // Order::status isn't int-cast on the model, so it comes back as a
         // string from the DB — compare loosely (or cast) rather than with
         // strict in_array, which would always fail against the enum's ints.
-        if (!in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
+        if (! in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
             return errorResponse('This order can no longer be updated.');
         }
 
@@ -373,7 +370,7 @@ class OrderController extends Controller
 
         $orderItem = $order->items()->whereKey($validated['order_list_id'])->first();
 
-        if (!$orderItem) {
+        if (! $orderItem) {
             return errorResponse('Order item not found.');
         }
 
@@ -382,7 +379,7 @@ class OrderController extends Controller
             ->where('product_id', $validated['product_id'])
             ->first();
 
-        if (!$variant) {
+        if (! $variant) {
             return errorResponse('Selected variant does not belong to the selected product.');
         }
 
@@ -448,7 +445,7 @@ class OrderController extends Controller
     public function addItem(Request $request, Order $order)
     {
         // Order::status isn't int-cast on the model, so compare loosely.
-        if (!in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
+        if (! in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
             return errorResponse('This order can no longer be updated.');
         }
 
@@ -473,7 +470,7 @@ class OrderController extends Controller
             // 1-based so the message matches what the agent sees on screen.
             $line = $index + 1;
 
-            if (!$variant) {
+            if (! $variant) {
                 return errorResponse("Line {$line}: selected variant does not belong to the selected product.");
             }
 
@@ -528,13 +525,13 @@ class OrderController extends Controller
      */
     public function deleteItem(Order $order, int $itemId)
     {
-        if (!in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
+        if (! in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
             return errorResponse('This order can no longer be updated.');
         }
 
         $orderItem = $order->items()->whereKey($itemId)->first();
 
-        if (!$orderItem) {
+        if (! $orderItem) {
             return errorResponse('Order item not found.');
         }
 
@@ -581,7 +578,7 @@ class OrderController extends Controller
      */
     public function updateGiftItem(Request $request, Order $order)
     {
-        if (!in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
+        if (! in_array((int) $order->status, [StatusEnum::Pending->value, StatusEnum::Approved->value, StatusEnum::Processing->value], true)) {
             return errorResponse('This order can no longer be updated.');
         }
 
@@ -592,13 +589,13 @@ class OrderController extends Controller
 
         $orderItem = $order->items()->whereKey($validated['order_list_id'])->first();
 
-        if (!$orderItem) {
+        if (! $orderItem) {
             return errorResponse('Order item not found.');
         }
 
         $currentGiftVariant = $orderItem->giftProductVariant;
 
-        if (!$currentGiftVariant) {
+        if (! $currentGiftVariant) {
             return errorResponse('This order item has no gift item to update.');
         }
 
@@ -607,7 +604,7 @@ class OrderController extends Controller
             ->where('product_id', $currentGiftVariant->product_id)
             ->first();
 
-        if (!$newVariant) {
+        if (! $newVariant) {
             return errorResponse('Selected variant does not belong to the current gift product.');
         }
 
@@ -629,7 +626,6 @@ class OrderController extends Controller
 
         return successResponse('Gift item updated successfully');
     }
-
 
     /**
      * Map string status to StatusEnum (case-insensitive)
@@ -671,7 +667,7 @@ class OrderController extends Controller
             'payment_status' => [
                 'name' => $paymentStatus?->name ?? 'Unknown',
                 'color' => $paymentStatus?->color() ?? 'secondary',
-            ]
+            ],
         ];
     }
 
@@ -686,7 +682,7 @@ class OrderController extends Controller
             'processing' => 5,
             'onway' => 6,
             'complete' => 7,
-            'return' => 9
+            'return' => 9,
         ];
         if ($action === 'changeamount') {
             $order->payable_amount = $order->grand_total;
@@ -696,15 +692,18 @@ class OrderController extends Controller
             return response()->json(['message' => 'Amount status changed successfully!']);
         }
 
-
-        if (!isset($statusMap[$action])) {
+        if (! isset($statusMap[$action])) {
             return response()->json(['message' => 'Invalid status action'], 400);
         }
 
+        if (in_array((int) $order->status, [StatusEnum::Approved->value, StatusEnum::Processing->value, StatusEnum::Complete->value, StatusEnum::OnWay->value], true)) {
+            if (in_array($action, ['cancel', 'return'], true)) {
+                return response()->json(['message' => 'Cannot cancel or return an already approved order.'], 400);
+            }
+        }
 
         $order->status = $statusMap[$action];
         $order->save();
-
 
         return response()->json([
             'message' => "Order status updated to $action successfully.",
@@ -716,7 +715,7 @@ class OrderController extends Controller
     {
 
         $request->validate([
-            'received_amount' => ['required', 'numeric', 'min:0', 'max:' . $order->grand_total],
+            'received_amount' => ['required', 'numeric', 'min:0', 'max:'.$order->grand_total],
         ]);
         $order->payable_amount = $request->received_amount;
         $order->due_amount = max(0, $order->grand_total - $request->received_amount);
@@ -727,6 +726,10 @@ class OrderController extends Controller
 
     public function destroy(Order $order)
     {
+        if (in_array((int) $order->status, [StatusEnum::Approved->value, StatusEnum::Processing->value, StatusEnum::Complete->value, StatusEnum::OnWay->value], true)) {
+            return errorResponse('Cannot delete an already approved order with fulfilled sales.', null, 400);
+        }
+
         $order->delete();
 
         return successResponse('Order deleted has been successfully');
@@ -734,22 +737,26 @@ class OrderController extends Controller
 
     public function approveOrderWithSerials(Request $request, Order $order)
     {
+        if (in_array((int) $order->status, [StatusEnum::Approved->value, StatusEnum::Processing->value, StatusEnum::Complete->value, StatusEnum::OnWay->value], true)) {
+            throw new OrderValidationException('This order has already been approved.');
+        }
+
         $request->validate([
-            'orders'                                => 'required|array',
-            'orders.*.order_list_id'                => 'required|integer',
-            'orders.*.serials'                      => 'required|array',
-            'orders.*.serials.*.serial_number'      => 'required|string',
-            'orders.*.serials.*.tenant_id'          => 'required|integer|exists:tenants,id',
-            'gift_orders'                           => 'nullable|array',
-            'gift_orders.*.order_list_id'           => 'required|integer',
-            'gift_orders.*.serials'                 => 'required|array',
+            'orders' => 'required|array',
+            'orders.*.order_list_id' => 'required|integer',
+            'orders.*.serials' => 'required|array',
+            'orders.*.serials.*.serial_number' => 'required|string',
+            'orders.*.serials.*.tenant_id' => 'required|integer|exists:tenants,id',
+            'gift_orders' => 'nullable|array',
+            'gift_orders.*.order_list_id' => 'required|integer',
+            'gift_orders.*.serials' => 'required|array',
             'gift_orders.*.serials.*.serial_number' => 'required|string',
-            'gift_orders.*.serials.*.tenant_id'     => 'required|integer|exists:tenants,id',
+            'gift_orders.*.serials.*.tenant_id' => 'required|integer|exists:tenants,id',
         ], [
-            'orders.*.serials.*.tenant_id.required'        => 'Warehouse is required',
-            'orders.*.serials.*.tenant_id.exists'          => 'Selected warehouse does not exist.',
-            'gift_orders.*.serials.*.tenant_id.required'   => 'Gift item warehouse is required',
-            'gift_orders.*.serials.*.tenant_id.exists'     => 'Selected gift warehouse does not exist.',
+            'orders.*.serials.*.tenant_id.required' => 'Warehouse is required',
+            'orders.*.serials.*.tenant_id.exists' => 'Selected warehouse does not exist.',
+            'gift_orders.*.serials.*.tenant_id.required' => 'Gift item warehouse is required',
+            'gift_orders.*.serials.*.tenant_id.exists' => 'Selected gift warehouse does not exist.',
         ]);
 
         // Key by order_list_id for fast lookup
@@ -759,7 +766,7 @@ class OrderController extends Controller
             ->where('id', $order->contact_id)
             ->first();
 
-        if (!$checkOrderCustomer) {
+        if (! $checkOrderCustomer) {
             throw new OrderValidationException('Customer not found');
         }
 
@@ -782,13 +789,13 @@ class OrderController extends Controller
 
             foreach ($order->items as $item) {
 
-                $productId    = $item->product_id;
-                $productName  = $item->variant->product->product_name;
+                $productId = $item->product_id;
+                $productName = $item->variant->product->product_name;
                 $discountType = ($item->discount_type === 'none') ? null : $item->discount_type;
 
                 $inputRow = $ordersInput->get($item->id);
 
-                if (!$inputRow) {
+                if (! $inputRow) {
                     throw new OrderValidationException(
                         "Missing serial input for '{$productName}'."
                     );
@@ -798,20 +805,20 @@ class OrderController extends Controller
 
                 if (count($serials) !== (int) $item->quantity) {
                     throw new OrderValidationException(
-                        "'{$productName}' requires {$item->quantity} serial number(s), " . count($serials) . " provided."
+                        "'{$productName}' requires {$item->quantity} serial number(s), ".count($serials).' provided.'
                     );
                 }
 
                 foreach ($serials as $serialData) {
                     $serialNumber = $serialData['serial_number'];
-                    $tenantId     = (int) $serialData['tenant_id'];
+                    $tenantId = (int) $serialData['tenant_id'];
 
                     $chekSerial = ProductSerial::query()
                         ->where('serial_number', $serialNumber)
                         ->where('product_id', $productId)
                         ->first();
 
-                    if (!$chekSerial) {
+                    if (! $chekSerial) {
                         throw new OrderValidationException(
                             "Serial '{$serialNumber}' for '{$productName}' does not exist."
                         );
@@ -828,42 +835,43 @@ class OrderController extends Controller
                         })
                         ->exists();
 
-                    if (!$serialExists) {
+                    if (! $serialExists) {
                         throw new OrderValidationException(
                             "Serial '{$serialNumber}' for '{$productName}' is unavailable in the selected warehouse."
                         );
                     }
 
-                    if (!isset($salesByTenant[$tenantId])) {
+                    if (! isset($salesByTenant[$tenantId])) {
+                        $isFirstTenantSale = $salesByTenant === [];
                         $salesByTenant[$tenantId] = [
-                            'contact_id'    => $order->contact_id,
-                            'tenant_id'     => $tenantId,
-                            'date'          => now()->format('Y-m-d'),
-                            'address'       => $orderAddress,
-                            'sub_total'     => 0,
-                            'shipping_cost' => $order->shipping_charge ?? 0,
-                            'order_tax'     => 0,
-                            'coupon_amount' => $order->discount_total ?? 0,
-                            'coupon_code'   => $order->coupon_code ?? null,
-                            'grand_total'   => 0,
-                            'items'         => [],
+                            'contact_id' => $order->contact_id,
+                            'tenant_id' => $tenantId,
+                            'date' => now()->format('Y-m-d'),
+                            'address' => $orderAddress,
+                            'sub_total' => 0,
+                            'shipping_cost' => $isFirstTenantSale ? ($order->shipping_charge ?? 0) : 0,
+                            'order_tax' => 0,
+                            'coupon_amount' => $isFirstTenantSale ? ($order->discount_total ?? 0) : 0,
+                            'coupon_code' => $isFirstTenantSale ? ($order->coupon_code ?? null) : null,
+                            'grand_total' => 0,
+                            'items' => [],
                         ];
                     }
 
                     $itemTotal = $item->product_price - ($item->discount_amount ?? 0);
-                    $salesByTenant[$tenantId]['sub_total']  += $item->product_price;
+                    $salesByTenant[$tenantId]['sub_total'] += $item->product_price;
                     $salesByTenant[$tenantId]['grand_total'] += $itemTotal;
 
                     $salesByTenant[$tenantId]['items'][] = [
-                        'product_id'      => $item->product_id,
-                        'variant_id'      => $item->product_variant_id,
-                        'tenant_id'       => $tenantId,
-                        'quantity'        => 1,
-                        'unit_price'      => $item->product_price,
-                        'discount_type'   => $discountType,
+                        'product_id' => $item->product_id,
+                        'variant_id' => $item->product_variant_id,
+                        'tenant_id' => $tenantId,
+                        'quantity' => 1,
+                        'unit_price' => $item->product_price,
+                        'discount_type' => $discountType,
                         'discount_amount' => $item->discount_amount ?? 0,
-                        'serial_number'   => $serialNumber,
-                        'note'            => null,
+                        'serial_number' => $serialNumber,
+                        'note' => null,
                     ];
                 }
             }
@@ -876,25 +884,25 @@ class OrderController extends Controller
                 $giftSerials = $giftOrder['serials'] ?? [];
 
                 $orderItem = $order->items->firstWhere('id', $orderListId);
-                if (!$orderItem) {
+                if (! $orderItem) {
                     continue;
                 }
 
                 $giftVariant = $orderItem->giftProductVariant;
-                if (!$giftVariant) {
+                if (! $giftVariant) {
                     continue;
                 }
 
                 foreach ($giftSerials as $giftSerial) {
                     $serialNumber = $giftSerial['serial_number'];
-                    $tenantId     = (int) $giftSerial['tenant_id'];
+                    $tenantId = (int) $giftSerial['tenant_id'];
 
                     $chekSerial = ProductSerial::query()
                         ->where('serial_number', $serialNumber)
                         ->where('product_id', $giftVariant->product_id)
                         ->first();
 
-                    if (!$chekSerial) {
+                    if (! $chekSerial) {
                         throw new OrderValidationException(
                             "Gift serial '{$serialNumber}' does not exist for the gift product."
                         );
@@ -911,46 +919,43 @@ class OrderController extends Controller
                         })
                         ->exists();
 
-                    if (!$serialExists) {
+                    if (! $serialExists) {
                         throw new OrderValidationException(
                             "Gift serial '{$serialNumber}' is unavailable in the selected warehouse."
                         );
                     }
 
-                    if (!isset($salesByTenant[$tenantId])) {
-                        $salesByTenant[$tenantId] = [
-                            'contact_id'    => $order->contact_id,
-                            'tenant_id'     => $tenantId,
-                            'date'          => now()->format('Y-m-d'),
-                            'address'       => $orderAddress,
-                            'sub_total'     => 0,
-                            'order_tax'     => 0,
-                            'shipping_cost' => 0,
-                            'coupon_code'   => null,
-                            'coupon_amount' =>  0,
-                            'grand_total'   => 0,
-                            'items'         => [],
-                        ];
-                    }
+                    $salesByTenant[$tenantId] ??= [
+                        'contact_id' => $order->contact_id,
+                        'tenant_id' => $tenantId,
+                        'date' => now()->format('Y-m-d'),
+                        'address' => $orderAddress,
+                        'sub_total' => 0,
+                        'order_tax' => 0,
+                        'shipping_cost' => 0,
+                        'coupon_code' => null,
+                        'coupon_amount' => 0,
+                        'grand_total' => 0,
+                        'items' => [],
+                    ];
 
                     $salesByTenant[$tenantId]['items'][] = [
-                        'product_id'      => $giftVariant->product_id,
-                        'variant_id'      => $giftVariant->product_variant_id,
-                        'tenant_id'       => $tenantId,
-                        'quantity'        => 1,
-                        'unit_price'      => 0,
-                        'discount_type'   => null,
+                        'product_id' => $giftVariant->product_id,
+                        'variant_id' => $giftVariant->product_variant_id,
+                        'tenant_id' => $tenantId,
+                        'quantity' => 1,
+                        'unit_price' => 0,
+                        'discount_type' => null,
                         'discount_amount' => 0,
-                        'serial_number'   => $serialNumber,
-                        'note'            => 'Gift item',
+                        'serial_number' => $serialNumber,
+                        'note' => 'Gift item',
                     ];
                 }
             }
 
-
             // Create one invoice per warehouse (tenant)
             $createdSaleIds = [];
-            foreach ($salesByTenant as $tenantId => $saleData) {
+            foreach ($salesByTenant as $saleData) {
                 $this->saleService
                     ->orderCreateSale($saleData)
                     ->createEcommerceItem($saleData)
@@ -977,13 +982,13 @@ class OrderController extends Controller
             return successResponse('Order approved has been successfully');
         } catch (OrderValidationException $e) {
             DB::rollBack();
-            throw new GeneralException($e->getMessage(), 400);
+            throw new GeneralException($e->getMessage(), 400, $e);
         } catch (\Exception $e) {
             DB::rollBack();
             if (app()->environment('production')) {
-                throw new GeneralException('Failed to approve order', 500);
+                throw new GeneralException('Failed to approve order', 500, $e);
             }
-            throw new GeneralException($e->getMessage(), 500);
+            throw new GeneralException($e->getMessage(), 500, $e);
         }
     }
 
@@ -999,13 +1004,12 @@ class OrderController extends Controller
             ->whereNotNull('transaction_id')
             ->first();
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'success' => false,
                 'message' => 'Order not found.',
             ], 404);
         }
-
 
         if (in_array((int) $order->payment_status, [
             OnlinePaymentStatusEnum::Successful->value,
@@ -1017,7 +1021,7 @@ class OrderController extends Controller
             ]);
         }
 
-        $result = (new SSLCommerzPaymentService())->checkTransactionStatus($order);
+        $result = (new SSLCommerzPaymentService)->checkTransactionStatus($order);
 
         return response()->json($result);
     }
