@@ -18,7 +18,7 @@ import Avatar from "@/views/global/avatar/Avatar.vue";
 
 const props = defineProps({ id: {} });
 const formData = ref({
-    warranty_text: 'Warranty will be applicable for Tekzo Care Protection',
+    warranty_text: 'TEKZO Care is not the manufacturer’s warranty. It is an additional protection product',
 
 });
 const toast = useToast();
@@ -444,7 +444,7 @@ const fetchEditProduct = async () => {
         pageLoader.value = true;
         const { data } = await Axios.get(`${PRODUCTS}/${props.id}`);
         formData.value = data;
-        formData.value.warranty_text = data.warranty_text || 'Warranty will be applicable for Tekzo Care Protection';
+        formData.value.warranty_text = data.warranty_text || 'TEKZO Care is not the manufacturer’s warranty. It is an additional protection product';
         productVariants.value = data.attributes;
         productVideoLinks.value = data.video_links || [];
 

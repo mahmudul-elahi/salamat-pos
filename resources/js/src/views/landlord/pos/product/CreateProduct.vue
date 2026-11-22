@@ -19,7 +19,7 @@ const props = defineProps({
     id: {}
 });
 const formData = ref({
-    warranty_text: 'Warranty will be applicable for Tekzo Care Protection',
+    warranty_text: 'TEKZO Care is not the manufacturer’s warranty. It is an additional protection product',
 });
 const toast = useToast();
 const errors = ref({});
