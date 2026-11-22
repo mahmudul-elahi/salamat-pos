@@ -105,4 +105,10 @@ return [
         ],
     ],
 
+    'meilisearch' => [
+        'host' => env('MEILISEARCH_HOST'),
+        'key' => env('MEILISEARCH_KEY'),
+        'products_index' => env('MEILISEARCH_PRODUCTS_INDEX', 'products'),
+    ],
+
 ];

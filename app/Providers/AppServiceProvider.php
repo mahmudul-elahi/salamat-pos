@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Ecommerce\Order\Order;
+use App\Models\Pos\Product\Product;
 use App\Observers\OrderObserver;
+use App\Observers\ProductObserver;
 use App\Services\Setting\SettingService;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -25,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Order::observe(OrderObserver::class);
+        Product::observe(ProductObserver::class);
 
         Schema::defaultStringLength(191);
 
