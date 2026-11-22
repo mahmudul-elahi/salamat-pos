@@ -63,7 +63,7 @@ const actionTiger = (row, action) => {
         deleteUrl.value = `${BRANDS}/${row.id}`
     } else if (action.type === 'manage_seo') {
         isModalActive.value = true
-        selectedData.value = `${SEO_MANAGE}/brand/${row.id}?tenant_id=4`
+        selectedData.value = `${SEO_MANAGE}/brand/${row.id}`
     }
 }
 

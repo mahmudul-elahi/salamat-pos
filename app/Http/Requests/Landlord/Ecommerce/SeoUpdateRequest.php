@@ -31,14 +31,12 @@ class SeoUpdateRequest extends FormRequest
             'meta_title' => ['nullable', 'string', 'max:191'],
             'meta_description' => ['nullable', 'string'],
             'tags' => ['nullable'],
-            'tenant_id' => ['nullable', 'numeric'],
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'tenant_id' => 'tenant',
             'meta_title' => 'meta title',
             'meta_description' => 'meta description',
         ];

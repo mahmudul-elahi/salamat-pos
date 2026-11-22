@@ -9,6 +9,7 @@ use App\Models\Landlord\Brand\Brand;
 use App\Models\Landlord\Category\Category;
 use App\Models\Pos\Product\Product;
 use App\Models\Pos\Seo\Seo;
+use App\Models\Tenant\Tenant;
 
 class SeoController extends Controller
 {
@@ -45,11 +46,7 @@ class SeoController extends Controller
             throw new GeneralException('Resource not found');
         }
 
-        $tenantId = $request->input('tenant_id');
-
-        if (! $tenantId) {
-            throw new GeneralException('Tenant not found');
-        }
+        $tenantId = $this->ecommerceTenantId();
 
         if ($model === 'product') {
             $entity->update([
@@ -120,7 +117,7 @@ class SeoController extends Controller
 
         $slug = $entity->slug ?? '';
 
-        $tenantId = request('tenant_id') ?? $entity->tenant_id ?? null;
+        $tenantId = $this->ecommerceTenantId();
 
         $seo = $entity->seos()->where('tenant_id', $tenantId)->first();
 
@@ -134,8 +131,28 @@ class SeoController extends Controller
             'meta_title' => $seo?->title ?? '',
             'meta_description' => $seo?->description ?? '',
             'tags' => $seo?->tags ?? '',
-            'tenant_id' => $seo?->tenant_id ?? $tenantId,
         ]);
+    }
+
+    /**
+     * SEO managed here belongs to the TEKZO e-commerce site, so the tenant is
+     * resolved server-side instead of trusting a tenant_id from the client.
+     * Access is governed by the route permissions, not shop membership.
+     *
+     * @throws GeneralException
+     */
+    private function ecommerceTenantId(): int
+    {
+        $tenantId = Tenant::query()
+            ->where('is_ecommerce', true)
+            ->where('slug', 'tekzo')
+            ->value('id');
+
+        if (! $tenantId) {
+            throw new GeneralException('TEKZO e-commerce tenant not found');
+        }
+
+        return $tenantId;
     }
 
     private function getModelClass($model)

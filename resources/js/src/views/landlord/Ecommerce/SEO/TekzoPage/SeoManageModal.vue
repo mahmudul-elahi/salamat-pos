@@ -12,7 +12,6 @@ const emit = defineEmits(['close'])
 const { preloader, pageLoader, formData, errors, save, closeModal } = useSubmitForm(props, emit)
 
 const submit = () => {
-    formData.value.tenant_id = 4;
     save(props.selectedUrl ? props.selectedUrl : PAGES, formData.value)
 }
 

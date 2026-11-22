@@ -80,7 +80,7 @@ const {deleteUrl, isDeleteModal, cancelled} = useDeleteModal()
 const actionTiger = (row, action) => {
     if (action.type === 'edit') {
         isModalActive.value = true
-        selectedData.value = `${TEKZO_PAGES}/${row.id}?tenant_id=4`
+        selectedData.value = `${TEKZO_PAGES}/${row.id}`
     } else if (action.type === 'delete') {
         isDeleteModal.value = true
         deleteUrl.value = `${TEKZO_PAGES}/${row.id}`
