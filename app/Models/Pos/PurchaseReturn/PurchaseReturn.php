@@ -43,13 +43,13 @@ class PurchaseReturn extends TenantBaseModel implements HasMedia
         parent::boot();
 
         if (! app()->runningInConsole()) {
-            $maxInvoiceNumber = self::withTrashed()
-                ->withoutGlobalScope(new TenantScope)
-                ->max('invoice_number') + 1;
+            static::creating(function ($model) {
+                $maxInvoiceNumber = self::withTrashed()
+                    ->withoutGlobalScope(new TenantScope)
+                    ->lockForUpdate()
+                    ->max('invoice_number') + 1;
 
-            $formattedInvoiceNumber = str_pad($maxInvoiceNumber, 6, '0', STR_PAD_LEFT);
-
-            static::creating(function ($model) use ($maxInvoiceNumber, $formattedInvoiceNumber) {
+                $formattedInvoiceNumber = str_pad($maxInvoiceNumber, 6, '0', STR_PAD_LEFT);
                 $model->created_by = auth()->id();
                 $model->invoice_number = $maxInvoiceNumber;
                 $model->full_invoice_number = 'PR-'.$formattedInvoiceNumber;
