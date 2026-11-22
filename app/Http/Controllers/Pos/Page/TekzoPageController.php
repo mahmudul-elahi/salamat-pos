@@ -9,6 +9,7 @@ use App\Http\Requests\Pos\Page\TekzoPageRequest;
 use App\Models\Pos\Page\Page;
 use App\Models\Tenant\Tenant;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -105,9 +106,13 @@ class TekzoPageController extends Controller
      */
     public function show(Page $tekzoPage)
     {
-
+        /*
+         * tenant_id is left out on purpose: the edit modal posts its loaded data
+         * back on save, and a tenant_id the user doesn't belong to would be
+         * rejected by the tenant.check middleware. Update never needs it.
+         */
         return [
-            ...$tekzoPage->toArray(),
+            ...Arr::except($tekzoPage->toArray(), ['tenant_id']),
             'meta_title' => $tekzoPage->seo?->title,
             'meta_description' => $tekzoPage->seo?->description,
             'tags' => $tekzoPage->seo?->tags,
