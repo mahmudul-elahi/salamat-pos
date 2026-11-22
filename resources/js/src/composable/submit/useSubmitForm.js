@@ -88,6 +88,9 @@ export const useSubmitForm = (props, emit, editData = "yes") => {
             .then(({ data }) => {
                 formData.value = data;
             })
+            .catch(({ response }) => {
+                toast.error(response?.data?.message || "Failed to load data.");
+            })
             .finally(() => {
                 pageLoader.value = false;
             });
