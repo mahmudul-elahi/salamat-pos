@@ -33,15 +33,21 @@ Route::group(['prefix' => 'ecommerce', 'middleware' => 'auth.permission'], funct
     $router->apiResource('sliders', SliderController::class);
     $router->patch('sliders/status-update/{slider}', [SliderController::class, 'statusUpdate'])
         ->name('sliders.status_update');
-    $router->apiResource('tekzo-pages', TekzoPageController::class);
 
-    // PreOwned Product
-    $router->get('pre-owned-product-seos', [PreOwnedProductSeoController::class, 'index'])
-        ->name('pre_owned_product_seos.index');
+    /*
+     * TEKZO website pages and SEO are website content, not shop data: access is
+     * governed by permissions alone, so shop membership (tenant.check) is not required.
+     */
+    $router->withoutMiddleware('tenant.check')->group(function (Router $router): void {
+        $router->apiResource('tekzo-pages', TekzoPageController::class);
 
-    $router->get('pre-owned-product-seos/{product}', [PreOwnedProductSeoController::class, 'show'])
-        ->name('pre_owned_product_seos.show');
+        $router->get('pre-owned-product-seos', [PreOwnedProductSeoController::class, 'index'])
+            ->name('pre_owned_product_seos.index');
 
-    $router->patch('pre-owned-product-seos/{product}', [PreOwnedProductSeoController::class, 'update'])
-        ->name('pre_owned_product_seos.update');
+        $router->get('pre-owned-product-seos/{product}', [PreOwnedProductSeoController::class, 'show'])
+            ->name('pre_owned_product_seos.show');
+
+        $router->patch('pre-owned-product-seos/{product}', [PreOwnedProductSeoController::class, 'update'])
+            ->name('pre_owned_product_seos.update');
+    });
 });

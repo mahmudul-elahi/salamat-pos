@@ -76,18 +76,23 @@ Route::group(['prefix' => 'landlord', 'middleware' => 'auth.permission'], functi
     $router->delete('products/{product}/specifications/{specification}', [ProductSpecificationController::class, 'destroy'])
         ->name('product_specifications.destroy');
 
-    // Specific SEO Update Routes
-    $router->get('ecommerce/seo/{model}/{id}', [SeoController::class, 'show'])
-        ->name('seo.show');
+    /*
+     * SEO is website content, not shop data: access is governed by the SEO
+     * permissions alone, so shop membership (tenant.check) is not required.
+     */
+    $router->withoutMiddleware('tenant.check')->group(function (Router $router): void {
+        $router->get('ecommerce/seo/{model}/{id}', [SeoController::class, 'show'])
+            ->name('seo.show');
 
-    $router->patch('ecommerce/seo/product/{id}', [SeoController::class, 'productSeoUpdate'])
-        ->name('product_seo.update');
+        $router->patch('ecommerce/seo/product/{id}', [SeoController::class, 'productSeoUpdate'])
+            ->name('product_seo.update');
 
-    $router->patch('ecommerce/seo/category/{id}', [SeoController::class, 'categorySeoUpdate'])
-        ->name('category_seo.update');
+        $router->patch('ecommerce/seo/category/{id}', [SeoController::class, 'categorySeoUpdate'])
+            ->name('category_seo.update');
 
-    $router->patch('ecommerce/seo/brand/{id}', [SeoController::class, 'brandSeoUpdate'])
-        ->name('brand_seo.update');
+        $router->patch('ecommerce/seo/brand/{id}', [SeoController::class, 'brandSeoUpdate'])
+            ->name('brand_seo.update');
+    });
 
     $router->post('product-barcode-generate', [ProductBarcodeController::class, 'barcodeGenerate'])
         ->name('barcode_generate.product');
