@@ -9,6 +9,7 @@ use App\Models\User;
 
 class IncomeCategory extends TenantBaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name', 'director_id', 'tenant_id',
 

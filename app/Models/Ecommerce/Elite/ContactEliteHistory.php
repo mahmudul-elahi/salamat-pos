@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class ContactEliteHistory extends Model
 {
+    #[\Override]
     public $timestamps = false;
 
+    #[\Override]
     protected $fillable = ['contact_id', 'elite_id', 'achieved_at'];
 
+    #[\Override]
     protected $casts = ['achieved_at' => 'datetime'];
 
     public function contact()

@@ -17,6 +17,7 @@ class Expense extends TenantBaseModel implements HasMedia
     use InteractsWithMedia;
 
     // Fillable fields
+    #[\Override]
     protected $fillable = [
         'date',
         'title',
@@ -30,6 +31,7 @@ class Expense extends TenantBaseModel implements HasMedia
         'payment_method_id',
     ];
 
+    #[\Override]
     protected $casts = [
         'amount' => 'float',
     ];

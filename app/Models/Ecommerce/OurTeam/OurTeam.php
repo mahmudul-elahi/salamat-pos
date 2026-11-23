@@ -11,6 +11,7 @@ class OurTeam extends TenantBaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'name',
         'about',

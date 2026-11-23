@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class ProductSearchIndexTest extends TestCase
 {
-    private const DOCUMENTS_URL = 'http://meili.test/indexes/products/documents';
+    private const string DOCUMENTS_URL = 'http://meili.test/indexes/products/documents';
 
     protected function setUp(): void
     {
@@ -65,23 +65,21 @@ class ProductSearchIndexTest extends TestCase
     {
         $product = $this->createProduct();
 
-        Http::assertSent(function (Request $request) use ($product) {
-            return $request->method() === 'POST'
-                && $request->url() === self::DOCUMENTS_URL.'?primaryKey=id'
-                && $request->hasHeader('Authorization', 'Bearer secret')
-                && $request->data() === [[
-                    'id' => $product->id,
-                    'name' => 'iPhone 16 Pro-Max',
-                    'slug' => 'iphone-16-pro-max',
-                    'headline' => null,
-                    'product_image' => null,
-                    'short_description' => null,
-                    'category' => 'Phones',
-                    'brand' => 'Apple',
-                    'status' => '1',
-                    'name_words' => 'iphone 16 promax',
-                ]];
-        });
+        Http::assertSent(fn (Request $request) => $request->method() === 'POST'
+            && $request->url() === self::DOCUMENTS_URL.'?primaryKey=id'
+            && $request->hasHeader('Authorization', 'Bearer secret')
+            && $request->data() === [[
+                'id' => $product->id,
+                'name' => 'iPhone 16 Pro-Max',
+                'slug' => 'iphone-16-pro-max',
+                'headline' => null,
+                'product_image' => null,
+                'short_description' => null,
+                'category' => 'Phones',
+                'brand' => 'Apple',
+                'status' => '1',
+                'name_words' => 'iphone 16 promax',
+            ]]);
     }
 
     public function test_updating_a_product_reindexes_it(): void

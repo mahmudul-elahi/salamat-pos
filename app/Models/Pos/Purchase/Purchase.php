@@ -23,6 +23,7 @@ class Purchase extends TenantBaseModel implements HasMedia
 
     protected $dates = ['deleted_at'];
 
+    #[\Override]
     protected $fillable = [
         'supplier_id',
         'contact_id',
@@ -41,6 +42,7 @@ class Purchase extends TenantBaseModel implements HasMedia
         'note',
     ];
 
+    #[\Override]
     public $casts = [
         'grand_total' => 'decimal:2',
     ];

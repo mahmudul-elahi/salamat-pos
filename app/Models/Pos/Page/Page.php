@@ -16,6 +16,7 @@ class Page extends BaseModel
 
     protected string $revalidationType = 'page-seo';
 
+    #[\Override]
     protected $fillable = [
         'title',
         'slug',

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class EmployeeDocument extends Model
 {
+    #[\Override]
     protected $fillable = [
         'employee_id',
         'name',

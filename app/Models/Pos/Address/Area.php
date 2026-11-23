@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Area extends BaseModel
 {
+    #[\Override]
     protected $guarded = [];
 
+    #[\Override]
     public $casts = [
         'new_district_id' => 'integer',
     ];

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeContact extends Model
 {
+    #[\Override]
     protected $fillable = ['user_id', 'key', 'value'];
 
     public function employee(): BelongsTo

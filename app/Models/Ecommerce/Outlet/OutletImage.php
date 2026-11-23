@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OutletImage extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'outlet_id',
         'image_url',

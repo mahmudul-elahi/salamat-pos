@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AttendanceDetail extends Model
 {
+    #[\Override]
     protected $fillable = [
         'attendance_details_id',
         'in_time',
@@ -26,6 +27,7 @@ class AttendanceDetail extends Model
         'work_from_home',
     ];
 
+    #[\Override]
     protected $casts = [
         'in_time' => 'datetime',
         'out_time' => 'datetime',

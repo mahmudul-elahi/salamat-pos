@@ -12,6 +12,7 @@ class Faq extends TenantBaseModel
 
     protected string $revalidationType = 'faq';
 
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'faq_category_id',

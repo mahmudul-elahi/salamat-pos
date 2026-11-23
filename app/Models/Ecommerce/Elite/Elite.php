@@ -11,6 +11,7 @@ class Elite extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'status_name',
         'tagline',
@@ -20,6 +21,7 @@ class Elite extends Model
         'point',
     ];
 
+    #[\Override]
     protected $casts = [
         'benefits' => 'array',
     ];

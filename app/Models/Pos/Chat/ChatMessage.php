@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatMessage extends BaseModel
 {
+    #[\Override]
     protected $table = 'chat_messages';
 
+    #[\Override]
     protected $fillable = [
         'conversation_id',
         'direction',
@@ -30,6 +32,7 @@ class ChatMessage extends BaseModel
         'read_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'raw_payload' => 'array',
         'sent_at' => 'datetime',

@@ -21,6 +21,7 @@ class Supplier extends BaseModel implements HasMedia
 {
     use InteractsWithMedia;
 
+    #[\Override]
     protected $fillable = [
         'name',
         'company_name',
@@ -34,6 +35,7 @@ class Supplier extends BaseModel implements HasMedia
         'new_district_id',
     ];
 
+    #[\Override]
     protected $casts = [
         'new_district_id' => 'integer',
         'area_id' => 'integer',

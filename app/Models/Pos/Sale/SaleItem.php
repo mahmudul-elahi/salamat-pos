@@ -15,6 +15,7 @@ class SaleItem extends BaseModel
 
     protected $dates = ['deleted_at'];
 
+    #[\Override]
     protected $fillable = [
         'sale_id',
         'product_id',

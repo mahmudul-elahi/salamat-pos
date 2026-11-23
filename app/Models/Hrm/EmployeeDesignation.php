@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeDesignation extends Model
 {
+    #[\Override]
     protected $fillable = [
         'employee_id',
         'designation_id',
@@ -15,6 +16,7 @@ class EmployeeDesignation extends Model
         'end_date',
     ];
 
+    #[\Override]
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',

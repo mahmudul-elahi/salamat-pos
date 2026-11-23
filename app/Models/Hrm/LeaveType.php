@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class LeaveType extends Model
 {
+    #[\Override]
     protected $fillable = ['name', 'type', 'day', 'enable'];
 
+    #[\Override]
     protected $casts = ['enable' => 'boolean'];
 
     public function leaveRequests()

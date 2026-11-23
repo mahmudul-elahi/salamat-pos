@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TelesaleResult extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'color',
@@ -14,6 +15,7 @@ class TelesaleResult extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'status' => 'boolean',
         'sort_order' => 'integer',

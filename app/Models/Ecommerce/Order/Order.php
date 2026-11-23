@@ -15,6 +15,7 @@ class Order extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'contact_id',
         'tenant_id',
@@ -45,6 +46,7 @@ class Order extends BaseModel
         'role',
     ];
 
+    #[\Override]
     public $casts = [
         'total_booking_amount' => 'decimal:2',
         'sub_total' => 'decimal:2',

@@ -13,6 +13,7 @@ class PopupDialog extends Model
 
     protected static $revalidationType = 'popup-dialog';
 
+    #[\Override]
     protected $fillable = [
         'name',
         'image',

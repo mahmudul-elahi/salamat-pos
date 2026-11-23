@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Attachment extends Model
 {
+    #[\Override]
     protected $fillable = [
         'link',
     ];

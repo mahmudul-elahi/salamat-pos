@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserProfile extends Model
 {
+    #[\Override]
     protected $fillable = [
         'user_id',
         'gender',
@@ -24,8 +25,10 @@ class UserProfile extends Model
         'invitation_token',
     ];
 
+    #[\Override]
     protected $appends = ['full_name'];
 
+    #[\Override]
     protected $casts = [
         'portal_access' => 'boolean',
         'user_id' => 'integer',

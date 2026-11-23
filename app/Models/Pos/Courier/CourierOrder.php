@@ -11,6 +11,7 @@ use App\Services\Courier\SteadfastService;
 
 class CourierOrder extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'sale_id',
         'created_by',
@@ -50,6 +51,7 @@ class CourierOrder extends BaseModel
         'courier_updated_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'raw_response' => 'array',
         'courier_created_at' => 'datetime',

@@ -1327,12 +1327,6 @@ parameters:
 			path: app/Http/Controllers/Landlord/Ecommerce/SeoController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>tenant_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Landlord/Ecommerce/SeoController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>title" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -5435,6 +5429,54 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 3
 			path: app/Services/Pos/SaleReturn/SaleReturnService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\Product\:\:\$headline\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Product/ProductSearchIndexService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\Product\:\:\$is_ecommerce\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Product/ProductSearchIndexService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\Product\:\:\$product_image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Product/ProductSearchIndexService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\Product\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Product/ProductSearchIndexService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\Product\:\:\$short_description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Product/ProductSearchIndexService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\Product\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Product/ProductSearchIndexService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\Product\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Product/ProductSearchIndexService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Product/ProductSearchIndexService.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Pos\\Product\\AttributeValue\:\:\$value\.$#'

@@ -115,7 +115,7 @@ class EmployeeController extends Controller
             DB::commit();
 
             Mail::to($employee->email)->queue(
-                (new WelcomeEmployeeMail($employee, $plainPassword))
+                new WelcomeEmployeeMail($employee, $plainPassword)
                     ->onQueue('hrm-employee-invitation')
             );
 
@@ -291,7 +291,7 @@ class EmployeeController extends Controller
         $employee->update(['password' => Hash::make($plainPassword)]);
 
         Mail::to($employee->email)->queue(
-            (new WelcomeEmployeeMail($employee, $plainPassword))
+            new WelcomeEmployeeMail($employee, $plainPassword)
                 ->onQueue('hrm-employee-invitation')
         );
 

@@ -19,6 +19,7 @@ class OrderConfirmationOption extends BaseModel
         self::TYPE_DELIVERY_BY,
     ];
 
+    #[\Override]
     protected $fillable = [
         'type',
         'name',
@@ -27,6 +28,7 @@ class OrderConfirmationOption extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'status' => 'boolean',
         'sort_order' => 'integer',

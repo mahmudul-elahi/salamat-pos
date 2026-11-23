@@ -14,6 +14,7 @@ class PaymentMethod extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $fillable = [
         'name',
         'logo',

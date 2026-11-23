@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductSerial extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'serial_number',
         'product_variant_id',

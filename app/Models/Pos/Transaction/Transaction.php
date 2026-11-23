@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Transaction extends TenantBaseModel
 {
+    #[\Override]
     protected $fillable = [
         'date',
         'invoice_number',

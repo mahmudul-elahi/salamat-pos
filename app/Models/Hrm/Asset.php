@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Asset extends Model
 {
+    #[\Override]
     protected $fillable = [
         'asset_category_id',
         'asset_name',
@@ -19,11 +20,13 @@ class Asset extends Model
         'note',
     ];
 
+    #[\Override]
     protected $casts = [
         'purchase_date' => 'date',
         'purchase_cost' => 'decimal:2',
     ];
 
+    #[\Override]
     protected $appends = ['status'];
 
     public function category(): BelongsTo

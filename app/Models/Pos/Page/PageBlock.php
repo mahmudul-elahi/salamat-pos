@@ -12,6 +12,7 @@ class PageBlock extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'page_id',
@@ -22,6 +23,7 @@ class PageBlock extends BaseModel
         'is_active',
     ];
 
+    #[\Override]
     protected $casts = [
         'props' => 'array',
         'is_active' => 'boolean',

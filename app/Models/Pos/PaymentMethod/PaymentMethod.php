@@ -8,6 +8,7 @@ use App\Models\Common\BaseModel;
 
 class PaymentMethod extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'tenant_id',

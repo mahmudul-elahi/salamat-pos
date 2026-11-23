@@ -18,6 +18,7 @@ class BlogPost extends BaseModel
 
     protected string $revalidationType = 'blog';
 
+    #[\Override]
     protected $fillable = [
         'category_id',
         'author_id',
@@ -40,6 +41,7 @@ class BlogPost extends BaseModel
         'meta_keywords',
     ];
 
+    #[\Override]
     protected $casts = [
         'is_featured' => 'boolean',
         'is_trending' => 'boolean',

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeSalary extends Model
 {
+    #[\Override]
     protected $fillable = [
         'employee_id',
         'amount',
@@ -15,6 +16,7 @@ class EmployeeSalary extends Model
         'end_date',
     ];
 
+    #[\Override]
     protected $casts = [
         'amount' => 'float',
         'start_date' => 'date',

@@ -16,6 +16,7 @@ class SellDeviceRequest extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'contact_id',
         'ad_title',
@@ -36,6 +37,7 @@ class SellDeviceRequest extends Model
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'is_exchange_possible' => 'boolean',
         'is_negotiable' => 'boolean',

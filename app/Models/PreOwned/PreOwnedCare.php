@@ -11,6 +11,7 @@ class PreOwnedCare extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'pre_owned_id',
         'care_id',

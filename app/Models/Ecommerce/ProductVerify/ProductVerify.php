@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductVerify extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'phone',
@@ -32,6 +33,7 @@ class ProductVerify extends BaseModel
         return $this->belongsTo(Product::class);
     }
 
+    #[\Override]
     protected $appends = ['full_address'];
 
     public function district(): BelongsTo

@@ -8,6 +8,7 @@ use App\Models\Common\BaseModel;
 
 class NewDistrict extends BaseModel
 {
+    #[\Override]
     protected $guarded = [];
 
     public function areas()

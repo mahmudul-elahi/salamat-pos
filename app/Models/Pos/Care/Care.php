@@ -11,6 +11,7 @@ class Care extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'name',
         'value',

@@ -12,12 +12,14 @@ class AttributeValue extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
+    #[\Override]
     protected $fillable = [
         'attribute_id',
         'value',
         'status',
     ];
 
+    #[\Override]
     public $casts = [
         'attribute_id' => 'integer',
     ];

@@ -11,6 +11,7 @@ class CashTransfer extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'from_tenant_id',
         'to_tenant_id',

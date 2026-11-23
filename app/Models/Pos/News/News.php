@@ -13,6 +13,7 @@ class News extends BaseModel
 
     protected static $revalidationType = 'news';
 
+    #[\Override]
     protected $fillable = [
         'heading',
         'name',

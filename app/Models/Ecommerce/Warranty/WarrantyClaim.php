@@ -14,6 +14,7 @@ class WarrantyClaim extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'serial_number',
         'product_id',
@@ -25,6 +26,7 @@ class WarrantyClaim extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'warranty_end_date' => 'date',
         'is_within_warranty' => 'boolean',

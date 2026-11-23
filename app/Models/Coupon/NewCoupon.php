@@ -13,6 +13,7 @@ class NewCoupon extends Model
 
     protected $revalidationType = 'coupon';
 
+    #[\Override]
     protected $fillable = [
         'code',
         'type',
@@ -26,6 +27,7 @@ class NewCoupon extends Model
         'is_public',
     ];
 
+    #[\Override]
     public $casts = [
         'is_public' => 'boolean',
     ];

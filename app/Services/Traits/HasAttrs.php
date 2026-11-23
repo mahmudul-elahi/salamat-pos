@@ -100,13 +100,7 @@ trait HasAttrs
             $keys = array_keys($keys);
         }
 
-        foreach ($keys as $k) {
-            if (! array_key_exists($k, $this->attributes)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($keys, fn ($k) => array_key_exists($k, $this->attributes));
     }
 
     public function hasAttr($key): bool

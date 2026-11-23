@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PointTransaction extends Model
 {
+    #[\Override]
     protected $fillable = [
         'contact_id',
         'order_id',

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeLeave extends Model
 {
+    #[\Override]
     protected $fillable = [
         'employee_id',
         'leave_type_id',
@@ -17,6 +18,7 @@ class EmployeeLeave extends Model
         'end_date',
     ];
 
+    #[\Override]
     protected $casts = [
         'is_updated' => 'boolean',
         'start_date' => 'date',

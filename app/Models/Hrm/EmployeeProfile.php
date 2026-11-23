@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeProfile extends Model
 {
+    #[\Override]
     protected $fillable = [
         'user_id',
         'gender',
@@ -28,6 +29,7 @@ class EmployeeProfile extends Model
         'blood_type',
     ];
 
+    #[\Override]
     protected $casts = [
         'joining_date' => 'date',
         'date_of_birth' => 'date',

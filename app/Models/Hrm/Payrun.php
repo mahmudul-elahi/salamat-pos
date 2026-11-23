@@ -23,6 +23,7 @@ class Payrun extends Model
 
     public const TYPE_MANUAL = 'manual';
 
+    #[\Override]
     protected $fillable = [
         'name',
         'batch_id',
@@ -35,6 +36,7 @@ class Payrun extends Model
         'type',
     ];
 
+    #[\Override]
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',

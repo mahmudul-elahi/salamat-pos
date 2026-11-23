@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'alias',
@@ -17,6 +18,7 @@ class Role extends BaseModel
         'is_default',
     ];
 
+    #[\Override]
     public $casts = [
         'is_admin' => 'boolean',
         'is_default' => 'boolean',

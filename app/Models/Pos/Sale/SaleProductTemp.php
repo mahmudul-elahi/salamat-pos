@@ -8,6 +8,7 @@ use App\Models\Common\BaseModel;
 
 class SaleProductTemp extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'product_id',
         'product_variant_id',

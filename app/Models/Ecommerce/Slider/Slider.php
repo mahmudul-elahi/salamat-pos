@@ -15,6 +15,7 @@ class Slider extends BaseModel
 
     protected string $revalidationType = 'slider';
 
+    #[\Override]
     protected $fillable = [
         'image',
         'heading',
@@ -29,6 +30,7 @@ class Slider extends BaseModel
         'tenant_id',
     ];
 
+    #[\Override]
     public $casts = [
         'status' => 'integer',
         'button_type' => 'integer',

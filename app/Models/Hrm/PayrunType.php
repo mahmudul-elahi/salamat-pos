@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PayrunType extends Model
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'payrun_period',
@@ -16,6 +17,7 @@ class PayrunType extends Model
         'is_default',
     ];
 
+    #[\Override]
     protected $casts = [
         'consider_overtime' => 'boolean',
         'is_default' => 'boolean',

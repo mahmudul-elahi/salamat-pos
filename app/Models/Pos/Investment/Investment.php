@@ -16,6 +16,7 @@ class Investment extends TenantBaseModel implements HasMedia
 {
     use InteractsWithMedia;
 
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'title',

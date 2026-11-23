@@ -8,6 +8,7 @@ use App\Models\Common\BaseModel;
 
 class ExpenseCategory extends BaseModel
 {
+    #[\Override]
     protected $fillable = ['name', 'logo'];
 
     public function expenses()

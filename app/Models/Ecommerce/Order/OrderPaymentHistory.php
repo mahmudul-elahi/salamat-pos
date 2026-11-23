@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderPaymentHistory extends Model
 {
+    #[\Override]
     protected $fillable = [
         'order_id',
         'payment_method',
@@ -17,6 +18,7 @@ class OrderPaymentHistory extends Model
         'gateway_response',
     ];
 
+    #[\Override]
     protected $casts = [
         'gateway_response' => 'array',
         'amount' => 'float',

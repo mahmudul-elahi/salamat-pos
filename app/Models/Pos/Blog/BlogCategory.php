@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 class BlogCategory extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'slug',
@@ -17,6 +18,7 @@ class BlogCategory extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'status' => 'boolean',
     ];

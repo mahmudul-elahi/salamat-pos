@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 class BlogTag extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'slug',

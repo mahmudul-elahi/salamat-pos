@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderConfirmationItem extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'order_confirmation_id',
         'product_id',
@@ -18,11 +19,13 @@ class OrderConfirmationItem extends BaseModel
         'unit_price',
     ];
 
+    #[\Override]
     protected $casts = [
         'quantity' => 'decimal:2',
         'unit_price' => 'decimal:2',
     ];
 
+    #[\Override]
     protected $appends = ['product_name', 'variant_attributes', 'line_total'];
 
     public function getProductNameAttribute(): ?string

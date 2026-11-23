@@ -12,6 +12,7 @@ class LeaveRequest extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
+    #[\Override]
     protected $fillable = [
         'user_id',
         'leave_type_id',
@@ -25,6 +26,7 @@ class LeaveRequest extends Model implements HasMedia
         'end_time',
     ];
 
+    #[\Override]
     protected $casts = [
         'date' => 'date',
         'start_date' => 'date',

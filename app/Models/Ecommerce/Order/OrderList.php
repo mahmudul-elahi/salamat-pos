@@ -22,6 +22,7 @@ class OrderList extends Model
     // existing query.
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'order_id',
         'product_id',

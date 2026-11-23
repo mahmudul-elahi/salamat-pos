@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class LongDescription extends Model
 {
+    #[\Override]
     protected $table = 'long_descriptions';
 
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'description',

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attribute extends Model
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'status',

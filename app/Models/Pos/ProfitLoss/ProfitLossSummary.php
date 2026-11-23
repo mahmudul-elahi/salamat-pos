@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProfitLossSummary extends TenantBaseModel
 {
+    #[\Override]
     protected $fillable = [
         'sale_id',
         'tenant_id',

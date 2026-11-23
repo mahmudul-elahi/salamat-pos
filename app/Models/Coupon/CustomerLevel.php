@@ -11,6 +11,7 @@ class CustomerLevel extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'name',         // bronze, silver, gold, platinum
         'min_points',

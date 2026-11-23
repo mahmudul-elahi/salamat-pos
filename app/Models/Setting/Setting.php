@@ -14,6 +14,7 @@ class Setting extends Model implements HasMedia
 
     protected string $revalidationType = 'settings';
 
+    #[\Override]
     protected $fillable = ['name', 'value', 'context', 'settingable_type', 'settingable_id'];
 
     public function settingable(): MorphTo

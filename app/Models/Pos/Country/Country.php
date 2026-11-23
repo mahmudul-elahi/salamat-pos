@@ -11,5 +11,6 @@ class Country extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $fillable = ['code', 'name'];
 }

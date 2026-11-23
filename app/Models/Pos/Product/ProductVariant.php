@@ -14,6 +14,7 @@ class ProductVariant extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'sku',
@@ -22,6 +23,7 @@ class ProductVariant extends BaseModel
         'status',
     ];
 
+    #[\Override]
     public $casts = [
         'stock' => 'integer',
         'is_prebook' => 'boolean',

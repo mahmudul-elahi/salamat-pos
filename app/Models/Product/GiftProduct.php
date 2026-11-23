@@ -17,6 +17,7 @@ class GiftProduct extends Model
 
     protected $revalidationType = 'gift-product';
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'pre_owned_id',

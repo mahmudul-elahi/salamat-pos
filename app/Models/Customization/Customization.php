@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customization extends Model
 {
+    #[\Override]
     protected $fillable = ['name', 'value', 'type'];
 }

@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Seo extends Model
 {
+    #[\Override]
     protected $table = 'seo';
 
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'model_type',

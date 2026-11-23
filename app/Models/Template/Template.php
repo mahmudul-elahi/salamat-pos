@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Template extends Model
 {
+    #[\Override]
     protected $fillable = [
         'subject',
         'default_content',

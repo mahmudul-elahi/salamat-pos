@@ -13,6 +13,7 @@ class Payslip extends Model
 
     public const STATUS_SENT = 'sent';
 
+    #[\Override]
     protected $fillable = [
         'employee_id',
         'department_id',
@@ -28,6 +29,7 @@ class Payslip extends Model
         'sent_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',

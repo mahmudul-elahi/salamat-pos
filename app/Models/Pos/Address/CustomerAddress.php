@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CustomerAddress extends Model
 {
+    #[\Override]
     protected $fillable = [
         'customer_id',
         'new_district_id',
@@ -20,6 +21,7 @@ class CustomerAddress extends Model
         'is_default',
     ];
 
+    #[\Override]
     protected $guarded = [];
 
     public function customer(): BelongsTo

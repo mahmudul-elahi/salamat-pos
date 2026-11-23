@@ -4,6 +4,7 @@ namespace App\Library\SslCommerz;
 
 class SslCommerzNotification extends AbstractSslCommerz
 {
+    #[\Override]
     protected $data = [];
 
     protected $config = [];

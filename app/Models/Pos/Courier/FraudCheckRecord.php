@@ -8,6 +8,7 @@ use App\Models\Common\BaseModel;
 
 class FraudCheckRecord extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'phone',
         'provider',
@@ -20,6 +21,7 @@ class FraudCheckRecord extends BaseModel
         'checked_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'raw_response' => 'array',
         'checked_at' => 'datetime',

@@ -15,6 +15,7 @@ class PurchaseItem extends Model
 
     protected $dates = ['deleted_at'];
 
+    #[\Override]
     protected $fillable = [
         'purchase_id',
         'product_id',
@@ -26,6 +27,7 @@ class PurchaseItem extends Model
         'purchase_type',
     ];
 
+    #[\Override]
     public $casts = [
         'purchase_id' => 'int',
         'product_id' => 'int',

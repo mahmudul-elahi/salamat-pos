@@ -10,6 +10,7 @@ class Career extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'heading',
         'slug',

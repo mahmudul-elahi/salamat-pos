@@ -20,7 +20,6 @@ class ReplaceCdnUrl
         $awsUrl = rtrim(config('filesystems.disks.s3.url', ''), '/');
         $bucket = config('filesystems.disks.s3.bucket', '');
         $region = config('filesystems.disks.s3.region', '');
-
         $this->s3Base = "https://{$bucket}.s3.{$region}.amazonaws.com";
         $this->cdnBase = $awsUrl;
 

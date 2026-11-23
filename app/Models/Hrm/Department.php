@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Department extends Model
 {
+    #[\Override]
     protected $fillable = ['name', 'department_head_id'];
 
     public function departmentHead()

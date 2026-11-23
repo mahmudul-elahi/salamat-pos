@@ -19,6 +19,7 @@ class Contact extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'name',
         'email',
@@ -47,6 +48,7 @@ class Contact extends BaseModel
         'last_login_at',
     ];
 
+    #[\Override]
     public $casts = [
         'country_id' => 'integer',
         'new_district_id' => 'integer',
@@ -56,10 +58,12 @@ class Contact extends BaseModel
         'rating' => 'integer',
     ];
 
+    #[\Override]
     public $hidden = [
         'password',
     ];
 
+    #[\Override]
     protected $appends = ['price_document_url'];
 
     /**

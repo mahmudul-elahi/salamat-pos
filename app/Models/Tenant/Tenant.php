@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 
 class Tenant extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'slug',
         'name',
@@ -22,6 +23,7 @@ class Tenant extends BaseModel
         'status',
     ];
 
+    #[\Override]
     public $casts = [
         'is_ecommerce' => 'boolean',
     ];

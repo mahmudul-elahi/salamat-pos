@@ -23,6 +23,7 @@ class Product extends BaseModel implements HasMedia
 {
     use InteractsWithMedia, SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'category_id',
         'tax_id',

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Barcode extends Model
 {
+    #[\Override]
     protected $fillable = [
         'product_id',
         'barcode_number',

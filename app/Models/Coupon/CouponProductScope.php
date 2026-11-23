@@ -14,6 +14,7 @@ class CouponProductScope extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'new_coupon_id',
         'scope_type',  // all, category, product, brand, pre_owned

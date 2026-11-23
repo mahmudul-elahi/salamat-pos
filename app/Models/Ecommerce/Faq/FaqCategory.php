@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 class FaqCategory extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'slug',
@@ -15,6 +16,7 @@ class FaqCategory extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'status' => 'boolean',
     ];

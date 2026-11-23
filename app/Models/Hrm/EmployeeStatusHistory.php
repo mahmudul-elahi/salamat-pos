@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EmployeeStatusHistory extends Model
 {
+    #[\Override]
     protected $table = 'employee_status';
 
+    #[\Override]
     protected $fillable = [
         'employee_id',
         'employee_status_id',
@@ -17,6 +19,7 @@ class EmployeeStatusHistory extends Model
         'end_date',
     ];
 
+    #[\Override]
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',

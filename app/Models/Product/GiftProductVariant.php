@@ -12,6 +12,7 @@ class GiftProductVariant extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'gift_product_id',
         'product_id',

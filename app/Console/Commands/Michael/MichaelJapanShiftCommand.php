@@ -14,6 +14,7 @@ class MichaelJapanShiftCommand extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $signature = 'app:michael-japan-shift-command';
 
     /**
@@ -21,6 +22,7 @@ class MichaelJapanShiftCommand extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $description = 'Command description';
 
     /**

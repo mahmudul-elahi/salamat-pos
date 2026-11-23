@@ -9,6 +9,7 @@ class JobApplication extends Model
 {
     use HasFactory;
 
+    #[\Override]
     protected $fillable = [
         'entry_job_id',
         'name',

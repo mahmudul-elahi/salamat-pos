@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Beneficiary extends Model
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'type',
@@ -15,6 +16,7 @@ class Beneficiary extends Model
         'description',
     ];
 
+    #[\Override]
     protected $casts = [
         'is_active' => 'boolean',
     ];

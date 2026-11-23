@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EmiBank extends Model
 {
+    #[\Override]
     protected $fillable = ['bank_name', 'gw_key', 'logo', 'is_active'];
 
+    #[\Override]
     protected $casts = ['is_active' => 'boolean'];
 
     public function tenures(): HasMany

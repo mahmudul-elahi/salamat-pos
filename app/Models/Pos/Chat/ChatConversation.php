@@ -12,8 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ChatConversation extends BaseModel
 {
+    #[\Override]
     protected $table = 'chat_conversations';
 
+    #[\Override]
     protected $fillable = [
         'channel',
         'contact_id',
@@ -29,6 +31,7 @@ class ChatConversation extends BaseModel
         'unread_count',
     ];
 
+    #[\Override]
     protected $casts = [
         'last_message_at' => 'datetime',
         'last_customer_message_at' => 'datetime',

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Feature extends Model
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'label',

@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class WorkShiftSchedule extends Model
 {
+    #[\Override]
     protected $fillable = ['work_shift_id', 'day_name', 'start_time', 'end_time'];
 }

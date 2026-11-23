@@ -14,6 +14,7 @@ class OrderConfirmation extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'date',
         'confirmation_date',
@@ -39,6 +40,7 @@ class OrderConfirmation extends BaseModel
         'created_by',
     ];
 
+    #[\Override]
     protected $casts = [
         'date' => 'date',
         'confirmation_date' => 'date',
@@ -48,6 +50,7 @@ class OrderConfirmation extends BaseModel
         'cod' => 'decimal:2',
     ];
 
+    #[\Override]
     protected $appends = ['product_name', 'is_confirmed'];
 
     /**

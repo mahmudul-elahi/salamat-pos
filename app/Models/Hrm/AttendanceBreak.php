@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttendanceBreak extends Model
 {
+    #[\Override]
     protected $fillable = [
         'attendance_id',
         'break_time_id',
@@ -14,6 +15,7 @@ class AttendanceBreak extends Model
         'ended_at',
     ];
 
+    #[\Override]
     protected $casts = [
         'started_at' => 'datetime',
         'ended_at' => 'datetime',

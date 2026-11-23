@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OfflineCustomer extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'email',
@@ -29,11 +30,13 @@ class OfflineCustomer extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'status' => StatusEnum::class,
         'customer_type' => CustomerTypeEnum::class,
     ];
 
+    #[\Override]
     protected $appends = ['full_address'];
 
     public function district(): BelongsTo

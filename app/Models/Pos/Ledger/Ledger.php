@@ -12,6 +12,7 @@ use App\Models\Tenant\Tenant;
 
 class Ledger extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'date',
         'invoice_number',

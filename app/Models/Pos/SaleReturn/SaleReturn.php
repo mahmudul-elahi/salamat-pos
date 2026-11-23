@@ -20,6 +20,7 @@ class SaleReturn extends TenantBaseModel implements HasMedia
 
     protected $dates = ['deleted_at'];
 
+    #[\Override]
     protected $fillable = [
         'contact_id',
         'customer_id',

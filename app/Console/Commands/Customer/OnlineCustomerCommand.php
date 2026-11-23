@@ -14,6 +14,7 @@ class OnlineCustomerCommand extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $signature = 'app:online-customer';
 
     /**
@@ -21,6 +22,7 @@ class OnlineCustomerCommand extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $description = 'Command description';
 
     /**

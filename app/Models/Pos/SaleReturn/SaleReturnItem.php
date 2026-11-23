@@ -15,6 +15,7 @@ class SaleReturnItem extends Model
 
     protected $dates = ['deleted_at'];
 
+    #[\Override]
     protected $fillable = [
         'sale_return_id',
         'product_id',
@@ -29,6 +30,7 @@ class SaleReturnItem extends Model
         'updated_at',
     ];
 
+    #[\Override]
     public $casts = [
         'sale_return_id' => 'integer',
         'product_id' => 'integer',

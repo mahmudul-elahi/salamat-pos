@@ -47,6 +47,7 @@ class User extends Authenticatable implements HasMedia
      *
      * @var list<string>
      */
+    #[\Override]
     protected $fillable = [
         'name',
         'email',
@@ -66,6 +67,7 @@ class User extends Authenticatable implements HasMedia
      *
      * @var list<string>
      */
+    #[\Override]
     protected $hidden = [
         'password',
         'remember_token',

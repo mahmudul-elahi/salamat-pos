@@ -15,6 +15,7 @@ class ReelsVideo extends Model
 
     protected string $revalidationType = 'reel-video';
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'video_link',

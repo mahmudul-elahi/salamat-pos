@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Attendance extends Model
 {
+    #[\Override]
     protected $fillable = [
         'in_date',
         'user_id',
@@ -19,6 +20,7 @@ class Attendance extends Model
         'behavior',
     ];
 
+    #[\Override]
     protected $casts = [
         'in_date' => 'date',
     ];

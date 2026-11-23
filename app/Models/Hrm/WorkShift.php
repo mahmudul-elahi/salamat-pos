@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class WorkShift extends Model
 {
+    #[\Override]
     protected $fillable = [
         'shift_name', 'working_shift_type', 'start_time', 'end_time', 'weekend_days',
     ];
 
+    #[\Override]
     protected $casts = [
         'weekend_days' => 'array',
     ];

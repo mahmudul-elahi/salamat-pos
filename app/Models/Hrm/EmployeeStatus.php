@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class EmployeeStatus extends Model
 {
+    #[\Override]
     protected $fillable = ['name', 'color', 'description'];
 }

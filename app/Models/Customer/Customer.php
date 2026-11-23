@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Customer extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'email',
@@ -29,11 +30,13 @@ class Customer extends BaseModel
         'new_district_id',
     ];
 
+    #[\Override]
     public $casts = [
         'new_district_id' => 'integer',
         'area_id' => 'integer',
     ];
 
+    #[\Override]
     protected $appends = ['full_address'];
 
     public function district(): BelongsTo

@@ -14,6 +14,7 @@ class PurchaseReturnItem extends Model
 
     protected $dates = ['deleted_at'];
 
+    #[\Override]
     protected $fillable = [
         'purchase_return_id',
         'product_id',

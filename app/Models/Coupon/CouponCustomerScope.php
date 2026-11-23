@@ -10,6 +10,7 @@ class CouponCustomerScope extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'new_coupon_id',
         'customer_level_id',

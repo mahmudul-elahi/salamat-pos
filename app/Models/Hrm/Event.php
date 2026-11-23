@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
+    #[\Override]
     protected $fillable = [
         'event_type', 'title', 'start_datetime', 'end_datetime', 'location', 'description',
     ];
 
+    #[\Override]
     protected $casts = [
         'start_datetime' => 'datetime',
         'end_datetime' => 'datetime',

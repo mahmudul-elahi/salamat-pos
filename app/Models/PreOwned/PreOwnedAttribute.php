@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PreOwnedAttribute extends Model
 {
+    #[\Override]
     protected $fillable = [
         'pre_owned_id',
         'attribute_id',

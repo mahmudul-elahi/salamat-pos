@@ -19,6 +19,7 @@ class Category extends BaseModel
 
     protected string $revalidationType = 'category';
 
+    #[\Override]
     protected $fillable = [
         'parent_id',
         'name',
@@ -35,6 +36,7 @@ class Category extends BaseModel
         'order',
     ];
 
+    #[\Override]
     public $casts = [
         'parent_id' => 'integer',
     ];

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvestmentCategory extends TenantBaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'director_id',

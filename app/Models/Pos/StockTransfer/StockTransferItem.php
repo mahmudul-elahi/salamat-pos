@@ -11,6 +11,7 @@ use App\Models\Pos\Product\ProductVariant;
 
 class StockTransferItem extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'stock_transfer_id',
         'product_id',

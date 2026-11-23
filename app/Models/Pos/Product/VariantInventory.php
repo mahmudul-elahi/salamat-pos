@@ -8,6 +8,7 @@ use App\Models\Common\BaseModel;
 
 class VariantInventory extends BaseModel
 {
+    #[\Override]
     protected $fillable = ['product_variant_id', 'stock'];
 
     public function variant()

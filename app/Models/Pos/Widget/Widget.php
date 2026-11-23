@@ -15,6 +15,7 @@ class Widget extends Model
 
     protected string $revalidationSlugField = 'type';
 
+    #[\Override]
     protected $fillable = [
         'name',
         'value',

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AssetAssignment extends Model
 {
+    #[\Override]
     protected $fillable = [
         'asset_id',
         'employee_id',
@@ -18,6 +19,7 @@ class AssetAssignment extends Model
         'return_note',
     ];
 
+    #[\Override]
     protected $casts = [
         'assigned_date' => 'date',
         'returned_date' => 'date',

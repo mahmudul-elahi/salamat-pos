@@ -21,6 +21,7 @@ class PurchaseReturn extends TenantBaseModel implements HasMedia
 
     protected $dates = ['deleted_at'];
 
+    #[\Override]
     protected $fillable = [
         'contact_id',
         'supplier_id',

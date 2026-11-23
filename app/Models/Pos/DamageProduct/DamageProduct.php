@@ -11,6 +11,7 @@ class DamageProduct extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'reference_no',

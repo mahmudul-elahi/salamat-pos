@@ -65,10 +65,7 @@ abstract class AbstractSslCommerz implements SslCommerzInterface
             curl_setopt($handle, CURLOPT_HTTPHEADER, $header);
         }
 
-        $response = curl_exec($handle);
-        curl_close($handle);
-
-        return $response;
+        return curl_exec($handle);
     }
 
     public function formatResponse($response, $type = 'checkout', $pattern = 'json')

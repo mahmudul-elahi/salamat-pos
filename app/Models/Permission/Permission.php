@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Permission extends Model
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'label',

@@ -13,6 +13,7 @@ class BeneficiaryValue extends Model
      * - or, in the future, a specific employee override
      *   (model_name = App\Models\User::class, model_id = the user's id).
      */
+    #[\Override]
     protected $fillable = [
         'model_name',
         'model_id',
@@ -21,6 +22,7 @@ class BeneficiaryValue extends Model
         'is_percentage',
     ];
 
+    #[\Override]
     protected $casts = [
         'amount' => 'float',
         'is_percentage' => 'boolean',

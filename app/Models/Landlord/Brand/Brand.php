@@ -17,6 +17,7 @@ class Brand extends BaseModel
 
     protected string $revalidationType = 'brand';
 
+    #[\Override]
     protected $fillable = [
         'name',
         'status',

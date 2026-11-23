@@ -15,6 +15,7 @@ class RebuildProfitLossSummary extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $signature = 'profit-loss:rebuild {--full : Full rebuild from scratch}';
 
     /**
@@ -22,6 +23,7 @@ class RebuildProfitLossSummary extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $description = 'Rebuild profit loss summary table from scratch';
 
     /**

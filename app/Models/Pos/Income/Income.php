@@ -16,6 +16,7 @@ class Income extends TenantBaseModel implements HasMedia
 {
     use InteractsWithMedia;
 
+    #[\Override]
     protected $fillable = [
         'title',
         'date',
@@ -30,6 +31,7 @@ class Income extends TenantBaseModel implements HasMedia
         'created_by',
     ];
 
+    #[\Override]
     public $casts = [
         'income_category_id' => 'integer',
         'amount' => 'decimal:2',

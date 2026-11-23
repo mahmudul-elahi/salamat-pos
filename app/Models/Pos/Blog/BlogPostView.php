@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BlogPostView extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'post_id',
         'ip',

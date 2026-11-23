@@ -13,6 +13,7 @@ class PayslipItem extends Model
 
     public const TYPE_DEDUCTION = 'deduction';
 
+    #[\Override]
     protected $fillable = [
         'payslip_id',
         'beneficiary_id',
@@ -21,6 +22,7 @@ class PayslipItem extends Model
         'amount',
     ];
 
+    #[\Override]
     protected $casts = [
         'amount' => 'float',
     ];

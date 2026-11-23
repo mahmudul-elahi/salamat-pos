@@ -11,6 +11,7 @@ class VariantPrice extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'product_variant_id',
         'dealer_price',
@@ -21,6 +22,7 @@ class VariantPrice extends Model
         'discount_fixed',
     ];
 
+    #[\Override]
     public $casts = [
         'dealer_price' => 'decimal:2',
     ];

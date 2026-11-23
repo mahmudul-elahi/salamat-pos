@@ -7,8 +7,10 @@ use Illuminate\Console\Command;
 
 class ExpireCouponsCommand extends Command
 {
+    #[\Override]
     protected $signature = 'coupons:expire';
 
+    #[\Override]
     protected $description = 'Expire coupons that have passed their end date';
 
     public function handle()

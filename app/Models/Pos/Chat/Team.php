@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends BaseModel
 {
+    #[\Override]
     protected $table = 'teams';
 
+    #[\Override]
     protected $fillable = [
         'name',
         'description',

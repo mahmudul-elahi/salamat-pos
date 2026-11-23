@@ -11,6 +11,7 @@ class EntryJob extends Model
 {
     use HasFactory;
 
+    #[\Override]
     protected $fillable = [
         'heading',
         'slug',

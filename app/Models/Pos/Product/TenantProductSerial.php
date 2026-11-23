@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TenantProductSerial extends TenantBaseModel
 {
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'product_serial_id',

@@ -13,6 +13,7 @@ class ProductSpecification extends Model
 {
     use HasFactory;
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'parent_id',

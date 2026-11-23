@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ChatLabel extends BaseModel
 {
+    #[\Override]
     protected $table = 'chat_labels';
 
+    #[\Override]
     protected $fillable = [
         'name',
         'color',

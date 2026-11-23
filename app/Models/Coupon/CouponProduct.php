@@ -11,6 +11,7 @@ class CouponProduct extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'coupon_id',

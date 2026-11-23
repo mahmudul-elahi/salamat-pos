@@ -11,6 +11,7 @@ use App\Models\Pos\Address\Area;
 
 class Partners extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'partner_type',
         'name',
@@ -30,11 +31,13 @@ class Partners extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'status' => StatusEnum::class,
         'partner_type' => CustomerTypeEnum::class,
     ];
 
+    #[\Override]
     protected $appends = ['full_address'];
 
     public function area()

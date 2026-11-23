@@ -13,6 +13,7 @@ class Outlet extends BaseModel
 
     protected string $revalidationType = 'outlet';
 
+    #[\Override]
     protected $fillable = [
         'name',
         'slug',
@@ -31,6 +32,7 @@ class Outlet extends BaseModel
         'status',
     ];
 
+    #[\Override]
     protected $casts = [
         'status' => 'boolean',
     ];

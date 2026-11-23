@@ -34,10 +34,12 @@ use Illuminate\Support\Facades\DB;
  */
 class ReconcileLedgerTransactions extends Command
 {
+    #[\Override]
     protected $signature = 'ledger:reconcile-missing-transactions
         {--apply : Actually write the changes. Without this, nothing is saved - only reported.}
         {--id=* : Only process these specific ledger id(s) instead of every broken one found.}';
 
+    #[\Override]
     protected $description = 'Reconcile Ledger payment entries that have no linked Transaction, by applying them against the contact\'s currently due sales/purchases (or advance credit if none are due).';
 
     public function handle(): int

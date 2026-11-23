@@ -12,10 +12,12 @@ class MediaFolder extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
+    #[\Override]
     protected $fillable = ['name', 'parent_id',
         'id',
     ];
 
+    #[\Override]
     public $casts = [
         'parent_id' => 'integer',
     ];

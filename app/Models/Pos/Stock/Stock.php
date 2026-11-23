@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Stock extends TenantBaseModel
 {
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'product_id',

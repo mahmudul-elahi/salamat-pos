@@ -13,6 +13,7 @@ class Telesale extends BaseModel
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'date',
         'contact_id',
@@ -29,11 +30,13 @@ class Telesale extends BaseModel
         'created_by',
     ];
 
+    #[\Override]
     protected $casts = [
         'date' => 'date',
         'is_existing_customer' => 'boolean',
     ];
 
+    #[\Override]
     protected $appends = ['demand_product'];
 
     /**

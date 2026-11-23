@@ -11,6 +11,7 @@ class CareerApplie extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $table = 'career_applies';
 
     public function career()

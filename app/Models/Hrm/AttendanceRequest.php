@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AttendanceRequest extends Model
 {
+    #[\Override]
     protected $fillable = [
         'user_id',
         'date',
@@ -19,6 +20,7 @@ class AttendanceRequest extends Model
         'attendance_detail_id',
     ];
 
+    #[\Override]
     protected $casts = [
         'date' => 'date',
         'in_time' => 'datetime',

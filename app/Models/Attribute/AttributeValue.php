@@ -10,6 +10,7 @@ class AttributeValue extends BaseModel
 {
     use HasFactory;
 
+    #[\Override]
     protected $fillable = [
         'attribute_id',
         'value',

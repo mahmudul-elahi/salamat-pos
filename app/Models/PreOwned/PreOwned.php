@@ -18,6 +18,7 @@ class PreOwned extends BaseModel
 
     protected string $revalidationSlugField = 'product.slug';
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'product_variant_id',
@@ -36,6 +37,7 @@ class PreOwned extends BaseModel
         'description',
     ];
 
+    #[\Override]
     public $casts = [
         'is_sold' => 'boolean',
         'box' => 'boolean',

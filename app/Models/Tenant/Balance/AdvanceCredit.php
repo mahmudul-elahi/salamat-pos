@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AdvanceCredit extends Model
 {
+    #[\Override]
     protected $fillable = [
         'tenant_id',
         'contact_id',
@@ -18,6 +19,7 @@ class AdvanceCredit extends Model
         'type',
     ];
 
+    #[\Override]
     protected $casts = [
         'amount' => 'decimal:2',
     ];

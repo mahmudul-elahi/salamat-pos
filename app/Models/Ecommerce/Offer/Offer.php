@@ -12,6 +12,7 @@ class Offer extends Model
 
     protected string $revalidationType = 'offer';
 
+    #[\Override]
     protected $fillable = [
         'title',
         'slug',

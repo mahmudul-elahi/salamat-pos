@@ -10,8 +10,10 @@ class ChatConversationAssignment extends BaseModel
 {
     const UPDATED_AT = null;
 
+    #[\Override]
     protected $table = 'chat_conversation_assignments';
 
+    #[\Override]
     protected $fillable = [
         'conversation_id',
         'agent_id',

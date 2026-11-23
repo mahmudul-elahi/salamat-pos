@@ -11,6 +11,7 @@ class ProductCare extends Model
 {
     use SoftDeletes;
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'care_id',

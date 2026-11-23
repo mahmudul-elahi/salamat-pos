@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PreOwnedProductSeo extends Model
 {
+    #[\Override]
     protected $fillable = [
         'product_id',
         'title',

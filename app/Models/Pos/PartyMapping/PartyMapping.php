@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PartyMapping extends Model
 {
+    #[\Override]
     protected $fillable = [
         'customer_id',
         'supplier_id',

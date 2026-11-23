@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TemplateType extends Model
 {
+    #[\Override]
     protected $fillable = [
         'name', 'display_name', 'group_name',
     ];

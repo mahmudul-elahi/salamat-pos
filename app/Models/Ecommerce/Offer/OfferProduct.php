@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OfferProduct extends Model
 {
+    #[\Override]
     protected $fillable = [
         'offer_id',
         'product_id',

@@ -13,6 +13,7 @@ class RecalculateStock extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $signature = 'stock:recalculate';
 
     /**
@@ -20,6 +21,7 @@ class RecalculateStock extends Command
      *
      * @var string
      */
+    #[\Override]
     protected $description = 'Recalculate stock from all transaction';
 
     /**

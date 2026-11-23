@@ -8,6 +8,7 @@ use App\Models\Common\BaseModel;
 
 class SpecificationGroup extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'name',
         'parent_id',

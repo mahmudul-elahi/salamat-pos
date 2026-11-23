@@ -11,6 +11,7 @@ use App\Models\Pos\Product\ProductVariant;
 
 class DamageProductItem extends BaseModel
 {
+    #[\Override]
     protected $fillable = [
         'damage_product_id',
         'product_id',

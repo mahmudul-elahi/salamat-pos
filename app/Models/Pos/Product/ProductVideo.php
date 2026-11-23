@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductVideo extends Model
 {
+    #[\Override]
     protected $fillable = [
         'product_id',
         'attribute_value_id',
@@ -14,6 +15,7 @@ class ProductVideo extends Model
         'order',
     ];
 
+    #[\Override]
     public $casts = [
         'product_id' => 'integer',
         'attribute_value_id' => 'integer',

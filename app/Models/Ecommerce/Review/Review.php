@@ -17,6 +17,7 @@ class Review extends BaseModel
 
     protected $revalidationSlugField = 'product.slug';
 
+    #[\Override]
     protected $fillable = [
         'product_id',
         'contact_id',
@@ -28,6 +29,7 @@ class Review extends BaseModel
         'customer_name',
     ];
 
+    #[\Override]
     public $casts = [
         'rating' => 'integer',
         'is_admin_review' => 'boolean',
