@@ -18,6 +18,14 @@ class BrandController extends Controller
 
     public function index()
     {
+        // Edit forms resolve the preselected value by refetching with ?selected=<id>.
+        if ($selected = request('selected')) {
+            return Brand::query()
+                ->whereKey($selected)
+                ->withCount('products')
+                ->paginate(1);
+        }
+
         return Brand::query()
             ->filters($this->filter)
             ->withCount('products')

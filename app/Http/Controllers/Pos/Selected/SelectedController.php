@@ -565,6 +565,14 @@ class SelectedController extends Controller
 
     public function category()
     {
+        // Edit forms resolve the preselected value by refetching with ?selected=<id>;
+        // page one of the list would rarely contain it, leaving the select empty.
+        if ($selected = request('selected')) {
+            return Category::query()
+                ->whereKey($selected)
+                ->paginate(1);
+        }
+
         $brand = request('brand');
         $brandCategoryProducts = Product::query()
             ->where('brand_id', $brand)

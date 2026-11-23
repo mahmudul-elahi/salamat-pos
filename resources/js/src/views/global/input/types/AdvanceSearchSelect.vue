@@ -26,13 +26,13 @@ const getSearchValue = _debounce(() => {
 const totalRow = ref(0);
 const preloader = ref(false);
 const selectedOption = ref({});
-const initialOption = ref([]);
+const optionsLoaded = ref(false);
 
 const dropDownId = computed(() => `${props.data.id}-multi-select`);
 
 const getOptionsByClick = () => {
-    if (options.value.length === 0) {
-        getOptions();
+    if (!optionsLoaded.value) {
+        getOptions(null);
     }
 };
 
@@ -56,12 +56,34 @@ const getInitialOption = () => {
             [props.data.queryAttributeName]: props.value,
         },
     }).then((res) => {
-        selectedOption.value = res.data.data.find(
-            (item) => props.value == item[props.data.listKeyField]
+        const items = Array.isArray(res.data.data) ? res.data.data : [];
+        const match = items.find(
+            (item) => item && props.value == item[props.data.listKeyField]
         );
-        initialOption.value = [selectedOption.value];
-        options.value = [...initialOption.value];
+
+        // The selected value may no longer exist (e.g. a deleted category),
+        // so never store undefined in the options array.
+        selectedOption.value = match ?? {};
+        options.value = match ? [match] : [];
+        optionsLoaded.value = false;
     });
+};
+
+const mergeOptions = (items, append) => {
+    const optionsByKey = new Map();
+    const keyField = props.data.listKeyField;
+
+    if (append) {
+        options.value
+            .filter(Boolean)
+            .forEach((option) => optionsByKey.set(option[keyField], option));
+    }
+
+    items
+        .filter(Boolean)
+        .forEach((option) => optionsByKey.set(option[keyField], option));
+
+    options.value = [...optionsByKey.values()];
 };
 
 const getOptions = (getType = "loadmore") => {
@@ -78,12 +100,10 @@ const getOptions = (getType = "loadmore") => {
         per_page: loadingLength.value,
     };
     Axios.get(url, requestData).then((res) => {
-        if (getType === "loadmore") {
-            options.value = [...options.value, ...res.data.data];
-        } else {
-            options.value = [...res.data.data];
-        }
+        const items = Array.isArray(res.data.data) ? res.data.data : [];
+        mergeOptions(items, getType === "loadmore");
         totalRow.value = res.data.total;
+        optionsLoaded.value = true;
         preloader.value = false;
     });
 };
