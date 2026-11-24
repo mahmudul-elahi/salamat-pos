@@ -140,12 +140,6 @@ class SaleService extends BaseService
         foreach ($request['items'] as $item) {
             $saleType = $item['sale_type'] ?? null;
 
-            if ($saleType === 'product' && $this->isSerialInStock($item, $tenantId, $isAppAdmin)) {
-                $this->strictSerialValidation($item, $request, $isAppAdmin);
-
-                continue;
-            }
-
             if (in_array($saleType, ['product', 'exchange'])) {
                 $this->upsertProductSerial($item, $tenantId, $isAppAdmin, $saleType);
             } else {
@@ -154,6 +148,31 @@ class SaleService extends BaseService
         }
 
         return $this;
+    }
+
+    /**
+     * Turn "product" (sold-before-purchase) items whose serial is already in stock into
+     * regular stock sales, so serial validation, sale items and stock updates all treat
+     * them as normal sales instead of backorders.
+     *
+     * @param  array<int, array<string, mixed>>  $items
+     * @return array<int, array<string, mixed>>
+     */
+    public function convertInStockProductItemsToRegular(array $items, ?int $tenantId, bool $isAppAdmin): array
+    {
+        return array_map(function (mixed $item) use ($tenantId, $isAppAdmin): mixed {
+            $isInStockProductItem = is_array($item)
+                && ($item['sale_type'] ?? null) === 'product'
+                && filled($item['serial_number'] ?? null)
+                && filled($item['variant_id'] ?? null)
+                && $this->isSerialInStock($item, $tenantId, $isAppAdmin);
+
+            if ($isInStockProductItem) {
+                $item['sale_type'] = null;
+            }
+
+            return $item;
+        }, $items);
     }
 
     /**

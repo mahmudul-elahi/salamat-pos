@@ -50,16 +50,46 @@ class SaleServiceTest extends TestCase
         });
     }
 
-    public function test_product_sale_of_an_in_stock_serial_sells_it_from_stock_without_a_backorder(): void
+    public function test_in_stock_product_item_is_converted_to_a_regular_sale(): void
     {
-        DB::table('product_serials')->insert(['id' => 1, 'serial_number' => self::SERIAL_NUMBER, 'product_variant_id' => 1631, 'product_id' => 366]);
-        DB::table('tenant_product_serials')->insert(['product_serial_id' => 1, 'tenant_id' => self::TENANT_ID, 'status' => 'purchase']);
+        $this->putSerialInStock(self::TENANT_ID);
 
-        app(SaleService::class)->tenantProductSerialLog($this->saleRequest(), true);
+        $items = app(SaleService::class)->convertInStockProductItemsToRegular($this->saleRequest()['items'], self::TENANT_ID, true);
+
+        $this->assertNull($items[0]['sale_type']);
+    }
+
+    public function test_product_item_stays_a_backorder_when_its_serial_is_only_in_another_tenants_stock(): void
+    {
+        $this->putSerialInStock(8);
+
+        $items = app(SaleService::class)->convertInStockProductItemsToRegular($this->saleRequest()['items'], self::TENANT_ID, true);
+
+        $this->assertSame('product', $items[0]['sale_type']);
+    }
+
+    public function test_exchange_item_is_not_converted_even_when_its_serial_is_in_stock(): void
+    {
+        $this->putSerialInStock(self::TENANT_ID);
+        $items = $this->saleRequest()['items'];
+        $items[0]['sale_type'] = 'exchange';
+
+        $items = app(SaleService::class)->convertInStockProductItemsToRegular($items, self::TENANT_ID, true);
+
+        $this->assertSame('exchange', $items[0]['sale_type']);
+    }
+
+    public function test_converted_in_stock_item_marks_its_serial_sold_without_a_backorder(): void
+    {
+        $this->putSerialInStock(self::TENANT_ID);
+        $service = app(SaleService::class);
+        $request = $this->saleRequest();
+        $request['items'] = $service->convertInStockProductItemsToRegular($request['items'], self::TENANT_ID, true);
+
+        $service->tenantProductSerialLog($request, true);
 
         $this->assertDatabaseHas('tenant_product_serials', ['product_serial_id' => 1, 'tenant_id' => self::TENANT_ID, 'status' => 'sale']);
         $this->assertDatabaseCount('sale_product_temps', 0);
-        $this->assertDatabaseCount('product_serials', 1);
     }
 
     public function test_product_sale_of_a_serial_not_in_stock_creates_a_backorder(): void
@@ -69,6 +99,12 @@ class SaleServiceTest extends TestCase
         $this->assertDatabaseHas('product_serials', ['serial_number' => self::SERIAL_NUMBER, 'status' => 'generated']);
         $this->assertDatabaseHas('sale_product_temps', ['serial_number' => self::SERIAL_NUMBER, 'tenant_id' => self::TENANT_ID]);
         $this->assertDatabaseCount('tenant_product_serials', 0);
+    }
+
+    private function putSerialInStock(int $tenantId): void
+    {
+        DB::table('product_serials')->insert(['id' => 1, 'serial_number' => self::SERIAL_NUMBER, 'product_variant_id' => 1631, 'product_id' => 366]);
+        DB::table('tenant_product_serials')->insert(['product_serial_id' => 1, 'tenant_id' => $tenantId, 'status' => 'purchase']);
     }
 
     /**

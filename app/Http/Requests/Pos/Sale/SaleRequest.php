@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Pos\Sale;
 
 use App\Http\Requests\CustomRule\MaxDigitsPrecision;
+use App\Services\Pos\Sale\SaleService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -15,6 +16,25 @@ class SaleRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * Sell "product" items from stock when their serial is already in stock, before any sale step runs.
+     */
+    protected function prepareForValidation(): void
+    {
+        $items = $this->input('items');
+
+        if (! is_array($items)) {
+            return;
+        }
+
+        $isAppAdmin = auth()->user()->isAppAdmin();
+        $tenantId = $isAppAdmin ? $this->integer('tenant_id') : tenant()?->id;
+
+        $this->merge([
+            'items' => app(SaleService::class)->convertInStockProductItemsToRegular($items, $tenantId, $isAppAdmin),
+        ]);
     }
 
     /**
