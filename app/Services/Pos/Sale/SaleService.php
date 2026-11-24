@@ -140,6 +140,12 @@ class SaleService extends BaseService
         foreach ($request['items'] as $item) {
             $saleType = $item['sale_type'] ?? null;
 
+            if ($saleType === 'product' && $this->isSerialInStock($item, $tenantId, $isAppAdmin)) {
+                $this->strictSerialValidation($item, $request, $isAppAdmin);
+
+                continue;
+            }
+
             if (in_array($saleType, ['product', 'exchange'])) {
                 $this->upsertProductSerial($item, $tenantId, $isAppAdmin, $saleType);
             } else {
@@ -148,6 +154,22 @@ class SaleService extends BaseService
         }
 
         return $this;
+    }
+
+    /**
+     * Determine whether the item's serial is already in the tenant's stock (purchased or returned).
+     *
+     * @param  array{serial_number: string, variant_id: int}  $item
+     */
+    private function isSerialInStock(array $item, ?int $tenantId, bool $isAppAdmin): bool
+    {
+        return TenantProductSerial::query()
+            ->when($isAppAdmin, fn ($query) => $query->where('tenant_id', $tenantId))
+            ->whereIn('status', ['purchase', 'sale_return'])
+            ->whereHas('productSerial', fn ($query) => $query
+                ->where('serial_number', $item['serial_number'])
+                ->where('product_variant_id', $item['variant_id']))
+            ->exists();
     }
 
     private function upsertProductSerial(array $item, ?int $tenantId, bool $isAppAdmin, ?string $saleType = null): void

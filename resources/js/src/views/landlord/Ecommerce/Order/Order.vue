@@ -73,8 +73,22 @@ const options = ref({
         },
         {
             title: t('pm'),
-            type: 'text',
+            type: 'custom-html',
             key: 'payment_method',
+            modifier: (paymentMethod => {
+                const paymentMethodLogos = {
+                    cod: { src: '/assets/images/payment-methods/cod.png', alt: 'Cash on Delivery', height: 28 },
+                    bkash: { src: '/assets/images/payment-methods/bkash.png', alt: 'bKash', height: 24 },
+                    online: { src: '/assets/images/payment-methods/sslcommerz.png', alt: 'SSLCommerz', height: 16 },
+                };
+                const logo = paymentMethodLogos[paymentMethod];
+
+                if (!logo) {
+                    return paymentMethod ?? '-';
+                }
+
+                return `<img src="${logo.src}" alt="${logo.alt}" title="${logo.alt}" style="height: ${logo.height}px; width: auto; max-width: 80px; object-fit: contain;">`;
+            })
         },
         {
             title: 'D.Amount',
