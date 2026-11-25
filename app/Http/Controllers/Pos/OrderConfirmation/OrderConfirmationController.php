@@ -82,6 +82,8 @@ class OrderConfirmationController extends Controller
             $orderConfirmation->update($data);
             $orderConfirmation->items()->delete();
             $orderConfirmation->items()->createMany($items);
+
+            $this->syncOrderWithConfirmation($orderConfirmation->refresh());
         });
 
         return successResponse('Order updated successfully');
@@ -123,23 +125,62 @@ class OrderConfirmationController extends Controller
      */
     private function createOrderFromConfirmation(OrderConfirmation $orderConfirmation): Order
     {
-        $orderConfirmation->loadMissing('items');
-
         $order = Order::query()->create([
-            'contact_id' => $orderConfirmation->contact_id,
+            ...$this->orderAttributes($orderConfirmation),
             'payment_method' => 'cod',
+            'discount_total' => 0,
+            'invoice_number' => $this->generateOrderInvoiceNumber(),
+            'status' => StatusEnum::Confirmed->value,
+        ]);
+
+        $this->createOrderLines($order, $orderConfirmation);
+
+        return $order;
+    }
+
+    /**
+     * Keep the raised Order in step when the confirmation is edited. Once the order has moved
+     * past Confirmed (approved into a sale, cancelled, ...) it is left alone.
+     */
+    private function syncOrderWithConfirmation(OrderConfirmation $orderConfirmation): void
+    {
+        $order = $orderConfirmation->order_id ? Order::query()->find($orderConfirmation->order_id) : null;
+
+        if (! $order || (int) $order->status !== StatusEnum::Confirmed->value) {
+            return;
+        }
+
+        $order->update($this->orderAttributes($orderConfirmation));
+        $order->items()->delete();
+        $this->createOrderLines($order, $orderConfirmation);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function orderAttributes(OrderConfirmation $orderConfirmation): array
+    {
+        $grandTotal = (float) $orderConfirmation->selling_price + (float) $orderConfirmation->shipping_charge;
+        $advanceAmount = (float) $orderConfirmation->advance_amount;
+
+        return [
+            'contact_id' => $orderConfirmation->contact_id,
             'address' => $orderConfirmation->address,
             'sub_total' => $orderConfirmation->selling_price,
             'shipping_charge' => $orderConfirmation->shipping_charge,
-            'discount_total' => 0,
-            'grand_total' => $orderConfirmation->selling_price + $orderConfirmation->shipping_charge,
+            'grand_total' => number_format($grandTotal, 2, '.', ''),
             'payable_amount' => $orderConfirmation->advance_amount,
-            'due_amount' => $orderConfirmation->cod,
-            'invoice_number' => $this->generateOrderInvoiceNumber(),
-            'status' => StatusEnum::Confirmed->value,
+            // What the customer still owes. The typed COD is what the courier collects and may
+            // include courier fees, so it is not the order's due.
+            'due_amount' => number_format(max(0, $grandTotal - $advanceAmount), 2, '.', ''),
             'customer_note' => $orderConfirmation->note,
             'custom_value' => json_encode(['customer_name' => $orderConfirmation->customer_name]),
-        ]);
+        ];
+    }
+
+    private function createOrderLines(Order $order, OrderConfirmation $orderConfirmation): void
+    {
+        $orderConfirmation->loadMissing('items');
 
         foreach ($orderConfirmation->items as $item) {
             // A legacy free-text line (no catalogue product) has nothing to
@@ -158,8 +199,6 @@ class OrderConfirmationController extends Controller
                 'status' => 1,
             ]);
         }
-
-        return $order;
     }
 
     private function generateOrderInvoiceNumber(): string

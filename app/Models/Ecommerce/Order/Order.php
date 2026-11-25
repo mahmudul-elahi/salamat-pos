@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property string|null $address
  * @property int|null $shipping_address_id
+ * @property int|null $status
  */
 class Order extends BaseModel
 {
