@@ -133,12 +133,6 @@ parameters:
 			path: app/Helpers/Notification/NotificationHelper.php
 
 		-
-			message: '#^Undefined variable\: \$mailSettings$#'
-			identifier: variable.undefined
-			count: 1
-			path: app/Helpers/Setting/SetEmailConfig.php
-
-		-
 			message: '#^Trait App\\Helpers\\Traits\\ImportFailedTrait is used zero times and is not analysed\.$#'
 			identifier: trait.unused
 			count: 1

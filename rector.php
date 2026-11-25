@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\Php86\Rector\Class_\ConstructorReadonlyAssignToDefaultRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -17,4 +18,9 @@ return RectorConfig::configure()
         codeQuality: true,
         earlyReturn: true
     )
-    ->withPhpSets(php86: true);
+    ->withPhpSets(php86: true)
+    ->withSkip([
+        ConstructorReadonlyAssignToDefaultRector::class => [
+            __DIR__.'/app/Http/Middleware/ReplaceCdnUrl.php',
+        ],
+    ]);

@@ -153,10 +153,10 @@ class SaleService extends BaseService
     /**
      * Turn "product" (sold-before-purchase) items whose serial is already in stock into
      * regular stock sales, so serial validation, sale items and stock updates all treat
-     * them as normal sales instead of backorders.
+     * them as normal sales instead of backorders. Runs before validation, so items may be malformed.
      *
-     * @param  array<int, array<string, mixed>>  $items
-     * @return array<int, array<string, mixed>>
+     * @param  array<int|string, mixed>  $items
+     * @return array<int|string, mixed>
      */
     public function convertInStockProductItemsToRegular(array $items, ?int $tenantId, bool $isAppAdmin): array
     {

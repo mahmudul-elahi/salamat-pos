@@ -12,7 +12,7 @@ class SetEmailConfig
     public function set(): void
     {
         $this->clearConfigCache();
-        $this->getMailSettings();
+        $mailSettings = $this->getMailSettings();
 
         $this->setConfig($mailSettings);
     }
@@ -23,7 +23,7 @@ class SetEmailConfig
         Artisan::call('config:cache');
     }
 
-    private function getMailSettings()
+    private function getMailSettings(): array
     {
         return resolve(SettingRepository::class)
             ->getDeliverySettings([
@@ -34,9 +34,9 @@ class SetEmailConfig
             );
     }
 
-    private function setConfig($mailSettings): void
+    private function setConfig(array $mailSettings): void
     {
-        if ($mailSettings) {
+        if ($mailSettings !== []) {
             Config::set('mail.default', $mailSettings['provider']);
             Config::set('mail.from.address', $mailSettings['from_email']);
             Config::set('mail.from.name', $mailSettings['from_name']);
