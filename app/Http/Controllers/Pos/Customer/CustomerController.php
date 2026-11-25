@@ -52,7 +52,7 @@ class CustomerController extends Controller
      */
     public function show(Contact $customer): Contact
     {
-        return $customer;
+        return $customer->append('invoice_address');
     }
 
     /**

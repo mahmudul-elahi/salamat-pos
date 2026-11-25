@@ -2,10 +2,17 @@
 
 namespace App\Models\Pos\Address;
 
+use App\Helpers\General\AddressHelper;
 use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $contact_id
+ * @property string|null $street
+ * @property bool $is_default_shipping
+ */
 class CustomerAddress extends Model
 {
     #[\Override]
@@ -29,11 +36,17 @@ class CustomerAddress extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<NewDistrict, $this>
+     */
     public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id');
     }
 
+    /**
+     * @return BelongsTo<Area, $this>
+     */
     public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class);
@@ -41,12 +54,11 @@ class CustomerAddress extends Model
 
     public function getFullAddressAttribute(): string
     {
-        $street = $this->street;
-        $area = $this->area->name ?? '';
-        $district = $this->area?->district?->name ?? '';
-        // $thana = $this->area?->thana ?? '';
-        $postcode = $this->area?->postcode ?? '';
-
-        return trim("$street, $area, $district, $postcode", ' ,');
+        return AddressHelper::join($this->street, [
+            $this->area?->name,
+            $this->area?->thana,
+            $this->district?->name ?? $this->area?->district?->name,
+            $this->area?->postcode,
+        ]);
     }
 }

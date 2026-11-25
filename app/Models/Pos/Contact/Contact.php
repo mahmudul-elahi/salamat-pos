@@ -3,9 +3,12 @@
 namespace App\Models\Pos\Contact;
 
 use App\Filters\Pos\Shop\ShopFilter;
+use App\Helpers\General\AddressHelper;
 use App\Models\Common\BaseModel;
 use App\Models\Pos\Address\Area;
+use App\Models\Pos\Address\CustomerAddress;
 use App\Models\Pos\Address\NewDistrict;
+use App\Models\Pos\Country\Country;
 use App\Models\Pos\Purchase\Purchase;
 use App\Models\Pos\PurchaseReturn\PurchaseReturn;
 use App\Models\Pos\Sale\Sale;
@@ -168,30 +171,67 @@ class Contact extends BaseModel
         return $image?->getFullUrl();
     }
 
+    /**
+     * @return BelongsTo<Country, $this>
+     */
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class, 'country_id', 'id');
+    }
+
+    /**
+     * @return BelongsTo<NewDistrict, $this>
+     */
     public function district(): BelongsTo
     {
         return $this->belongsTo(NewDistrict::class, 'new_district_id', 'id');
     }
 
+    /**
+     * @return BelongsTo<Area, $this>
+     */
     public function area(): BelongsTo
     {
         return $this->belongsTo(Area::class, 'area_id', 'id');
     }
 
-    public function getFullAddress()
+    /**
+     * Addresses an online customer saved on the storefront.
+     *
+     * @return HasMany<CustomerAddress, $this>
+     */
+    public function savedAddresses(): HasMany
     {
-        $addressParts = [];
+        return $this->hasMany(CustomerAddress::class, 'contact_id', 'id');
+    }
 
-        if ($this->district?->name) {
-            $addressParts[] = $this->district->name;
-        }
-        if ($this->area?->name) {
-            $addressParts[] = $this->area->name;
-        }
-        if ($this->address) {
-            $addressParts[] = $this->address;
+    public function getFullAddress(): string
+    {
+        return AddressHelper::join($this->address, [
+            $this->area?->name,
+            $this->area?->thana,
+            $this->district?->name,
+            $this->area?->postcode,
+            $this->country?->name,
+        ]);
+    }
+
+    /**
+     * The address to print on an invoice when the sale has none of its own:
+     * the contact's own address, otherwise their default (or latest) saved storefront address.
+     */
+    public function getInvoiceAddressAttribute(): string
+    {
+        $address = $this->getFullAddress();
+
+        if ($address !== '') {
+            return $address;
         }
 
-        return implode(', ', $addressParts);
+        $savedAddress = $this->savedAddresses
+            ->sortBy([['is_default_shipping', 'desc'], ['id', 'desc']])
+            ->first();
+
+        return $savedAddress === null ? '' : $savedAddress->full_address;
     }
 }

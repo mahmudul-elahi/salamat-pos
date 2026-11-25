@@ -13,21 +13,18 @@ class SaleReturnDownloadController extends Controller
     public function invoiceData(SaleReturn $saleReturn): JsonResponse
     {
         $saleReturn->load([
-            'contact',
+            'contact.area',
+            'contact.country',
+            'contact.district',
+            'contact.savedAddresses.area.district',
+            'contact.savedAddresses.district',
             'items.product',
             'items.productVariant.attributeValues',
             'payments.paymentMethod',
         ]);
 
         $customer = $saleReturn->contact;
-        $address = '';
-        if ($customer) {
-            if ($customer->shipping_address_id && $customer->shippingAddress) {
-                $address = $customer->shippingAddress->getFullAddressAttribute() ?? '';
-            } else {
-                $address = $customer->getFullAddress() ?? '';
-            }
-        }
+        $address = $customer?->invoice_address;
 
         // $receivedAmount = $saleReturn->getTransactionAmountAttribute();
         // $dueAmount      = max(0, $saleReturn->grand_total - $receivedAmount);
@@ -66,7 +63,7 @@ class SaleReturnDownloadController extends Controller
         return response()->json([
             'customer' => [
                 'name' => $customer?->name,
-                'company_name' => $customer?->company_name,
+                'company_name' => $customer?->business_name,
                 'phone' => $customer?->phone,
                 'email' => $customer?->email,
                 'address' => $address,

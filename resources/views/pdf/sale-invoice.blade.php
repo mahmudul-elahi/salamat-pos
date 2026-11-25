@@ -308,15 +308,9 @@
                     <tr>
                         <td class="label-col">Address</td>
                         <td class="sep-col">:</td>
-                        @if($customer->shipping_address_id && $customer->shippingAddress)
                         <td>
-                            {{$customer->shippingAddress->getFullAddressAttribute() ?? ''}}
+                            {{ filled($sale->address) ? $sale->address : (filled($customer?->invoice_address) ? $customer->invoice_address : '-') }}
                         </td>
-                        @else
-                        <td>
-                            {{ $customer->getFullAddress() ?? '-' }}
-                        </td>
-                        @endif
                     </tr>
                 </table>
             </div>

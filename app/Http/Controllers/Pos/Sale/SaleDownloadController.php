@@ -83,14 +83,18 @@ class SaleDownloadController extends Controller
     public function invoiceData(Sale $sale): JsonResponse
     {
         $sale->load([
-            'contact',
+            'contact.area',
+            'contact.country',
+            'contact.district',
+            'contact.savedAddresses.area.district',
+            'contact.savedAddresses.district',
             'items.product',
             'items.productVariant.attributeValues',
             'payments.paymentMethod',
         ]);
 
         $customer = $sale->contact;
-        $address = $sale->address ?? $customer->getFullAddress() ?? '';
+        $address = filled($sale->address) ? $sale->address : $customer?->invoice_address;
 
         // $sale->grand_total is only the item total after line-level discounts -
         // shipping is added and any coupon is subtracted separately (see
@@ -149,7 +153,7 @@ class SaleDownloadController extends Controller
         return response()->json([
             'customer' => [
                 'name' => $customer?->name,
-                'company_name' => $customer?->company_name,
+                'company_name' => $customer?->business_name,
                 'phone' => $customer?->phone,
                 'email' => $customer?->email,
                 'address' => $address,

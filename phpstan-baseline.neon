@@ -2227,19 +2227,7 @@ parameters:
 			path: app/Http/Controllers/Pos/People/OnlineContactController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Pos\\Address\\CustomerAddress\:\:\$is_default_shipping\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/People/OnlineContactController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Pos\\Address\\CustomerAddress\:\:\$label\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/People/OnlineContactController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Pos\\Address\\CustomerAddress\:\:\$street\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Pos/People/OnlineContactController.php
@@ -2343,7 +2331,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
-			count: 5
+			count: 3
 			path: app/Http/Controllers/Pos/People/OnlineContactController.php
 
 		-
@@ -2360,12 +2348,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Ecommerce\\Elite\\ContactEliteHistory\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Pos/People/OnlineContactController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Pos\\Address\\CustomerAddress\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Pos/People/OnlineContactController.php
@@ -3121,12 +3103,6 @@ parameters:
 			path: app/Http/Controllers/Pos/Report/SaleReturnReportController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profile_picture\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Report/SaleReturnReportController.php
-
-		-
 			message: '#^Class App\\Filters\\Pos\\Report\\SalesReportFilter does not have a constructor and must be instantiated without any parameters\.$#'
 			identifier: new.noConstructor
 			count: 1
@@ -3182,12 +3158,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profile_photo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Report/SalesReportController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profile_picture\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Pos/Report/SalesReportController.php
@@ -3391,36 +3361,6 @@ parameters:
 			path: app/Http/Controllers/Pos/Sale/SaleDownloadController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$company_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Sale/SaleDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Sale/SaleDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Sale/SaleDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Sale/SaleDownloadController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getFullAddress\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Sale/SaleDownloadController.php
-
-		-
 			message: '#^Relation ''items'' is not found in App\\Models\\Pos\\Sale\\Sale model\.$#'
 			identifier: larastan.relationExistence
 			count: 2
@@ -3448,48 +3388,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Pos\\SaleReturn\\SaleReturn\:\:\$payments\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$company_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shippingAddress\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shipping_address_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getFullAddress\(\)\.$#'
-			identifier: method.notFound
-			count: 1
 			path: app/Http/Controllers/Pos/SaleReturn/SaleReturnDownloadController.php
 
 		-
@@ -3967,12 +3865,6 @@ parameters:
 			path: app/Http/Controllers/Pos/Statement/SaleReturnStatementController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profile_picture\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Statement/SaleReturnStatementController.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Pagination\\AbstractPaginator\<int,App\\Models\\Pos\\SaleReturn\\SaleReturn\>\:\:through\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 1
@@ -4028,12 +3920,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profile_photo\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Statement/SaleStatementController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$profile_picture\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Pos/Statement/SaleStatementController.php
@@ -4831,31 +4717,7 @@ parameters:
 			path: app/Models/Landlord/Feature/Feature.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Pos\\Address\\CustomerAddress\:\:\$street\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Pos/Address/CustomerAddress.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$district\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Pos/Address/CustomerAddress.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$postcode\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Pos/Address/CustomerAddress.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/Pos/Address/CustomerAddress.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>postcode" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Pos/Address/CustomerAddress.php
@@ -4865,12 +4727,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Models/Pos/CashTransfer/CashTransfer.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Pos/Contact/Contact.php
 
 		-
 			message: '#^Call to an undefined method App\\Models\\Pos\\Contact\\Contact\:\:getFirstMedia\(\)\.$#'

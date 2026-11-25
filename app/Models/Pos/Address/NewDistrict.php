@@ -6,6 +6,10 @@ namespace App\Models\Pos\Address;
 
 use App\Models\Common\BaseModel;
 
+/**
+ * @property int $id
+ * @property string $name
+ */
 class NewDistrict extends BaseModel
 {
     #[\Override]

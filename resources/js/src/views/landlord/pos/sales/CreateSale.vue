@@ -2,7 +2,7 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import {
     SELECTED_SHOPS, SALES, SALE_SEARCH_PRODUCTS, SELECTED_PAYMENT_METHODS, SALE_INVOICE_DOWNLOAD,
-    SELECTED_CONTACTS, SELECTED_PRODUCT, SELECTED_PRODUCT_ATTRIBUTE, SELECTED_SELLERS
+    SELECTED_CONTACTS, SELECTED_PRODUCT, SELECTED_PRODUCT_ATTRIBUTE, SELECTED_SELLERS, CUSTOMERS
 } from '@/services/endpoints/landlord.js';
 import Axios from "@/services/axios/index.js";
 import { serverDateFormat } from "@/utils/helper.js";
@@ -35,6 +35,24 @@ const formData = ref({
 
 const toast = useToast();
 const saleType = ref(null);
+
+// Pre-fill the sale address from the chosen customer, without overwriting anything typed by hand.
+const prefilledAddress = ref('');
+
+watch(() => formData.value.contact_id, async (contactId) => {
+    const addressIsUntouched = !formData.value.address || formData.value.address === prefilledAddress.value;
+    if (!contactId || !addressIsUntouched) return;
+
+    try {
+        const { data } = await Axios.get(`${CUSTOMERS}/${contactId}`);
+        if (formData.value.contact_id !== contactId) return;
+
+        prefilledAddress.value = data.invoice_address || '';
+        formData.value.address = prefilledAddress.value;
+    } catch {
+        // The address stays editable; the invoice falls back to the customer's address.
+    }
+});
 
 
 // Structured product add (Product mode)
