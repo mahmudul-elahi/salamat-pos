@@ -252,7 +252,7 @@ class OrderConfirmationController extends Controller
             'date' => ['required', 'date'],
             'confirmation_date' => ['nullable', 'date'],
             'contact_id' => ['required', 'integer', 'exists:contacts,id'],
-            'address' => ['nullable', 'string', 'max:1000'],
+            'address' => ['required', 'string', 'max:1000'],
             'source_media' => ['nullable', 'string', 'max:50'],
             'order_type' => ['nullable', 'in:online,offline'],
             'order_person_id' => ['nullable', 'integer', 'exists:users,id'],
@@ -276,12 +276,6 @@ class OrderConfirmationController extends Controller
 
         $data['customer_name'] = $contact->name;
         $data['mobile'] = $contact->phone;
-
-        // Fall back to the contact's address, but never overwrite one typed for
-        // this order — a delivery address often differs from the one on file.
-        if (empty($data['address'])) {
-            $data['address'] = $contact->address;
-        }
 
         $items = collect($data['items'])->map(function (array $item) {
             $quantity = (float) $item['quantity'];

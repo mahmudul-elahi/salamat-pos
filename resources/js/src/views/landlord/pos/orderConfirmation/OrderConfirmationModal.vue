@@ -13,6 +13,7 @@ import {
     SELECTED_ADVANCE_MEDIAS,
     SELECTED_DELIVERY_STATUSES,
     SELECTED_DELIVERY_BYS,
+    CUSTOMERS,
 } from "@/services/endpoints/landlord.js";
 
 const props = defineProps({ modalId: String, tableId: String, selectedUrl: String });
@@ -118,14 +119,29 @@ const money = (value) => Number(value || 0).toLocaleString('en-US', { minimumFra
 const isCustomerModal = ref(false);
 const customerPickerKey = ref(0);
 
+// Only prefill a blank address — a delivery address for this order may
+// deliberately differ from the one on the contact. The customer's full
+// address (street, area, thana, district, postcode, country) comes from the server.
+const prefillAddress = async (contactId, fallbackAddress) => {
+    if (!contactId || formData.value.address) return;
+
+    let address = fallbackAddress ?? "";
+    try {
+        const { data } = await Axios.get(`${CUSTOMERS}/${contactId}`);
+        address = data.invoice_address || address;
+    } catch {
+        // Keep the street address the picker already gave us.
+    }
+
+    if (!formData.value.address) {
+        formData.value.address = address;
+    }
+};
+
 const selectCustomer = (contact) => {
     if (!contact) return;
 
-    // Only prefill a blank address — a delivery address for this order may
-    // deliberately differ from the one on the contact.
-    if (!formData.value.address) {
-        formData.value.address = contact.address ?? "";
-    }
+    prefillAddress(contact.id, contact.address);
 };
 
 // A customer added through the "+" is selected straight away, so the agent
@@ -135,9 +151,7 @@ const onCustomerCreated = (customer) => {
 
     formData.value.contact_id = customer.id;
 
-    if (!formData.value.address) {
-        formData.value.address = customer.address ?? "";
-    }
+    prefillAddress(customer.id, customer.address);
 
     // The picker resolves its label once, on mount — bump the key so it
     // remounts and picks up the id we just set.
@@ -283,8 +297,9 @@ onMounted(() => {
                     </div>
 
                     <div class="col-xl-9 col-md-6">
-                        <app-input type="textarea" id="address" :label="$t('address')" :placeholder="$t('address')"
-                            v-model="formData.address" :errors="$errors(errors, 'address')" />
+                        <app-input type="textarea" id="address" :label="$t('address')" label-required
+                            :placeholder="$t('address')" v-model="formData.address"
+                            :errors="$errors(errors, 'address')" />
                     </div>
 
                     <div class="col-12">

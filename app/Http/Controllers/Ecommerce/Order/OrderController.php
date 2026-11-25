@@ -7,7 +7,6 @@ use App\Enums\StatusEnum;
 use App\Exceptions\GeneralException;
 use App\Exceptions\OrderValidationException;
 use App\Filters\Ecommerce\Order\OrderFilter;
-use App\Helpers\General\AddressHelper;
 use App\Helpers\Traits\S3ToLocalPathTrait;
 use App\Http\Controllers\Controller;
 use App\Models\Ecommerce\Order\Order;
@@ -167,13 +166,7 @@ class OrderController extends Controller
             ];
         });
 
-        $address = $order->shipping_address_id && $order->shippingAddress
-            ? $order->shippingAddress->getFullAddressAttribute()
-            : AddressHelper::join($order->address, [
-                $order->area?->name,
-                $order->district?->name ?? $order->area?->district?->name,
-                $order->area?->postcode,
-            ]);
+        $address = $order->delivery_address;
 
         return [
             'barcode' => 'data:image/png;base64,'.(new DNS1D)->getBarcodePNG($order->invoice_number, 'C128'),
@@ -770,13 +763,7 @@ class OrderController extends Controller
             throw new OrderValidationException('Customer not found');
         }
 
-        $orderAddress = $order->shipping_address_id && $order->shippingAddress
-            ? $order->shippingAddress->getFullAddressAttribute()
-            : AddressHelper::join($order->address, [
-                $order->area?->name,
-                $order->district?->name ?? $order->area?->district?->name,
-                $order->area?->postcode,
-            ]);
+        $orderAddress = $order->delivery_address;
 
         try {
             DB::beginTransaction();

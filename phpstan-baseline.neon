@@ -241,12 +241,6 @@ parameters:
 			path: app/Http/Controllers/Ecommerce/Offer/OfferProductController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Ecommerce\\Order\\Order\:\:\$address\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Ecommerce\\Order\\Order\:\:\$contact_id\.$#'
 			identifier: property.notFound
 			count: 3
@@ -301,12 +295,6 @@ parameters:
 			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Ecommerce\\Order\\Order\:\:\$shipping_address_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Ecommerce\\Order\\Order\:\:\$shipping_charge\.$#'
 			identifier: property.notFound
 			count: 1
@@ -331,12 +319,6 @@ parameters:
 			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$district\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
 			identifier: property.notFound
 			count: 1
@@ -345,25 +327,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
-			count: 6
+			count: 2
 			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$postcode\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getFullAddressAttribute\(\)\.$#'
-			identifier: method.notFound
-			count: 2
 			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
 
 		-
@@ -393,7 +363,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 4
+			count: 2
 			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
 
 		-

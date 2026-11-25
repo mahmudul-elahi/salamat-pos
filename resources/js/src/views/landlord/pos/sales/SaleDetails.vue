@@ -135,11 +135,10 @@ onMounted(() => loadInvoiceData());
                             <td class="sep-col">:</td>
                             <td>{{ invoice?.customer?.email || '-' }}</td>
                         </tr>
-                        <tr>
+                        <tr v-if="invoice?.customer?.address">
                             <td class="label-col">Address</td>
                             <td class="sep-col">:</td>
-                            <td>{{ invoice?.customer?.address || '-' }} </td>
-
+                            <td>{{ invoice.customer.address }}</td>
                         </tr>
                     </table>
                 </div>

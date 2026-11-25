@@ -305,13 +305,14 @@
                         <td class="sep-col">:</td>
                         <td>{{ $customer->email ?? '-' }}</td>
                     </tr>
+                    @php($invoiceAddress = filled($sale->address) ? $sale->address : $customer?->invoice_address)
+                    @if(filled($invoiceAddress))
                     <tr>
                         <td class="label-col">Address</td>
                         <td class="sep-col">:</td>
-                        <td>
-                            {{ filled($sale->address) ? $sale->address : (filled($customer?->invoice_address) ? $customer->invoice_address : '-') }}
-                        </td>
+                        <td>{{ $invoiceAddress }}</td>
                     </tr>
+                    @endif
                 </table>
             </div>
             <div class="invoice-info">

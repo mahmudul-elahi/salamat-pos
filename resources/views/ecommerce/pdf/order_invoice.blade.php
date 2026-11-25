@@ -301,27 +301,17 @@
                     <tr>
                         <td class="label-col">Phone</td>
                         <td class="sep-col">:</td>
-                        <td>{{ $customer->email }}</td>
+                        <td>{{ $customer->phone }}</td>
                     </tr>
                     <tr>
                         <td class="label-col">Email</td>
                         <td class="sep-col">:</td>
-                        <td>{{ $customer->phone }}</td>
+                        <td>{{ $customer->email }}</td>
                     </tr>
                     <tr>
                         <td class="label-col">Address</td>
                         <td class="sep-col">:</td>
-                        @if($order->shipping_address_id && $order->shippingAddress)
-                        <td>
-                            {{$order->shippingAddress->getFullAddressAttribute() ?? ''}}
-                        </td>
-                        @else
-                        <td>
-                            {{ $order->address ?? '' }}
-                            {{ $order->area?->name ?? '' }}
-                            {{ $order->area?->district->name ?? '' }} {{ $order->area?->postcode ?? '' }}
-                        </td>
-                        @endif
+                        <td>{{ $order->delivery_address ?: '-' }}</td>
                     </tr>
                 </table>
             </div>
