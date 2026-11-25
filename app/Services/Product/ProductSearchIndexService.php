@@ -89,6 +89,8 @@ class ProductSearchIndexService
     private function send(callable $call, string $action): void
     {
         if (blank(config('services.meilisearch.host'))) {
+            Log::warning("Meilisearch: skipped {$action}, MEILISEARCH_HOST is not configured");
+
             return;
         }
 
