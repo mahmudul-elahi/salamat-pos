@@ -33,7 +33,7 @@ class ForgotPasswordController extends Controller
                 'created_at' => now(),
             ]);
 
-        dispatch(new ForgotPasswordJob($user, $token))->onQueue('high-priority');
+        dispatch(new ForgotPasswordJob($user, $token))->onQueue('business-high-priority');
 
         return successResponse('Forgot password link sent successfully');
 

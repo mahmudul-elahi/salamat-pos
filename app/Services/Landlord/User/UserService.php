@@ -49,7 +49,7 @@ class UserService extends BaseService
             ->where('user_id', $this->model->id)
             ->first();
 
-        dispatch(new InviteUserJob($this->model, $userProfile))->onQueue('high-priority');
+        dispatch(new InviteUserJob($this->model, $userProfile))->onQueue('business-high-priority');
 
         return $this;
     }
