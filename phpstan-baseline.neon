@@ -1807,36 +1807,6 @@ parameters:
 			path: app/Http/Controllers/Pos/OrderConfirmation/OrderConfirmationController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/OrderConfirmation/OrderConfirmationController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_variant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/OrderConfirmation/OrderConfirmationController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/OrderConfirmation/OrderConfirmationController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/OrderConfirmation/OrderConfirmationController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int\<0, max\>, product_id\: int\<0, max\>\|null, product_variant_id\: int\<0, max\>\|null, variant_attributes\: string\|null, custom_product\: string\|null, product_name\: string\|null, quantity\: float, unit_price\: float, line_total\: float\}, Closure\(App\\Models\\Pos\\OrderConfirmation\\OrderConfirmationItem\)\: array\{id\: int\<0, max\>, product_id\: int\<0, max\>\|null, product_variant_id\: int\<0, max\>\|null, variant_attributes\: string\|null, custom_product\: string\|null, product_name\: string\|null, quantity\: float, unit_price\: float, line_total\: float\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Pos/OrderConfirmation/OrderConfirmationController.php
-
-		-
 			message: '#^Parameter \#1 \$string of function str_pad expects string, \(float\|int\) given\.$#'
 			identifier: argument.type
 			count: 1
@@ -4733,12 +4703,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/Pos/News/News.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(string\|null\), Closure\(App\\Models\\Pos\\OrderConfirmation\\OrderConfirmationItem\)\: \(string\|null\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Models/Pos/OrderConfirmation/OrderConfirmation.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$attributeValues\.$#'

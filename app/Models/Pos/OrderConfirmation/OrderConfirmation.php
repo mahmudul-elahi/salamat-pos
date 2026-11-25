@@ -90,6 +90,9 @@ class OrderConfirmation extends BaseModel
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return HasMany<OrderConfirmationItem, $this>
+     */
     public function items(): HasMany
     {
         return $this->hasMany(OrderConfirmationItem::class);

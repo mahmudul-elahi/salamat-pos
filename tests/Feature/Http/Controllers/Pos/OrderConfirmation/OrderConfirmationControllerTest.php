@@ -92,6 +92,33 @@ class OrderConfirmationControllerTest extends TestCase
         Schema::create('order_lists', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('product_id')->nullable();
+            $table->unsignedBigInteger('product_variant_id')->nullable();
+            $table->decimal('product_price', 12, 2)->default(0);
+            $table->string('discount_type')->nullable();
+            $table->decimal('discount_amount', 12, 2)->nullable();
+            $table->decimal('quantity', 12, 2)->default(0);
+            $table->unsignedInteger('purchase_point')->default(0);
+            $table->unsignedInteger('status')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+        });
+
+        Schema::create('product_variants', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('product_id');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('variant_prices', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('product_variant_id');
+            $table->decimal('max_retail_price', 12, 2)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -117,6 +144,35 @@ class OrderConfirmationControllerTest extends TestCase
             'due_amount' => 3320,
             'status' => StatusEnum::Confirmed->value,
         ]);
+    }
+
+    public function test_store_records_a_catalogue_line_at_its_regular_price_with_the_agreed_discount(): void
+    {
+        DB::table('products')->insert(['id' => 1]);
+        DB::table('product_variants')->insert(['id' => 1, 'product_id' => 1]);
+        DB::table('variant_prices')->insert(['product_variant_id' => 1, 'max_retail_price' => 3999]);
+
+        $response = $this->postJson(route('order-confirmations.store'), $this->orderPayload([
+            'shipping_charge' => 70,
+            'items' => [['product_id' => 1, 'product_variant_id' => 1, 'quantity' => 1, 'unit_price' => 3300]],
+        ]));
+
+        $response->assertOk();
+        $this->assertDatabaseHas('order_lists', ['product_price' => 3999, 'discount_type' => 'fixed', 'discount_amount' => 699]);
+        $this->assertDatabaseHas('orders', ['grand_total' => 3370, 'due_amount' => 3370]);
+    }
+
+    public function test_store_records_no_discount_when_the_agreed_price_is_not_below_the_regular_price(): void
+    {
+        DB::table('products')->insert(['id' => 1]);
+        DB::table('product_variants')->insert(['id' => 1, 'product_id' => 1]);
+
+        $response = $this->postJson(route('order-confirmations.store'), $this->orderPayload([
+            'items' => [['product_id' => 1, 'product_variant_id' => 1, 'quantity' => 2, 'unit_price' => 1500]],
+        ]));
+
+        $response->assertOk();
+        $this->assertDatabaseHas('order_lists', ['product_price' => 1500, 'discount_type' => null, 'discount_amount' => 0]);
     }
 
     public function test_update_carries_new_totals_and_address_over_to_a_confirmed_order(): void

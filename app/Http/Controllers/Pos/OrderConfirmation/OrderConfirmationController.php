@@ -10,6 +10,7 @@ use App\Models\Ecommerce\Order\OrderList;
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\OrderConfirmation\OrderConfirmation;
 use App\Models\Pos\OrderConfirmation\OrderConfirmationItem;
+use App\Models\Pos\Product\VariantPrice;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -178,9 +179,18 @@ class OrderConfirmationController extends Controller
         ];
     }
 
+    /**
+     * Order lines are stored like storefront ones: the regular price (MRP) plus a fixed per-unit
+     * discount. The discount is whatever brings the MRP down to the price agreed on the call, so
+     * the order total always stays what the customer agreed to.
+     */
     private function createOrderLines(Order $order, OrderConfirmation $orderConfirmation): void
     {
         $orderConfirmation->loadMissing('items');
+
+        $regularPrices = VariantPrice::query()
+            ->whereIn('product_variant_id', $orderConfirmation->items->pluck('product_variant_id')->filter())
+            ->pluck('max_retail_price', 'product_variant_id');
 
         foreach ($orderConfirmation->items as $item) {
             // A legacy free-text line (no catalogue product) has nothing to
@@ -189,11 +199,17 @@ class OrderConfirmationController extends Controller
                 continue;
             }
 
+            $agreedPrice = (float) $item->unit_price;
+            $regularPrice = max($agreedPrice, (float) $regularPrices->get($item->product_variant_id));
+            $discountPerUnit = $regularPrice - $agreedPrice;
+
             OrderList::query()->create([
                 'order_id' => $order->id,
                 'product_id' => $item->product_id,
                 'product_variant_id' => $item->product_variant_id,
-                'product_price' => $item->unit_price,
+                'product_price' => number_format($regularPrice, 2, '.', ''),
+                'discount_type' => $discountPerUnit > 0 ? 'fixed' : null,
+                'discount_amount' => number_format($discountPerUnit, 2, '.', ''),
                 'quantity' => $item->quantity,
                 'purchase_point' => 0,
                 'status' => 1,

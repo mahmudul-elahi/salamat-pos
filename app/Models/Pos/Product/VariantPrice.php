@@ -7,6 +7,9 @@ namespace App\Models\Pos\Product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property string|null $max_retail_price
+ */
 class VariantPrice extends Model
 {
     use SoftDeletes;
