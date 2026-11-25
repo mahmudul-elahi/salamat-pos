@@ -30,6 +30,7 @@ use App\Models\PreOwned\PreOwned;
 use App\Models\Tenant\Tenant;
 use App\Models\User;
 use App\Scopes\TenantScope;
+use App\Services\Pos\Product\VariantSellingPriceService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -200,9 +201,9 @@ class SelectedController extends Controller
         return response()->json($variants);
     }
 
-    public function productAttribute($id)
+    public function productAttribute($id, VariantSellingPriceService $variantSellingPriceService)
     {
-        return ProductVariant::query()
+        $variants = ProductVariant::query()
             ->where('product_id', $id)
             ->where('status', '1')
             ->with([
@@ -210,20 +211,25 @@ class SelectedController extends Controller
                 'price',
                 'attributeValues.attribute',
             ])
-            ->get()->map(function ($variant) {
-                $joinedAttributes = $variant->attributeValues
-                    ->sortBy(fn ($attrValue) => $attrValue->attribute->name)->map(fn ($attrValue) => $attrValue->value)->join(' / ');
+            ->get();
 
-                return [
-                    'id' => $variant->id,
-                    'product_id' => $variant->product_id,
-                    'max_retail_price' => $variant->price?->max_retail_price ?? null,
-                    'product_name' => $variant->product?->product_name ?? null,
-                    'warranty_day' => $variant->product?->warranty_day ?? null,
-                    'sku' => $variant->sku,
-                    'attributes' => $joinedAttributes ?: 'N/A',
-                ];
-            });
+        $sellingPrices = $variantSellingPriceService->forVariants($variants);
+
+        return $variants->map(function ($variant) use ($sellingPrices) {
+            $joinedAttributes = $variant->attributeValues
+                ->sortBy(fn ($attrValue) => $attrValue->attribute->name)->map(fn ($attrValue) => $attrValue->value)->join(' / ');
+
+            return [
+                'id' => $variant->id,
+                'product_id' => $variant->product_id,
+                'max_retail_price' => $variant->price?->max_retail_price ?? null,
+                'selling_price' => $variant->price ? $sellingPrices[$variant->id] : null,
+                'product_name' => $variant->product?->product_name ?? null,
+                'warranty_day' => $variant->product?->warranty_day ?? null,
+                'sku' => $variant->sku,
+                'attributes' => $joinedAttributes ?: 'N/A',
+            ];
+        });
     }
 
     public function productVariantSerial($variantId)

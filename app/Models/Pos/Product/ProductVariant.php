@@ -39,6 +39,9 @@ class ProductVariant extends BaseModel
         return $this->belongsToMany(AttributeValue::class, 'variant_attribute_values')->withTimestamps();
     }
 
+    /**
+     * @return HasOne<VariantPrice, $this>
+     */
     public function price(): HasOne
     {
         return $this->hasOne(VariantPrice::class, 'product_variant_id', 'id');

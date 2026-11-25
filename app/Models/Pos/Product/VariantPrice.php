@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property string|null $max_retail_price
+ * @property string|null $discount_fixed
+ * @property string|null $discount_percent
  */
 class VariantPrice extends Model
 {

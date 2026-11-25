@@ -99,11 +99,22 @@ const onProductPicked = async (item, option) => {
 };
 
 // The price is specific to the variant (storage/color tiers commonly differ
-// in price), so it prefills from whichever one gets picked - same as Sale.
+// in price), so it prefills from whichever one gets picked. It is the price
+// after any active offer or variant discount, same as the storefront; the
+// regular price is kept to show the discount under the field.
 const onVariantPicked = (item, variant) => {
-    if (variant?.max_retail_price != null) {
-        item.unit_price = variant.max_retail_price;
+    item.regular_price = variant?.max_retail_price != null ? Number(variant.max_retail_price) : null;
+
+    const sellingPrice = variant?.selling_price ?? variant?.max_retail_price;
+    if (sellingPrice != null) {
+        item.unit_price = sellingPrice;
     }
+};
+
+const discountHint = (item) => {
+    const discount = (Number(item.regular_price) || 0) - (Number(item.unit_price) || 0);
+
+    return discount > 0 ? `Regular ${money(item.regular_price)} − ${money(discount)} off` : '';
 };
 
 const lineTotal = (item) => (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
@@ -344,6 +355,7 @@ onMounted(() => {
                                 <app-input type="number" :id="`item_unit_price_${index}`" :label="$t('unit_price')"
                                     placeholder="0" v-model="item.unit_price"
                                     :errors="$errors(errors, `items.${index}.unit_price`)" />
+                                <small v-if="discountHint(item)" class="text-success">{{ discountHint(item) }}</small>
                             </div>
 
                             <div class="col-xl-2 col-md-3">
