@@ -243,9 +243,28 @@ const shippingAmount = computed(() => {
     return 0;
 });
 
+const calculateCareAmount = (product) => {
+    if (product.product_care_id && Array.isArray(product.cares)) {
+        const selected = product.cares.find((c) => Number(c.id) === Number(product.product_care_id));
+        if (selected) {
+            const basePrice = Number(product.price) || 0;
+            return Number((((basePrice * (Number(product.quantity) || 1)) * Number(selected.value || 0)) / 100).toFixed(2));
+        }
+    }
+    return Number(product.care_amount) || 0;
+};
+
+const onCareChange = (product) => {
+    product.care_amount = calculateCareAmount(product);
+};
+
+const totalCareCharge = computed(() => {
+    return productList.value.reduce((sum, product) => sum + calculateCareAmount(product), 0);
+});
+
 // Grand total
 const grandTotal = computed(() => {
-    return discountedSubtotal.value + taxAmount.value + shippingAmount.value + additionalChargeAmount.value;
+    return discountedSubtotal.value + taxAmount.value + shippingAmount.value + additionalChargeAmount.value + totalCareCharge.value;
 });
 // Received Amount
 const totalDeuAmount = computed(() => {
@@ -303,6 +322,11 @@ const fetchSaleData = async () => {
             discount_type: item.discount_type,
             sale_price: item.discount_type && item.discount_type === 'percent' ? 0 : item.price - item.discount_amount || 0,
             discount_amount: item.discount_amount,
+            product_care_id: item.product_care_id || null,
+            pre_owned_care_id: item.pre_owned_care_id || null,
+            care_amount: Number(item.care_amount || 0),
+            care_name: item.care_name || null,
+            cares: item.cares || [],
             note: item.note || '',
             status: item.status || '',
         }));
@@ -356,6 +380,9 @@ const submit = async () => {
                 unit_price: product.price,
                 discount_type: 'fixed',
                 discount_amount: calculateDiscount(product),
+                product_care_id: product.product_care_id || null,
+                pre_owned_care_id: product.pre_owned_care_id || null,
+                care_amount: calculateCareAmount(product),
                 note: product.note,
             }
         })
@@ -557,6 +584,24 @@ const isCustomerCloseModal = () => {
                                             <div v-if="product.attribute_values" class="badge-square-light bg-success">
                                                 {{ product.attribute_values }}
                                             </div>
+                                            <div v-if="product.cares && product.cares.length" class="mt-2">
+                                                <select class="form-select form-select-sm"
+                                                    v-model="product.product_care_id"
+                                                    @change="onCareChange(product)">
+                                                    <option :value="null">No Care</option>
+                                                    <option v-for="care in product.cares" :key="care.id" :value="care.id">
+                                                        {{ care.name }} ({{ care.value }}%)
+                                                    </option>
+                                                </select>
+                                                <small v-if="calculateCareAmount(product) > 0" class="text-primary d-block mt-1">
+                                                    Care: {{ numberWithCurrencySymbol(calculateCareAmount(product)) }}
+                                                </small>
+                                            </div>
+                                            <div v-else-if="product.care_name" class="mt-1">
+                                                <small class="text-primary">
+                                                    Care: {{ product.care_name }} ({{ numberWithCurrencySymbol(product.care_amount || 0) }})
+                                                </small>
+                                            </div>
                                         </td>
 
                                         <td>
@@ -663,6 +708,10 @@ const isCustomerCloseModal = () => {
                                 <tr>
                                     <td class="px-4 py-3">{{ $t('additional_charge') }}</td>
                                     <td class="px-4 py-3">{{ numberWithCurrencySymbol(additionalChargeAmount) }}</td>
+                                </tr>
+                                <tr v-if="totalCareCharge > 0">
+                                    <td class="px-4 py-3">Total Care Charge</td>
+                                    <td class="px-4 py-3">{{ numberWithCurrencySymbol(totalCareCharge) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-3 text-primary">{{ $t('grand_total') }}</td>

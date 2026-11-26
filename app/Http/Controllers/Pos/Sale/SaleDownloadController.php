@@ -30,6 +30,8 @@ class SaleDownloadController extends Controller
             'contact',
             'items.product',
             'items.productVariant.attributeValues.attribute',
+            'items.productCare.care',
+            'items.preOwnedCare.care',
             'payments.paymentMethod',
             'tenant',
         ]);
@@ -37,6 +39,7 @@ class SaleDownloadController extends Controller
         $receivedAmount = $sale->getTransactionAmountAttribute();
         $dueAmount = max(0, $sale->grand_total - $receivedAmount);
         $totalQuantity = $sale->items->sum('quantity');
+        $totalCareCharge = $sale->items->sum(fn ($item) => (float) ($item->care_amount ?? 0));
 
         $totalUnitPrice = $sale->items->sum(function ($item) {
             $amount = $item->unit_price * $item->quantity;
@@ -69,6 +72,7 @@ class SaleDownloadController extends Controller
             'due_amount' => $dueAmount,
             'additional_charge_name' => $sale->additional_charge_name,
             'additional_charge' => $sale->additional_charge,
+            'totalCareCharge' => $totalCareCharge,
             'order_tax' => $sale->order_tax,
             'shipping_cost' => $sale->shipping_cost,
             'payment_summary' => $sale->paymentSummary(),
@@ -90,6 +94,8 @@ class SaleDownloadController extends Controller
             'contact.savedAddresses.district',
             'items.product',
             'items.productVariant.attributeValues',
+            'items.productCare.care',
+            'items.preOwnedCare.care',
             'payments.paymentMethod',
         ]);
 
@@ -121,12 +127,20 @@ class SaleDownloadController extends Controller
             return (float) ($item->discount_amount ?? 0);
         });
 
+        $totalCareCharge = $sale->items->sum(fn ($item) => (float) ($item->care_amount ?? 0));
+
         $barcodeBase64 = (new DNS1D)->getBarcodePNG($sale->full_invoice_number, 'C128', 1, 40);
 
         $groupedItems = $sale->items->groupBy('product_variant_id');
 
         $itemRows = $groupedItems->map(function ($items) {
             $first = $items->first();
+            $careNames = $items
+                ->map(fn ($item) => $item->care_name)
+                ->filter()
+                ->unique()
+                ->values();
+            $rowCareAmount = $items->sum(fn ($item) => (float) ($item->care_amount ?? 0));
 
             return [
                 'product_name' => $first->product?->product_name,
@@ -135,6 +149,8 @@ class SaleDownloadController extends Controller
                 'attributes' => $first->productVariant?->attributeValues?->pluck('value') ?? [],
                 'serials' => $items->pluck('serial_number')->filter()->values(),
                 'total_qty' => $items->sum('quantity'),
+                'care_names' => $careNames,
+                'care_amount' => $rowCareAmount,
                 'lines' => $items->map(function ($item) {
                     $lineTotal = ($item->unit_price * $item->quantity) - ($item->discount_amount ?? 0);
                     $isExchange = $item->sale_type === 'exchange';
@@ -145,6 +161,8 @@ class SaleDownloadController extends Controller
                         'line_total' => $isExchange ? -$lineTotal : $lineTotal,
                         'is_exchange' => $isExchange,
                         'serial_number' => $item->serial_number,
+                        'care_name' => $item->care_name,
+                        'care_amount' => (float) ($item->care_amount ?? 0),
                     ];
                 })->values(),
             ];
@@ -174,6 +192,7 @@ class SaleDownloadController extends Controller
             'payment_summary' => $sale->paymentSummary()->values(),
             'total_quantity' => $totalQuantity,
             'total_unit_price' => $totalUnitPrice,
+            'total_care_charge' => $totalCareCharge,
             'coupon_amount' => $sale->coupon_amount,
             'total_discount' => $totalDiscount + $sale->coupon_amount,
             'received_amount' => $receivedAmount,

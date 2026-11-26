@@ -180,6 +180,9 @@ onMounted(() => loadInvoiceData());
                                 <div v-if="row.warranty_day" class="warranty">
                                     Warranty Days: {{ row.warranty_day }}
                                 </div>
+                                <div v-if="row.care_names && row.care_names.length" class="warranty">
+                                    Product Care: {{ row.care_names.join(', ') }} (৳ {{ fmt(row.care_amount) }})
+                                </div>
                             </div>
                         </td>
                         <td>
@@ -228,6 +231,10 @@ onMounted(() => loadInvoiceData());
                                 </template>
                             </td>
                             <td>: ৳ {{ fmt(invoice.sale.additional_charge) }}</td>
+                        </tr>
+                        <tr v-if="Number(invoice.total_care_charge) > 0">
+                            <td class="s-label">Total Care Charge</td>
+                            <td>: ৳ {{ fmt(invoice.total_care_charge) }}</td>
                         </tr>
                         <tr>
                             <td class="s-label">Shipping Charge</td>

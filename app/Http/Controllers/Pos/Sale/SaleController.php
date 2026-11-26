@@ -183,16 +183,13 @@ class SaleController extends Controller
             'items' => $sale->items()->with([
                 'product:id,product_name',
                 'product.serial:product_id,serial_number,status',
+                'product.cares.care:id,name,value',
                 'productVariant:id,sku',
+                'productCare.care:id,name,value',
+                'preOwnedCare.care:id,name,value',
             ])
                 ->get()
                 ->map(
-                    //                    $matchedSerial = $item->product?->serial
-                    //                        ->firstWhere('serial_number', $item->serial_number);
-                    //                    $productSerialStatus = TenantProductSerial::query()
-                    //                        ->when($isAdmin, fn($query) => $query->where('tenant_id', $sale->tenant_id))
-                    //                        ->where('product_serial_id', $matchedSerial?->id)
-                    //                        ->first();
                     fn ($item) => [
                         'id' => $item->id,
                         'product_id' => $item->product_id,
@@ -206,7 +203,19 @@ class SaleController extends Controller
                         'note' => $item->note,
                         'discount_type' => $item->discount_type,
                         'discount_amount' => $item->discount_amount,
-                        //                        'status' => $productSerialStatus?->status,
+                        'product_care_id' => $item->product_care_id,
+                        'pre_owned_care_id' => $item->pre_owned_care_id,
+                        'care_amount' => (float) ($item->care_amount ?? 0),
+                        'care_name' => $item->care_name,
+                        'cares' => $item->product?->cares
+                            ?->map(fn ($pc) => [
+                                'id' => $pc->id,
+                                'care_id' => $pc->care_id,
+                                'name' => $pc->care?->name,
+                                'value' => (float) ($pc->care?->value ?? 0),
+                            ])
+                            ->filter(fn ($c) => $c['name'] !== null)
+                            ->values() ?? [],
                         'attribute_values' => $item->productVariant?->attributeValues->pluck('value')->implode('/'),
                     ]),
         ];

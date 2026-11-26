@@ -38,10 +38,11 @@ const fetchItems = async () => {
 
 const lineTotal = (item) => {
     const base = item.price * item.quantity;
+    const care = Number(item.care_amount || 0);
     if (item.discount_type === 'percent') {
-        return base - (base * (item.discount_amount || 0) / 100);
+        return base - (base * (item.discount_amount || 0) / 100) + care;
     }
-    return base - (item.discount_amount || 0);
+    return base - (item.discount_amount || 0) + care;
 };
 
 const totalQuantity = computed(() => items.value.reduce((sum, item) => sum + Number(item.quantity || 0), 0));
@@ -107,6 +108,9 @@ onMounted(fetchItems);
                                 <td>
                                     <div class="item-name">{{ item.name }}</div>
                                     <div v-if="item.attribute_values" class="item-variant">{{ item.attribute_values }}</div>
+                                    <div v-if="item.care_name" class="item-variant text-primary">
+                                        Care: {{ item.care_name }} ({{ numberWithCurrencySymbol(item.care_amount || 0) }})
+                                    </div>
                                 </td>
                                 <td class="text-muted">{{ item.serial_number || '-' }}</td>
                                 <td class="text-center">
