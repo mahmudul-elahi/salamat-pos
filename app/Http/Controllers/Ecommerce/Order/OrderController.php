@@ -771,8 +771,6 @@ class OrderController extends Controller
             $order->status = StatusEnum::Approved->value;
             $order->save();
 
-            $order->loadMissing(['items.productCare.care', 'items.preOwnedCare.care']);
-
             $salesByTenant = [];
 
             foreach ($order->items as $item) {
@@ -780,8 +778,6 @@ class OrderController extends Controller
                 $productId = $item->product_id;
                 $productName = $item->variant->product->product_name;
                 $discountType = ($item->discount_type === 'none') ? null : $item->discount_type;
-                $carePercentage = (float) ($item->productCare?->care?->value ?? $item->preOwnedCare?->care?->value ?? 0);
-                $careAmountPerUnit = round($item->product_price * ($carePercentage / 100), 2);
 
                 $inputRow = $ordersInput->get($item->id);
 
@@ -850,7 +846,7 @@ class OrderController extends Controller
 
                     $itemTotal = $item->product_price - ($item->discount_amount ?? 0);
                     $salesByTenant[$tenantId]['sub_total'] += $item->product_price;
-                    $salesByTenant[$tenantId]['grand_total'] += $itemTotal + $careAmountPerUnit;
+                    $salesByTenant[$tenantId]['grand_total'] += $itemTotal;
 
                     $salesByTenant[$tenantId]['items'][] = [
                         'product_id' => $item->product_id,
@@ -861,9 +857,6 @@ class OrderController extends Controller
                         'discount_type' => $discountType,
                         'discount_amount' => $item->discount_amount ?? 0,
                         'serial_number' => $serialNumber,
-                        'product_care_id' => $item->product_care_id,
-                        'pre_owned_care_id' => $item->pre_owned_care_id,
-                        'care_amount' => $careAmountPerUnit,
                         'note' => null,
                     ];
                 }

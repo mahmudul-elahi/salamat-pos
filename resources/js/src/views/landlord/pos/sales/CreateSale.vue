@@ -165,10 +165,6 @@ const addProduct = (product) => {
             quantity: 1,
             discount_type: '',
             discount_amount: '',
-            product_care_id: null,
-            pre_owned_care_id: null,
-            care_amount: 0,
-            cares: product.cares || [],
             note: '',
             sale_type: product.sale_type,
             showPurchasePrice: false,
@@ -326,29 +322,9 @@ const shippingAmount = computed(() => {
     return 0;
 });
 
-const calculateCareAmount = (product) => {
-    if (product.sale_type === 'exchange') return 0;
-    if (product.product_care_id && Array.isArray(product.cares)) {
-        const selected = product.cares.find((c) => Number(c.id) === Number(product.product_care_id));
-        if (selected) {
-            const basePrice = Number(product.price) || 0;
-            return Number((((basePrice * (Number(product.quantity) || 1)) * Number(selected.value || 0)) / 100).toFixed(2));
-        }
-    }
-    return Number(product.care_amount) || 0;
-};
-
-const onCareChange = (product) => {
-    product.care_amount = calculateCareAmount(product);
-};
-
-const totalCareCharge = computed(() => {
-    return productList.value.reduce((sum, product) => sum + calculateCareAmount(product), 0);
-});
-
 // Grand total
 const grandTotal = computed(() => {
-    return discountedSubtotal.value + taxAmount.value + shippingAmount.value + additionalChargeAmount.value + totalCareCharge.value;
+    return discountedSubtotal.value + taxAmount.value + shippingAmount.value + additionalChargeAmount.value;
 });
 
 const isExchangeOverpaid = computed(() => grandTotal.value < 0);
@@ -416,9 +392,6 @@ const submit = async () => {
                 unit_price: product.sale_type === 'exchange' ? product.sale_price : product.price,
                 discount_type: 'fixed',
                 discount_amount: calculateDiscount(product),
-                product_care_id: product.product_care_id || null,
-                pre_owned_care_id: product.pre_owned_care_id || null,
-                care_amount: calculateCareAmount(product),
                 note: product.note,
                 sale_type: product.sale_type ?? null,
             }
@@ -732,19 +705,6 @@ const isCustomerCloseModal = () => {
                                             <div v-if="product.attribute_values" class="badge-square-light bg-success">
                                                 {{ product.attribute_values }}
                                             </div>
-                                            <div v-if="product.cares && product.cares.length && product.sale_type !== 'exchange'" class="mt-2">
-                                                <select class="form-select form-select-sm"
-                                                    v-model="product.product_care_id"
-                                                    @change="onCareChange(product)">
-                                                    <option :value="null">No Care</option>
-                                                    <option v-for="care in product.cares" :key="care.id" :value="care.id">
-                                                        {{ care.name }} ({{ care.value }}%)
-                                                    </option>
-                                                </select>
-                                                <small v-if="calculateCareAmount(product) > 0" class="text-primary d-block mt-1">
-                                                    Care: {{ numberWithCurrencySymbol(calculateCareAmount(product)) }}
-                                                </small>
-                                            </div>
                                         </td>
 
                                         <td>
@@ -856,10 +816,6 @@ const isCustomerCloseModal = () => {
                                 <tr>
                                     <td class="px-4 py-3">{{ $t('additional_charge') }}</td>
                                     <td class="px-4 py-3">{{ numberWithCurrencySymbol(additionalChargeAmount) }}</td>
-                                </tr>
-                                <tr v-if="totalCareCharge > 0">
-                                    <td class="px-4 py-3">Total Care Charge</td>
-                                    <td class="px-4 py-3">{{ numberWithCurrencySymbol(totalCareCharge) }}</td>
                                 </tr>
                                 <tr>
                                     <td class="px-4 py-3 text-primary">{{ $t('grand_total') }}</td>

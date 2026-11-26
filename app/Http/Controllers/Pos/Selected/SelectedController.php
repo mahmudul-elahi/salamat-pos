@@ -207,7 +207,7 @@ class SelectedController extends Controller
             ->where('product_id', $id)
             ->where('status', '1')
             ->with([
-                'product.cares.care:id,name,value',
+                'product',
                 'price',
                 'attributeValues.attribute',
             ])
@@ -228,15 +228,6 @@ class SelectedController extends Controller
                 'warranty_day' => $variant->product?->warranty_day ?? null,
                 'sku' => $variant->sku,
                 'attributes' => $joinedAttributes ?: 'N/A',
-                'cares' => $variant->product?->cares
-                    ?->map(fn ($pc) => [
-                        'id' => $pc->id,
-                        'care_id' => $pc->care_id,
-                        'name' => $pc->care?->name,
-                        'value' => (float) ($pc->care?->value ?? 0),
-                    ])
-                    ->filter(fn ($c) => $c['name'] !== null)
-                    ->values() ?? [],
             ];
         });
     }
@@ -342,7 +333,6 @@ class SelectedController extends Controller
                         ]);
                     });
             })
-            ->with(['cares.care:id,name,value'])
             ->select(['id', 'product_name'])
             ->get();
 
@@ -364,15 +354,6 @@ class SelectedController extends Controller
                 'attribute_values' => $serial?->variant?->attributeValues
                     ->pluck('value')
                     ->implode('/'),
-                'cares' => $product->cares
-                    ->map(fn ($pc) => [
-                        'id' => $pc->id,
-                        'care_id' => $pc->care_id,
-                        'name' => $pc->care?->name,
-                        'value' => (float) ($pc->care?->value ?? 0),
-                    ])
-                    ->filter(fn ($c) => $c['name'] !== null)
-                    ->values(),
             ];
         });
 

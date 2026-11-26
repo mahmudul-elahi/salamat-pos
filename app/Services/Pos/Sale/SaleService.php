@@ -74,9 +74,6 @@ class SaleService extends BaseService
             'sale_type' => $item['sale_type'] ?? 'regular',
             'discount_type' => $item['discount_type'],
             'discount_amount' => $item['discount_amount'],
-            'product_care_id' => $item['product_care_id'] ?? null,
-            'pre_owned_care_id' => $item['pre_owned_care_id'] ?? null,
-            'care_amount' => $item['care_amount'] ?? 0,
             'note' => $item['note'] ?? null,
             'created_at' => $now,
             'updated_at' => $now,
@@ -103,9 +100,6 @@ class SaleService extends BaseService
             'serial_number' => $item['serial_number'],
             'discount_type' => $item['discount_type'],
             'discount_amount' => $item['discount_amount'],
-            'product_care_id' => $item['product_care_id'] ?? null,
-            'pre_owned_care_id' => $item['pre_owned_care_id'] ?? null,
-            'care_amount' => $item['care_amount'] ?? 0,
             'note' => $item['note'] ?? null,
             'created_at' => $now,
             'updated_at' => $now,
@@ -622,9 +616,6 @@ class SaleService extends BaseService
                     'unit_price' => $item['unit_price'],
                     'discount_type' => $item['discount_type'],
                     'discount_amount' => $item['discount_amount'],
-                    'product_care_id' => $item['product_care_id'] ?? null,
-                    'pre_owned_care_id' => $item['pre_owned_care_id'] ?? null,
-                    'care_amount' => $item['care_amount'] ?? 0,
                     'note' => $item['note'] ?? null,
                 ]);
             } else {
@@ -637,9 +628,6 @@ class SaleService extends BaseService
                     'serial_number' => $item['serial_number'],
                     'discount_type' => $item['discount_type'],
                     'discount_amount' => $item['discount_amount'],
-                    'product_care_id' => $item['product_care_id'] ?? null,
-                    'pre_owned_care_id' => $item['pre_owned_care_id'] ?? null,
-                    'care_amount' => $item['care_amount'] ?? 0,
                     'note' => $item['note'] ?? null,
                 ]);
 

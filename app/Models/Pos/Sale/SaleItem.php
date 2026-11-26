@@ -4,10 +4,8 @@ namespace App\Models\Pos\Sale;
 
 use App\Models\Common\BaseModel;
 use App\Models\Pos\Product\Product;
-use App\Models\Pos\Product\ProductCare;
 use App\Models\Pos\Product\ProductVariant;
 use App\Models\Pos\SaleReturn\SaleReturnItem;
-use App\Models\PreOwned\PreOwnedCare;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -28,9 +26,6 @@ class SaleItem extends BaseModel
         'discount_amount',
         'serial_number',
         'sale_type',
-        'product_care_id',
-        'pre_owned_care_id',
-        'care_amount',
         'note',
         'updated_at',
         'created_at',
@@ -49,21 +44,6 @@ class SaleItem extends BaseModel
     public function productVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
-    }
-
-    public function productCare(): BelongsTo
-    {
-        return $this->belongsTo(ProductCare::class, 'product_care_id');
-    }
-
-    public function preOwnedCare(): BelongsTo
-    {
-        return $this->belongsTo(PreOwnedCare::class, 'pre_owned_care_id');
-    }
-
-    public function getCareNameAttribute(): ?string
-    {
-        return $this->productCare?->care?->name ?? $this->preOwnedCare?->care?->name;
     }
 
     public function saleReturnItems()

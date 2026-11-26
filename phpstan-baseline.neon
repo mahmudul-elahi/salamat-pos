@@ -339,7 +339,7 @@ parameters:
 		-
 			message: '#^Relation ''items'' is not found in App\\Models\\Ecommerce\\Order\\Order model\.$#'
 			identifier: larastan.relationExistence
-			count: 6
+			count: 5
 			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
 
 		-
@@ -369,7 +369,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 6
+			count: 4
 			path: app/Http/Controllers/Ecommerce/Order/OrderController.php
 
 		-
@@ -3277,15 +3277,9 @@ parameters:
 			path: app/Http/Controllers/Pos/Sale/SaleController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Pos/Sale/SaleController.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Pos\\Sale\\Sale\:\:\$items\.$#'
 			identifier: property.notFound
-			count: 10
+			count: 8
 			path: app/Http/Controllers/Pos/Sale/SaleDownloadController.php
 
 		-
@@ -3415,27 +3409,9 @@ parameters:
 			path: app/Http/Controllers/Pos/Selected/SelectedController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$care\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Selected/SelectedController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$care_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Selected/SelectedController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cares\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Pos/Selected/SelectedController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 2
 			path: app/Http/Controllers/Pos/Selected/SelectedController.php
 
 		-
@@ -3501,7 +3477,7 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 3
+			count: 2
 			path: app/Http/Controllers/Pos/Selected/SelectedController.php
 
 		-
@@ -3512,12 +3488,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Pos\\Product\\ProductVariant\>\:\:transform\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Pos/Selected/SelectedController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:filter\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Pos/Selected/SelectedController.php
@@ -3598,12 +3568,6 @@ parameters:
 			message: '#^Using nullsafe property access "\?\-\>product_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 3
-			path: app/Http/Controllers/Pos/Selected/SelectedController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
 			path: app/Http/Controllers/Pos/Selected/SelectedController.php
 
 		-
@@ -4829,18 +4793,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Models/Pos/Sale/Sale.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$care\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Pos/Sale/SaleItem.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Models/Pos/Sale/SaleItem.php
 
 		-
 			message: '#^Parameter \#1 \$string of function str_pad expects string, \(float\|int\) given\.$#'

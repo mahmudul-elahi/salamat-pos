@@ -387,17 +387,6 @@
                                     Warranty Days: {{ $firstItem->product->warranty_day }}
                                 </div>
                                 @endif
-
-                                {{-- Product Care --}}
-                                @php
-                                $rowCareNames = $items->map(fn ($i) => $i->care_name)->filter()->unique()->values();
-                                $rowCareAmount = $items->sum(fn ($i) => (float) ($i->care_amount ?? 0));
-                                @endphp
-                                @if ($rowCareNames->isNotEmpty())
-                                <div class="warranty">
-                                    Product Care: {{ $rowCareNames->implode(', ') }} (৳{{ number_format($rowCareAmount, 2) }})
-                                </div>
-                                @endif
                             </div>
                     </td>
 
@@ -477,12 +466,6 @@
                         <td style="font-weight: 600;">Additional Charge @if($additional_charge_name)<br>({{ $additional_charge_name }})@endif</td>
                         <td>: <img src="{{ $taka }}" class="taka-icon"> {{ number_format($additional_charge, 2) }}</td>
                     </tr>
-                    @if(($totalCareCharge ?? 0) > 0)
-                    <tr>
-                        <td style="font-weight: 600;">Total Care Charge</td>
-                        <td>: <img src="{{ $taka }}" class="taka-icon"> {{ number_format($totalCareCharge, 2) }}</td>
-                    </tr>
-                    @endif
                     <tr>
                         <td style="font-weight: 600;">Shipping Charge</td>
                         <td>: <img src="{{ $taka }}" class="taka-icon"> {{ number_format($shipping_cost, 2) }}</td>
