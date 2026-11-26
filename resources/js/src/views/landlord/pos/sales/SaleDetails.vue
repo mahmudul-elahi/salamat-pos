@@ -180,6 +180,9 @@ onMounted(() => loadInvoiceData());
                                 <div v-if="row.warranty_day" class="warranty">
                                     Warranty Days: {{ row.warranty_day }}
                                 </div>
+                                <div v-for="(note, ni) in (row.notes || [])" :key="ni" class="warranty">
+                                    {{ note }}
+                                </div>
                             </div>
                         </td>
                         <td>

@@ -165,6 +165,8 @@ const addProduct = (product) => {
             quantity: 1,
             discount_type: '',
             discount_amount: '',
+            selected_care_id: null,
+            cares: product.cares || [],
             note: '',
             sale_type: product.sale_type,
             showPurchasePrice: false,
@@ -321,6 +323,37 @@ const shippingAmount = computed(() => {
     }
     return 0;
 });
+
+const syncCareCharges = () => {
+    let totalCare = 0;
+    const careNames = [];
+
+    for (const product of productList.value) {
+        if (product.sale_type === 'exchange' || !product.selected_care_id || !Array.isArray(product.cares)) {
+            continue;
+        }
+        const selected = product.cares.find((c) => Number(c.id) === Number(product.selected_care_id));
+        if (selected) {
+            const basePrice = Number(product.price) || 0;
+            const careAmount = Number((((basePrice * (Number(product.quantity) || 1)) * Number(selected.value || 0)) / 100).toFixed(2));
+            totalCare += careAmount;
+            product.note = `Product Care: ${selected.name} (৳${careAmount.toFixed(2)})`;
+            if (!careNames.includes(selected.name)) {
+                careNames.push(selected.name);
+            }
+        }
+    }
+
+    formData.value.additional_charge = Number(totalCare.toFixed(2));
+    formData.value.additional_charge_name = careNames.join(', ').slice(0, 250);
+};
+
+const onCareChange = (product) => {
+    if (!product.selected_care_id && product.note && product.note.startsWith('Product Care:')) {
+        product.note = '';
+    }
+    syncCareCharges();
+};
 
 // Grand total
 const grandTotal = computed(() => {
@@ -704,6 +737,19 @@ const isCustomerCloseModal = () => {
                                             {{ product.name }}
                                             <div v-if="product.attribute_values" class="badge-square-light bg-success">
                                                 {{ product.attribute_values }}
+                                            </div>
+                                            <div v-if="product.cares && product.cares.length && product.sale_type !== 'exchange'" class="mt-2">
+                                                <select class="form-select form-select-sm"
+                                                    v-model="product.selected_care_id"
+                                                    @change="onCareChange(product)">
+                                                    <option :value="null">No Care</option>
+                                                    <option v-for="care in product.cares" :key="care.id" :value="care.id">
+                                                        {{ care.name }} ({{ care.value }}%)
+                                                    </option>
+                                                </select>
+                                            </div>
+                                            <div v-if="product.note" class="mt-1">
+                                                <small class="text-primary">{{ product.note }}</small>
                                             </div>
                                         </td>
 

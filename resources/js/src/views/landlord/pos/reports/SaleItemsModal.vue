@@ -107,6 +107,7 @@ onMounted(fetchItems);
                                 <td>
                                     <div class="item-name">{{ item.name }}</div>
                                     <div v-if="item.attribute_values" class="item-variant">{{ item.attribute_values }}</div>
+                                    <div v-if="item.note" class="item-variant text-primary">{{ item.note }}</div>
                                 </td>
                                 <td class="text-muted">{{ item.serial_number || '-' }}</td>
                                 <td class="text-center">

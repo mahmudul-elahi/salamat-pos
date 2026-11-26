@@ -387,6 +387,16 @@
                                     Warranty Days: {{ $firstItem->product->warranty_day }}
                                 </div>
                                 @endif
+
+                                {{-- Item Notes / Product Care --}}
+                                @php
+                                $rowNotes = $items->pluck('note')->filter()->unique()->values();
+                                @endphp
+                                @foreach ($rowNotes as $rowNote)
+                                <div class="warranty">
+                                    {{ $rowNote }}
+                                </div>
+                                @endforeach
                             </div>
                     </td>
 

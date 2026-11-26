@@ -127,6 +127,7 @@ class SaleDownloadController extends Controller
 
         $itemRows = $groupedItems->map(function ($items) {
             $first = $items->first();
+            $notes = $items->pluck('note')->filter()->unique()->values();
 
             return [
                 'product_name' => $first->product?->product_name,
@@ -134,6 +135,7 @@ class SaleDownloadController extends Controller
                 'warranty_day' => $first->product?->warranty_day,
                 'attributes' => $first->productVariant?->attributeValues?->pluck('value') ?? [],
                 'serials' => $items->pluck('serial_number')->filter()->values(),
+                'notes' => $notes,
                 'total_qty' => $items->sum('quantity'),
                 'lines' => $items->map(function ($item) {
                     $lineTotal = ($item->unit_price * $item->quantity) - ($item->discount_amount ?? 0);
@@ -145,6 +147,7 @@ class SaleDownloadController extends Controller
                         'line_total' => $isExchange ? -$lineTotal : $lineTotal,
                         'is_exchange' => $isExchange,
                         'serial_number' => $item->serial_number,
+                        'note' => $item->note,
                     ];
                 })->values(),
             ];

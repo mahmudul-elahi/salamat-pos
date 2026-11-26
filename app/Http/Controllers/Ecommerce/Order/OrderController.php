@@ -771,6 +771,8 @@ class OrderController extends Controller
             $order->status = StatusEnum::Approved->value;
             $order->save();
 
+            $order->loadMissing(['items.productCare.care', 'items.preOwnedCare.care']);
+
             $salesByTenant = [];
 
             foreach ($order->items as $item) {
@@ -778,6 +780,11 @@ class OrderController extends Controller
                 $productId = $item->product_id;
                 $productName = $item->variant->product->product_name;
                 $discountType = ($item->discount_type === 'none') ? null : $item->discount_type;
+                $care = $item->productCare?->care ?? $item->preOwnedCare?->care;
+                $careName = $care?->name;
+                $carePercentage = (float) ($care?->value ?? 0);
+                $careAmountPerUnit = round($item->product_price * ($carePercentage / 100), 2);
+                $careNote = $careName ? "Product Care: {$careName} (৳".number_format($careAmountPerUnit, 2).')' : null;
 
                 $inputRow = $ordersInput->get($item->id);
 
@@ -837,6 +844,8 @@ class OrderController extends Controller
                             'sub_total' => 0,
                             'shipping_cost' => $isFirstTenantSale ? ($order->shipping_charge ?? 0) : 0,
                             'order_tax' => 0,
+                            'additional_charge_name' => null,
+                            'additional_charge' => 0,
                             'coupon_amount' => $isFirstTenantSale ? ($order->discount_total ?? 0) : 0,
                             'coupon_code' => $isFirstTenantSale ? ($order->coupon_code ?? null) : null,
                             'grand_total' => 0,
@@ -846,7 +855,18 @@ class OrderController extends Controller
 
                     $itemTotal = $item->product_price - ($item->discount_amount ?? 0);
                     $salesByTenant[$tenantId]['sub_total'] += $item->product_price;
-                    $salesByTenant[$tenantId]['grand_total'] += $itemTotal;
+                    $salesByTenant[$tenantId]['additional_charge'] += $careAmountPerUnit;
+                    $salesByTenant[$tenantId]['grand_total'] += $itemTotal + $careAmountPerUnit;
+
+                    if ($careName) {
+                        $existingNames = $salesByTenant[$tenantId]['additional_charge_name']
+                            ? explode(', ', $salesByTenant[$tenantId]['additional_charge_name'])
+                            : [];
+                        if (! in_array($careName, $existingNames, true)) {
+                            $existingNames[] = $careName;
+                            $salesByTenant[$tenantId]['additional_charge_name'] = mb_substr(implode(', ', $existingNames), 0, 250);
+                        }
+                    }
 
                     $salesByTenant[$tenantId]['items'][] = [
                         'product_id' => $item->product_id,
@@ -857,7 +877,7 @@ class OrderController extends Controller
                         'discount_type' => $discountType,
                         'discount_amount' => $item->discount_amount ?? 0,
                         'serial_number' => $serialNumber,
-                        'note' => null,
+                        'note' => $careNote,
                     ];
                 }
             }
