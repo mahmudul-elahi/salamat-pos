@@ -24,6 +24,20 @@ class ProductService extends BaseService
         $this->model = $product;
     }
 
+    /**
+     * Create a product with its attributes, variants, colour images, videos and SEO, then revalidate the storefront.
+     */
+    public function createWithDetails(Request $request): static
+    {
+        return $this->createProduct($request)
+            ->variantAttribute($request)
+            ->variant($request)
+            ->colorAttributeValueImage($request)
+            ->createProductVideos($request)
+            ->createSeo($request)
+            ->revalidate();
+    }
+
     public function createProduct(Request $request): static
     {
 

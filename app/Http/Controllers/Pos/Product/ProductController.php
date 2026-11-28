@@ -67,14 +67,7 @@ class ProductController extends Controller
         try {
             DB::beginTransaction();
 
-            $this->service
-                ->createProduct($request)
-                ->variantAttribute($request)
-                ->variant($request)
-                ->colorAttributeValueImage($request)
-                ->createProductVideos($request)
-                ->createSeo($request)
-                ->revalidate();
+            $this->service->createWithDetails($request);
 
             DB::commit();
 
