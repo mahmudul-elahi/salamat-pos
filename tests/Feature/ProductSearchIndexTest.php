@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\Product\SyncProductSearchIndexJob;
 use App\Models\Pos\Product\Product;
+use App\Services\Product\ProductSearchIndexService;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
@@ -123,14 +127,81 @@ class ProductSearchIndexTest extends TestCase
 
     public function test_a_meilisearch_outage_does_not_break_saving_the_product(): void
     {
-        Http::fake(['meili.test/*' => Http::response('down', 503)]);
+        $this->meilisearchIsDown();
 
         $product = $this->createProduct();
 
         $this->assertDatabaseHas('products', ['id' => $product->id]);
     }
 
-    private function createProduct(): Product
+    public function test_a_sync_that_cannot_reach_meilisearch_is_retried_later(): void
+    {
+        $product = $this->createProduct();
+        $this->meilisearchIsDown();
+
+        $job = (new SyncProductSearchIndexJob($product->id))->withFakeQueueInteractions();
+        $job->handle(app(ProductSearchIndexService::class));
+
+        $job->assertReleased(delay: SyncProductSearchIndexJob::RETRY_DELAYS[0]);
+    }
+
+    public function test_saving_a_product_queues_its_search_index_sync(): void
+    {
+        Queue::fake();
+
+        $product = $this->createProduct();
+
+        Queue::assertPushed(SyncProductSearchIndexJob::class, fn (SyncProductSearchIndexJob $job): bool => $job->productId === $product->id);
+    }
+
+    public function test_the_safety_net_resends_recently_changed_products(): void
+    {
+        $recent = $this->createProduct();
+        $hidden = $this->createProduct(['product_name' => 'Hidden case', 'is_ecommerce' => false]);
+        $old = $this->createProduct(['product_name' => 'Old charger']);
+        DB::table('products')->where('id', $old->id)->update(['updated_at' => now()->subHour()]);
+        Http::fake(['meili.test/*' => Http::response(['taskUid' => 1], 202)]);
+
+        $this->artisan('products:sync-search-index', ['--minutes' => 15])->assertSuccessful();
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'POST'
+            && str_ends_with($request->url(), '/indexes/products/documents?primaryKey=id')
+            && collect($request->data())->pluck('id')->all() === [$recent->id]);
+        Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/documents/delete-batch')
+            && $request->data() === [$hidden->id]);
+    }
+
+    public function test_the_full_sync_resends_every_product(): void
+    {
+        $products = collect([$this->createProduct(), $this->createProduct(['product_name' => 'Old charger'])]);
+        DB::table('products')->where('id', $products->last()->id)->update(['updated_at' => now()->subYear()]);
+        Http::fake(['meili.test/*' => Http::response(['taskUid' => 1], 202)]);
+
+        $this->artisan('products:sync-search-index', ['--all' => true])->assertSuccessful();
+
+        Http::assertSent(fn (Request $request): bool => str_contains($request->url(), '/documents?primaryKey=id')
+            && collect($request->data())->pluck('id')->all() === $products->pluck('id')->all());
+    }
+
+    public function test_the_safety_net_reports_failure_when_meilisearch_is_down(): void
+    {
+        $this->createProduct();
+        $this->meilisearchIsDown();
+
+        $this->artisan('products:sync-search-index')->assertFailed();
+    }
+
+    /**
+     * Replace the healthy Meilisearch fake from setUp(); a second Http::fake() would not,
+     * because the first matching stub wins.
+     */
+    private function meilisearchIsDown(): void
+    {
+        Http::swap(new Factory);
+        Http::fake(['meili.test/*' => Http::response('down', 503)]);
+    }
+
+    private function createProduct(array $attributes = []): Product
     {
         return Product::create([
             'product_name' => 'iPhone 16 Pro-Max',
@@ -139,6 +210,7 @@ class ProductSearchIndexTest extends TestCase
             'brand_id' => 1,
             'status' => '1',
             'is_ecommerce' => true,
+            ...$attributes,
         ]);
     }
 }

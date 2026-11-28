@@ -9,6 +9,12 @@ Schedule::command('queue:work --queue=high-priority,high,default --memory=512 --
     ->everyMinute()
     ->withoutOverlapping();
 
+// Safety net for the storefront search index: re-sends products changed recently in case
+// their queued sync never ran (for example while the queue worker was down).
+Schedule::command('products:sync-search-index --minutes=15')
+    ->everyTenMinutes()
+    ->withoutOverlapping();
+
 Schedule::command('coupons:expire')
     ->dailyAt('00:01')
     ->withoutOverlapping();
