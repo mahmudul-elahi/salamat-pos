@@ -12,12 +12,15 @@ use App\Services\AiAssistant\Tools\ListAttributes;
 use App\Services\AiAssistant\Tools\SearchBrands;
 use App\Services\AiAssistant\Tools\SearchCategories;
 use App\Services\AiAssistant\Tools\SearchProducts;
+use Laravel\Ai\Ai;
 use Laravel\Ai\Attributes\MaxSteps;
 use Laravel\Ai\Attributes\Timeout;
 use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Contracts\HasTools;
+use Laravel\Ai\Contracts\Providers\SupportsWebFetch;
+use Laravel\Ai\Contracts\Providers\SupportsWebSearch;
 use Laravel\Ai\Promptable;
 use Laravel\Ai\Providers\Tools\WebFetch;
 use Laravel\Ai\Providers\Tools\WebSearch;
@@ -74,8 +77,13 @@ class AiAssistant implements Agent, Conversational, HasTools
             app(CreateProduct::class),
         ];
 
-        if (config('ai.default') === 'anthropic') {
+        $provider = Ai::textProvider();
+
+        if ($provider instanceof SupportsWebSearch) {
             $tools[] = (new WebSearch)->max(5);
+        }
+
+        if ($provider instanceof SupportsWebFetch) {
             $tools[] = (new WebFetch)->max(5);
         }
 

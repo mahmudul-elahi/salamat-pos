@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('AI_DEFAULT_PROVIDER', 'anthropic'),
+    'default' => env('AI_DEFAULT_PROVIDER', 'gemini'),
     'default_for_images' => env('AI_DEFAULT_IMAGE_PROVIDER', 'gemini'),
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
@@ -112,6 +112,11 @@ return [
             'key' => env('GEMINI_API_KEY'),
             'url' => env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1beta/'),
             'models' => [
+                'text' => [
+                    'default' => env('GEMINI_MODEL', 'gemini-3.8-flash'),
+                    'cheapest' => env('GEMINI_CHEAPEST_MODEL', 'gemini-3.1-flash-lite'),
+                    'smartest' => env('GEMINI_SMARTEST_MODEL', 'gemini-3.8-flash'),
+                ],
                 'image' => [
                     'default' => env('GEMINI_IMAGE_MODEL', 'gemini-3.1-flash-image'),
                 ],
