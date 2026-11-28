@@ -30,11 +30,6 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
-    'gemini' => [
-        'key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
-    ],
-
     'photoroom' => [
         'key' => env('PHOTOROOM_API_KEY'),
     ],
