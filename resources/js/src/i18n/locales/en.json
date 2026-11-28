@@ -1755,6 +1755,18 @@
     "share_icon" : "Share Icon",
     "total_sale_price": "Total Sale Price",
     "offline_customers": "Offline Customers",
-    "offline_customer": "Offline Customer"
+    "offline_customer": "Offline Customer",
+    "ai_assistant": "AI Assistant",
+    "ai_assistant_new_chat": "New chat",
+    "ai_assistant_intro": "Ask about your products, or ask me to create a category, brand or product. I will ask before changing anything.",
+    "ai_assistant_placeholder": "Type a message…",
+    "ai_assistant_decide_first": "Approve or reject the action above first",
+    "ai_assistant_send": "Send",
+    "ai_assistant_thinking": "Thinking…",
+    "ai_assistant_approval_needed": "Approval needed",
+    "ai_assistant_details": "Details",
+    "ai_assistant_approve": "Approve",
+    "ai_assistant_reject": "Reject",
+    "ai_assistant_error": "The assistant could not answer. Please try again."
 
 }

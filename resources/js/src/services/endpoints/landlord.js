@@ -367,3 +367,6 @@ export const PATHAO_TRACK = (consignmentId) => `/admin/pos/pathao/track/${consig
 export const REDX_TRACK = (trackingId) => `/admin/pos/redx/track/${trackingId}`;
 export const BLOG_POSTS_PINNED = "/admin/ecommerce/blog-posts/pinned";
 export const BLOG_POSTS_PINNED_ORDER = "/admin/ecommerce/blog-posts/pinned-order";
+export const AI_ASSISTANT_MESSAGES = "/admin/ai-assistant/messages";
+export const AI_ASSISTANT_CONVERSATION = (conversationId) => `/admin/ai-assistant/conversations/${conversationId}`;
+export const AI_ASSISTANT_APPROVALS = (conversationId) => `/admin/ai-assistant/conversations/${conversationId}/approvals`;

@@ -5,6 +5,7 @@ import {useProfileStore} from "@/stores/profile/profile.js";
 import {storeToRefs} from "pinia";
 import {useSettingStore} from "@/stores/setting/setting.js";
 import LandlordSidebar from "@/views/common/layout/inc/LandlordSidebar.vue";
+import AiAssistantWidget from "@/views/common/layout/inc/AiAssistantWidget.vue";
 
 // Reactive variable to track scroll position
 const scrollTop = ref(0);
@@ -61,6 +62,9 @@ const sidebarOffCanvas = () => {
         <div class="main-panel">
             <router-view/>
         </div>
+
+        <!-- AI assistant chat, available on every admin page -->
+        <ai-assistant-widget/>
     </div>
 </template>
 
