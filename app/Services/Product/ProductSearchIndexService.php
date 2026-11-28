@@ -3,22 +3,27 @@
 namespace App\Services\Product;
 
 use App\Models\Pos\Product\Product;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Throwable;
 
 /**
  * Pushes POS products into the Meilisearch index that the tekzo storefront searches.
  *
  * The document shape must stay identical to Product::toSearchableArray() in tekzo-api.
- * Failures are logged and swallowed so a search outage never blocks saving a product.
+ * A failed request throws, so the caller (SyncProductSearchIndexJob) can retry it; when
+ * Meilisearch is not configured at all, nothing is sent.
  */
 class ProductSearchIndexService
 {
     /**
      * Add/replace the product in the index, or remove it when it should not be searchable.
+     *
+     * @throws RequestException|ConnectionException
      */
     public function sync(Product $product): void
     {
@@ -36,12 +41,49 @@ class ProductSearchIndexService
         );
     }
 
+    /**
+     * @throws RequestException|ConnectionException
+     */
     public function remove(int|string $productId): void
     {
         $this->send(
             fn (PendingRequest $request) => $request->delete($this->documentsUrl().'/'.$productId),
             "remove product {$productId}"
         );
+    }
+
+    /**
+     * Index the searchable products and remove the rest, in two requests.
+     *
+     * @param  Collection<int, Product>  $products
+     *
+     * @throws RequestException|ConnectionException
+     */
+    public function syncMany(Collection $products): void
+    {
+        [$searchable, $hidden] = $products->partition(fn (Product $product): bool => $this->shouldBeSearchable($product));
+
+        if ($searchable->isNotEmpty()) {
+            $searchable->loadMissing(['category:id,name', 'brand:id,name']);
+
+            $this->send(
+                fn (PendingRequest $request) => $request->post(
+                    $this->documentsUrl().'?primaryKey=id',
+                    $searchable->map(fn (Product $product): array => $this->toDocument($product))->values()->all(),
+                ),
+                "index {$searchable->count()} products"
+            );
+        }
+
+        if ($hidden->isNotEmpty()) {
+            $this->send(
+                fn (PendingRequest $request) => $request->post(
+                    $this->documentsUrl().'/delete-batch',
+                    $hidden->map(fn (Product $product): int => $product->getKey())->values()->all(),
+                ),
+                "remove {$hidden->count()} products"
+            );
+        }
     }
 
     /**
@@ -83,27 +125,30 @@ class ProductSearchIndexService
         );
     }
 
+    public function isConfigured(): bool
+    {
+        return filled(config('services.meilisearch.host'));
+    }
+
     /**
      * @param  callable(PendingRequest): Response  $call
+     *
+     * @throws RequestException|ConnectionException
      */
     private function send(callable $call, string $action): void
     {
-        if (blank(config('services.meilisearch.host'))) {
+        if (! $this->isConfigured()) {
             Log::warning("Meilisearch: skipped {$action}, MEILISEARCH_HOST is not configured");
 
             return;
         }
 
-        try {
-            $request = Http::withToken((string) config('services.meilisearch.key'))
-                ->acceptJson()
-                ->connectTimeout(2)
-                ->timeout(5);
+        $request = Http::withToken((string) config('services.meilisearch.key'))
+            ->acceptJson()
+            ->connectTimeout(2)
+            ->timeout(10);
 
-            $call($request)->throw();
-        } catch (Throwable $exception) {
-            Log::warning("Meilisearch: failed to {$action}", ['error' => $exception->getMessage()]);
-        }
+        $call($request)->throw();
     }
 
     private function documentsUrl(): string
