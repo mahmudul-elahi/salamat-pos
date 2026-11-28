@@ -20,7 +20,7 @@ class SearchBrands extends AssistantTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'search' => $schema->string()->description('Text to match against the brand name. Leave empty to list brands.'),
+            'search' => $schema->string()->nullable()->description('Text to match against the brand name. Leave empty to list brands.'),
         ];
     }
 

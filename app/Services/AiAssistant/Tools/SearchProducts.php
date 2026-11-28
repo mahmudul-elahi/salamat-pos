@@ -18,10 +18,10 @@ class SearchProducts extends AssistantTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'search' => $schema->string()->description('Text to match against the product name or a variant SKU.'),
-            'category_id' => $schema->integer()->description('Only products in this category.'),
-            'brand_id' => $schema->integer()->description('Only products of this brand.'),
-            'limit' => $schema->integer()->min(1)->max(25)->description('How many products to return. Defaults to 10.'),
+            'search' => $schema->string()->nullable()->description('Text to match against the product name or a variant SKU.'),
+            'category_id' => $schema->integer()->nullable()->description('Only products in this category.'),
+            'brand_id' => $schema->integer()->nullable()->description('Only products of this brand.'),
+            'limit' => $schema->integer()->nullable()->min(1)->max(25)->description('How many products to return. Defaults to 10.'),
         ];
     }
 

@@ -20,7 +20,7 @@ class SearchCategories extends AssistantTool
     public function schema(JsonSchema $schema): array
     {
         return [
-            'search' => $schema->string()->description('Text to match against the category name. Leave empty to list categories.'),
+            'search' => $schema->string()->nullable()->description('Text to match against the category name. Leave empty to list categories.'),
         ];
     }
 

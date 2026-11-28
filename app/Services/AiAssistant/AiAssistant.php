@@ -65,6 +65,20 @@ class AiAssistant implements Agent, Conversational, HasTools
         TEXT;
     }
 
+    /**
+     * The default provider first, then the fallbacks to try when it is rate limited or unavailable.
+     *
+     * @return list<string>
+     */
+    public function provider(): array
+    {
+        return collect([config('ai.default'), ...config('ai.assistant.fallback_providers')])
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     public function tools(): iterable
     {
         $tools = [

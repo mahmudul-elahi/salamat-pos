@@ -22,7 +22,7 @@ class ImportImageFromUrl extends AssistantTool
     {
         return [
             'url' => $schema->string()->required()->description('The direct address of the image file.'),
-            'name' => $schema->string()->description('A descriptive name for the image, such as "iPhone 17 Pro Max Black front".'),
+            'name' => $schema->string()->nullable()->description('A descriptive name for the image, such as "iPhone 17 Pro Max Black front".'),
         ];
     }
 

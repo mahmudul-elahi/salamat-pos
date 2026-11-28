@@ -20,10 +20,10 @@ class CreateCategory extends ApprovableAssistantTool
     {
         return [
             'name' => $schema->string()->required()->description('The category name.'),
-            'parent_id' => $schema->integer()->description('The parent category ID, to create a sub-category.'),
-            'description' => $schema->string()->description('A short description of the category.'),
-            'logo' => $schema->string()->description('A logo image URL from the media library.'),
-            'banner' => $schema->string()->description('A banner image URL from the media library.'),
+            'parent_id' => $schema->integer()->nullable()->description('The parent category ID, to create a sub-category.'),
+            'description' => $schema->string()->nullable()->description('A short description of the category.'),
+            'logo' => $schema->string()->nullable()->description('A logo image URL from the media library.'),
+            'banner' => $schema->string()->nullable()->description('A banner image URL from the media library.'),
         ];
     }
 

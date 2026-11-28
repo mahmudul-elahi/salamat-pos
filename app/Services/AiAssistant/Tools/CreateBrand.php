@@ -19,9 +19,9 @@ class CreateBrand extends ApprovableAssistantTool
     {
         return [
             'name' => $schema->string()->required()->description('The brand name.'),
-            'tagline' => $schema->string()->description('The brand tagline.'),
-            'description' => $schema->string()->description('A short description of the brand.'),
-            'primary_logo' => $schema->string()->description('A logo image URL from the media library.'),
+            'tagline' => $schema->string()->nullable()->description('The brand tagline.'),
+            'description' => $schema->string()->nullable()->description('A short description of the brand.'),
+            'primary_logo' => $schema->string()->nullable()->description('A logo image URL from the media library.'),
         ];
     }
 

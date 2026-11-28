@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('AI_DEFAULT_PROVIDER', 'gemini'),
+    'default' => env('AI_DEFAULT_PROVIDER', 'groq'),
     'default_for_images' => env('AI_DEFAULT_IMAGE_PROVIDER', 'gemini'),
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
@@ -30,10 +30,14 @@ return [
     | find product images). It needs the provider's web search quota, which the
     | Gemini free tier does not include, so turn it off on free-tier keys.
     |
+    | Fallback providers are tried in order when the default provider is rate
+    | limited or unavailable, for example "gemini" behind a free Groq key.
+    |
     */
 
     'assistant' => [
         'web_tools' => (bool) env('AI_ASSISTANT_WEB_TOOLS', true),
+        'fallback_providers' => array_filter(explode(',', (string) env('AI_ASSISTANT_FALLBACK_PROVIDERS', ''))),
     ],
 
     /*
@@ -141,6 +145,13 @@ return [
         'groq' => [
             'driver' => 'groq',
             'key' => env('GROQ_API_KEY'),
+            'models' => [
+                'text' => [
+                    'default' => env('GROQ_MODEL', 'openai/gpt-oss-120b'),
+                    'cheapest' => env('GROQ_CHEAPEST_MODEL', 'openai/gpt-oss-20b'),
+                    'smartest' => env('GROQ_SMARTEST_MODEL', 'openai/gpt-oss-120b'),
+                ],
+            ],
         ],
 
         'jina' => [
