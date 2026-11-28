@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Ecommerce\Order\OrderController;
 use App\Http\Controllers\Pos\Sale\SaleController;
 use App\Http\Controllers\Pos\Sale\SaleDownloadController;
+use App\Models\Ecommerce\Order\Order;
+use App\Models\Ecommerce\Order\OrderList;
 use App\Models\Pos\Care\Care;
 use App\Models\Pos\Contact\Contact;
 use App\Models\Pos\Product\Product;
@@ -179,6 +182,48 @@ class SaleCareTest extends TestCase
             $table->unsignedInteger('order_column')->nullable();
             $table->timestamps();
         });
+
+        Schema::create('orders', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('contact_id')->nullable();
+            $table->unsignedBigInteger('shipping_address_id')->nullable();
+            $table->unsignedBigInteger('area_id')->nullable();
+            $table->unsignedBigInteger('new_district_id')->nullable();
+            $table->string('address')->nullable();
+            $table->string('invoice_number')->nullable();
+            $table->decimal('sub_total', 12, 2)->default(0);
+            $table->decimal('discount_total', 12, 2)->default(0);
+            $table->decimal('payable_amount', 12, 2)->default(0);
+            $table->decimal('shipping_charge', 12, 2)->default(0);
+            $table->decimal('grand_total', 12, 2)->default(0);
+            $table->integer('status')->default(2);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('order_lists', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('product_id');
+            $table->unsignedBigInteger('product_variant_id')->nullable();
+            $table->unsignedBigInteger('pre_owned_id')->nullable();
+            $table->unsignedBigInteger('gift_product_variant_id')->nullable();
+            $table->unsignedBigInteger('product_care_id')->nullable();
+            $table->unsignedBigInteger('pre_owned_care_id')->nullable();
+            $table->decimal('product_price', 12, 2)->default(0);
+            $table->decimal('discount_amount', 12, 2)->default(0);
+            $table->integer('quantity')->default(1);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
+        Schema::create('gift_product_variants', function (Blueprint $table): void {
+            $table->id();
+            $table->unsignedBigInteger('gift_product_id')->nullable();
+            $table->unsignedBigInteger('product_variant_id')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
 
     public function test_sale_care_is_persisted_in_note_and_additional_charge_without_db_changes(): void
@@ -237,5 +282,72 @@ class SaleCareTest extends TestCase
 
         $this->assertSame('Product Care: TEKZO Care for Apple (৳10,000.00)', $showData['items'][0]['note']);
         $this->assertCount(1, $showData['items'][0]['cares']);
+    }
+
+    public function test_order_care_charge_matches_net_discounted_price_and_legacy_mrp(): void
+    {
+        $contact = Contact::query()->create(['name' => 'Nessaruzzaman']);
+        $product = Product::query()->create(['product_name' => 'Hoco DB81', 'warranty_day' => 90]);
+        $variant = ProductVariant::query()->create([
+            'product_id' => $product->id,
+            'sku' => 'HOCO-DB81',
+            'status' => '1',
+        ]);
+        $care = Care::query()->create([
+            'name' => '6 month replacement guarantee',
+            'value' => 6.00,
+        ]);
+        $productCare = ProductCare::query()->create([
+            'product_id' => $product->id,
+            'care_id' => $care->id,
+        ]);
+
+        // Net-priced order: MRP 4000 - Discount 1200 = 2800; 6% of 2800 = 168; +120 shipping = 3088
+        $netOrder = Order::query()->create([
+            'contact_id' => $contact->id,
+            'invoice_number' => 'ORD-20261126-002001',
+            'sub_total' => 2968.00,
+            'discount_total' => 0,
+            'shipping_charge' => 120.00,
+            'grand_total' => 3088.00,
+            'status' => 2,
+        ]);
+        OrderList::query()->create([
+            'order_id' => $netOrder->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'product_care_id' => $productCare->id,
+            'product_price' => 4000.00,
+            'discount_amount' => 1200.00,
+            'quantity' => 1,
+        ]);
+
+        $netOrderData = app(OrderController::class)->orderInvoiceData($netOrder);
+        $this->assertEquals(168.00, round((float) $netOrderData['total_care_charge'], 2));
+        $this->assertEquals(3088.00, round((float) $netOrderData['order']['grand_total'], 2));
+
+        // Legacy MRP-priced order: MRP 4000 - Discount 1200 = 2800; 6% of 4000 = 240; +120 shipping = 3160
+        $mrpOrder = Order::query()->create([
+            'contact_id' => $contact->id,
+            'invoice_number' => 'ORD-LEGACY-0001',
+            'sub_total' => 4240.00,
+            'discount_total' => 0,
+            'shipping_charge' => 120.00,
+            'grand_total' => 3160.00,
+            'status' => 2,
+        ]);
+        OrderList::query()->create([
+            'order_id' => $mrpOrder->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'product_care_id' => $productCare->id,
+            'product_price' => 4000.00,
+            'discount_amount' => 1200.00,
+            'quantity' => 1,
+        ]);
+
+        $mrpOrderData = app(OrderController::class)->orderInvoiceData($mrpOrder);
+        $this->assertEquals(240.00, round((float) $mrpOrderData['total_care_charge'], 2));
+        $this->assertEquals(3160.00, round((float) $mrpOrderData['order']['grand_total'], 2));
     }
 }

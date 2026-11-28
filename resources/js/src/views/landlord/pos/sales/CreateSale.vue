@@ -334,7 +334,7 @@ const syncCareCharges = () => {
         }
         const selected = product.cares.find((c) => Number(c.id) === Number(product.selected_care_id));
         if (selected) {
-            const basePrice = Number(product.price) || 0;
+            const basePrice = Number(product.sale_price ?? product.price) || 0;
             const careAmount = Number((((basePrice * (Number(product.quantity) || 1)) * Number(selected.value || 0)) / 100).toFixed(2));
             totalCare += careAmount;
             product.note = `Product Care: ${selected.name} (৳${careAmount.toFixed(2)})`;
@@ -782,7 +782,7 @@ const isCustomerCloseModal = () => {
                                             <app-input type="number" class="w-70" :id="`sale_price_${index}`"
                                                 v-model="product.sale_price" placeholder="Sale Price"
                                                 @keydown="blockInvalidKeys" @paste="blockNegativePaste" min="1"
-                                                @input="validateDiscountAmount(product)"
+                                                @input="() => { validateDiscountAmount(product); syncCareCharges(); }"
                                                 :errors="getItemsError('sale_price', index)" />
                                         </td>
                                         <td>{{ calculateDiscount(product) }}</td>

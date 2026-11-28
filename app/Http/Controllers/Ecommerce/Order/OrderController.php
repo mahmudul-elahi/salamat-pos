@@ -107,16 +107,9 @@ class OrderController extends Controller
 
         $totalDiscount = $order->items->sum(fn ($item) => (float) $item->discount_amount * $item->quantity);
         $totalUnitPrice = $order->items->sum(fn ($item) => $item->product_price * $item->quantity);
-        $totalCareCharge = $order->items->sum(function ($item) {
-            $chargeValue = $item->productCare ? ($item->productCare->care?->value ?? 0) : 0;
-
-            return ($item->product_price * $item->quantity) * ($chargeValue / 100);
-        });
-        $totalPreOwnedCharge = $order->items->sum(function ($item) {
-            $chargeValue = $item->preOwnedCare ? ($item->preOwnedCare->care?->value ?? 0) : 0;
-
-            return ($item->product_price * $item->quantity) * ($chargeValue / 100);
-        });
+        $resolvedCare = $this->resolveOrderCareCharges($order);
+        $totalCareCharge = $resolvedCare['product_total'];
+        $totalPreOwnedCharge = $resolvedCare['pre_owned_total'];
         $totalPurchasePoint = $order->items->sum(fn ($item) => ($item->product?->purchase_point ?? 0) * $item->quantity);
         $totalPreOwnedPoint = $order->items->sum(fn ($item) => ($item->preOwned?->purchase_point ?? 0) * $item->quantity);
         $totalQuantity = $order->items->sum('quantity');
@@ -228,17 +221,9 @@ class OrderController extends Controller
 
         $totalUnitPrice = $order->items->sum(fn ($item) => $item->product_price * $item->quantity);
 
-        $totalCareCharge = $order->items->sum(function ($item) {
-            $chargeValue = $item->productCare ? ($item->productCare->care?->value ?? 0) : 0;
-
-            return ($item->product_price * $item->quantity) * ($chargeValue / 100);
-        });
-
-        $totalPreOwnedCharge = $order->items->sum(function ($item) {
-            $chargeValue = $item->preOwnedCare ? ($item->preOwnedCare->care?->value ?? 0) : 0;
-
-            return ($item->product_price * $item->quantity) * ($chargeValue / 100);
-        });
+        $resolvedCare = $this->resolveOrderCareCharges($order);
+        $totalCareCharge = $resolvedCare['product_total'];
+        $totalPreOwnedCharge = $resolvedCare['pre_owned_total'];
 
         $totalPurchasePoint = $order->items->sum(function ($item) {
             $point = $item->product ? ($item->product->purchase_point ?? 0) : 0;
@@ -772,6 +757,7 @@ class OrderController extends Controller
             $order->save();
 
             $order->loadMissing(['items.productCare.care', 'items.preOwnedCare.care']);
+            $resolvedCare = $this->resolveOrderCareCharges($order);
 
             $salesByTenant = [];
 
@@ -782,8 +768,7 @@ class OrderController extends Controller
                 $discountType = ($item->discount_type === 'none') ? null : $item->discount_type;
                 $care = $item->productCare?->care ?? $item->preOwnedCare?->care;
                 $careName = $care?->name;
-                $carePercentage = (float) ($care?->value ?? 0);
-                $careAmountPerUnit = round($item->product_price * ($carePercentage / 100), 2);
+                $careAmountPerUnit = $resolvedCare['per_unit'][$item->id] ?? 0.0;
                 $careNote = $careName ? "Product Care: {$careName} (৳".number_format($careAmountPerUnit, 2).')' : null;
 
                 $inputRow = $ordersInput->get($item->id);
@@ -996,6 +981,72 @@ class OrderController extends Controller
             }
             throw new GeneralException($e->getMessage(), 500, $e);
         }
+    }
+
+    /**
+     * Resolve product & pre-owned care charges for an order.
+     *
+     * Storefront calculates care on the discounted selling price (product_price - discount_amount),
+     * whereas legacy orders calculated it on MRP (product_price). Compare against the stored
+     * grand_total so legacy orders match their invoice total while current orders use net price.
+     *
+     * @return array{product_total: float, pre_owned_total: float, per_unit: array<int, float>}
+     */
+    private function resolveOrderCareCharges(Order $order): array
+    {
+        $netProductTotal = 0.0;
+        $netPreOwnedTotal = 0.0;
+        $mrpProductTotal = 0.0;
+        $mrpPreOwnedTotal = 0.0;
+        $netPerUnit = [];
+        $mrpPerUnit = [];
+        $netItemsTotal = 0.0;
+
+        foreach ($order->items as $item) {
+            $qty = max(1, (int) $item->quantity);
+            $unitPrice = (float) $item->product_price;
+            $unitDiscount = (float) ($item->discount_amount ?? 0);
+            $netUnitPrice = max(0.0, $unitPrice - $unitDiscount);
+            $netItemsTotal += $netUnitPrice * $qty;
+
+            $productPct = (float) ($item->productCare?->care?->value ?? 0);
+            $preOwnedPct = (float) ($item->preOwnedCare?->care?->value ?? 0);
+
+            $pNetUnit = round($netUnitPrice * ($productPct / 100), 2);
+            $poNetUnit = round($netUnitPrice * ($preOwnedPct / 100), 2);
+            $pMrpUnit = round($unitPrice * ($productPct / 100), 2);
+            $poMrpUnit = round($unitPrice * ($preOwnedPct / 100), 2);
+
+            $netProductTotal += $pNetUnit * $qty;
+            $netPreOwnedTotal += $poNetUnit * $qty;
+            $mrpProductTotal += $pMrpUnit * $qty;
+            $mrpPreOwnedTotal += $poMrpUnit * $qty;
+
+            $netPerUnit[$item->id] = $productPct > 0 ? $pNetUnit : $poNetUnit;
+            $mrpPerUnit[$item->id] = $productPct > 0 ? $pMrpUnit : $poMrpUnit;
+        }
+
+        $totalNetCare = $netProductTotal + $netPreOwnedTotal;
+        $totalMrpCare = $mrpProductTotal + $mrpPreOwnedTotal;
+
+        $impliedCare = round(
+            (float) $order->grand_total
+            - (float) ($order->shipping_charge ?? 0)
+            + (float) ($order->discount_total ?? 0)
+            - $netItemsTotal,
+            2
+        );
+
+        $useMrp = $totalNetCare !== $totalMrpCare
+            && $totalMrpCare > 0
+            && abs($impliedCare - $totalMrpCare) < 0.05
+            && abs($impliedCare - $totalNetCare) >= 0.05;
+
+        return [
+            'product_total' => $useMrp ? $mrpProductTotal : $netProductTotal,
+            'pre_owned_total' => $useMrp ? $mrpPreOwnedTotal : $netPreOwnedTotal,
+            'per_unit' => $useMrp ? $mrpPerUnit : $netPerUnit,
+        ];
     }
 
     public function checkTransactionStatus(Request $request)
