@@ -192,7 +192,7 @@ const onKeydown = (event) => {
             </div>
 
             <form class="ai-assistant__composer" @submit.prevent="send">
-                <textarea v-model="draft" rows="2" maxlength="4000" class="form-control"
+                <textarea v-model="draft" rows="3" maxlength="4000" class="form-control"
                           :placeholder="pendingApprovals.length ? $t('ai_assistant_decide_first') : $t('ai_assistant_placeholder')"
                           :disabled="isSending || pendingApprovals.length > 0"
                           @keydown="onKeydown"/>
@@ -231,8 +231,8 @@ const onKeydown = (event) => {
 }
 
 .ai-assistant__panel {
-    width: min(400px, calc(100vw - 32px));
-    height: min(600px, calc(100vh - 120px));
+    width: min(520px, calc(100vw - 32px));
+    height: min(760px, calc(100vh - 120px));
     margin-bottom: 12px;
     display: flex;
     flex-direction: column;
@@ -271,8 +271,8 @@ const onKeydown = (event) => {
 }
 
 .ai-assistant__message {
-    max-width: 85%;
-    padding: 8px 12px;
+    max-width: 88%;
+    padding: 10px 14px;
     border-radius: 12px;
     white-space: pre-wrap;
     word-break: break-word;
@@ -308,7 +308,7 @@ const onKeydown = (event) => {
 }
 
 .ai-assistant__arguments {
-    max-height: 180px;
+    max-height: 260px;
     overflow: auto;
     font-size: 12px;
     margin: 6px 0 0;

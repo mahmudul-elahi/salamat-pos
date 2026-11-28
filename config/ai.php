@@ -23,6 +23,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | In-App Assistant
+    |--------------------------------------------------------------------------
+    |
+    | Whether the admin panel assistant may search and read web pages (used to
+    | find product images). It needs the provider's web search quota, which the
+    | Gemini free tier does not include, so turn it off on free-tier keys.
+    |
+    */
+
+    'assistant' => [
+        'web_tools' => (bool) env('AI_ASSISTANT_WEB_TOOLS', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Caching
     |--------------------------------------------------------------------------
     |
